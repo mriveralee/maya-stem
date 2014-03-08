@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
-#----------------------------------------------------------------------------
-# Global Functions for Stem Maya
-#----------------------------------------------------------------------------
+import sys, math
+import random
 
 import maya
 import maya.cmds as cmds
@@ -9,6 +8,13 @@ import maya.OpenMaya as OpenMaya
 import maya.OpenMayaAnim as OpenMayaAnim
 import maya.OpenMayaMPx as OpenMayaMPx
 
+import pymel.all as pm
+from pymel.core import *
+from functools import partial
+
+#------------------------------------------------------------------------------#
+# Global Functions for Stem Maya
+#------------------------------------------------------------------------------#
 
 # Useful functions for declaring attributes as inputs or outputs.
 def MAKE_INPUT(attr):

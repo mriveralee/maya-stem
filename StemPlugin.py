@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-#----------------------------------------------------------------------------
-# The STEM Functions for Stem Maya
-#----------------------------------------------------------------------------
 import sys, math
 import random
 import maya
@@ -16,11 +13,14 @@ from functools import partial
 
 # Import the necessary STEM Plugin Nodes
 import StemGlobal as SG
-import StemNode
-import StemSpaceNode
-import StemLightNode
-import StemUI
+import StemInstanceNode as SI
+import StemSpaceNode as SS
+import StemLightNode as SL
+import StemUI as SU
 
+#------------------------------------------------------------------------------#
+# StemPlugin Class - Loads/Initializes the STEM Plugin classes
+#------------------------------------------------------------------------------#
 
 ##############################################################
 ###  INIT FUNCTIONS FOR PLUG-IN  #############################
@@ -36,37 +36,42 @@ def initializePlugin(mobject):
 
   try:
     # Register StemNode
-    mplugin.registerNode(kPluginStemNodeTypeName, kStemInstanceNodeId,
-    StemNodeCreator, StemNodeInitializer)
+    mplugin.registerNode(SI.STEM_INSTANCE_NODE_TYPE_NAME,
+      SI.STEM_INSTANCE_NODE_ID,
+      SI.StemInstanceNodeCreator,
+      SI.StemInstanceNodeInitializer)
 
     # Register StemSpaceNode
-    # mplugin.registerNode(kPluginStemNodeTypeName, kStemInstanceNodeId,
-    #   StemNodeCreator, StemNodeInitializer)
+    mplugin.registerNode(SS.STEM_SPACE_NODE_TYPE_NAME,
+      SS.STEM_SPACE_NODE_ID,
+      SS.StemSpaceNodeCreator,
+      SS.StemSpaceNodeInitializer)
 
     # Register StemLightNode
-    mplugin.registerNode(kPluginStemNodeTypeName, kStemInstanceNodeId,
-    StemNodeCreator, StemNodeInitializer)
+    mplugin.registerNode(SL.STEM_LIGHT_NODE_TYPE_NAME,
+      SL.STEM_LIGHT_NODE_ID,
+      SL.StemLightNodeCreator,
+      SL.StemLightNodeInitializer)
   except:
     sys.stderr.write(
-    "Failed to register node: %s\n" % kPluginStemNodeTypeName)
+    "Failed to register node: %s\n" % SI.STEM_INSTANCE_NODE_TYPE_NAME)
     # uninitialize the script plug-in
 
 def uninitializePlugin(mobject):
-  global STEM_SYSTEM_MENU
   mplugin = OpenMayaMPx.MFnPlugin(mobject)
   try:
 
     # Unregister StemNode
-    mplugin.deregisterNode(StemInstanceNodeId)
-
-    # Unregister StemLightNode
-    # mplugin.deregisterNode(StemInstanceNodeId)
+    mplugin.deregisterNode(SI.STEM_INSTANCE_NODE_ID)
 
     # Unregister StemSpaceNode
-    # mplugin.deregisterNode(StemInstanceNodeId)
+    mplugin.deregisterNode(SS.STEM_SPACE_NODE_ID)
+
+    # Unregister StemLightNode
+    mplugin.deregisterNode(SL.STEM_LIGHT_NODE_ID)
 
     # Delete old UI
-    if STEM_SYSTEM_MENU != None:
-      cmds.deleteUI(STEM_SYSTEM_MENU.name)
+    if SU.STEM_SYSTEM_MENU != None:
+      cmds.deleteUI(SU.STEM_SYSTEM_MENU.name)
   except:
-    sys.stderr.write( "Failed to unregister node: %s\n" % kPluginNodeTypeName )
+    sys.stderr.write( "Failed to unregister node: %s\n" % SI.STEM_INSTANCE_NODE_TYPE_NAME )
