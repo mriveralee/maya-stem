@@ -10,14 +10,16 @@ import maya.OpenMayaMPx as OpenMayaMPx
 import maya.OpenMayaRender as OpenMayaRender
 
 #------------------------------------------------------------------------------#
-# Global Functions for Stem Maya
+# Global Functions & Variables for Maya-Stem
 #------------------------------------------------------------------------------#
 
-STEM_AUTHORS = "Michael Rivera (mriveralee) & Judy Trinh (judytrinh)"
-STEM_VERSION = "0.1"
+# Stem Authorship  & Links
+STEM_AUTHORS = 'Michael Rivera (mriveralee) & Judy Trinh (judytrinh)'
+STEM_VERSION = '0.1'
 STEM_GITHUB_SITE = 'https://github.com/mriveralee/maya-stem/'
 STEM_HELP_SITE = 'http://github.com/mriveralee/maya-stem/issues'
 
+# Maya's OpenGL Renderer & Function table api
 GL_RENDERER = OpenMayaRender.MHardwareRenderer.theRenderer()
 GLFT = GL_RENDERER.glFunctionTable()
 

@@ -19,16 +19,22 @@ import StemGlobal as SG
 #------------------------------------------------------------------------------#
 
 # The Stem Node Name
-STEM_LIGHT_NODE_TYPE_NAME = "StemLightNode"
+STEM_LIGHT_NODE_TYPE_NAME = 'StemLightNode'
 
 # The Stem Node Id
 STEM_LIGHT_NODE_ID = OpenMaya.MTypeId(0xFA235)
 
+KEY_DEF_LIGHT_RADIUS = 'lightRadius', 'lr'
+
 class StemLightNode(OpenMayaMPx.MPxLocatorNode):
   # Declare class variables
 
-  # Size of drawn sphere
+  mDefaultLightRadius = OpenMaya.MObject()
+
+  # Size of drawn lines
   mDisplayRadius = 0.6
+
+  # This doesn't change
   mSphereDisplayRadius = 0.3
 
   # constructor
@@ -117,11 +123,18 @@ def StemLightNodeInitializer():
   #------------------------------------#
   ############ NUM RAND PTS ##########
   #------------------------------------#
-  # Num Random Points
-  #SG.MAKE_INPUT(nAttr)
   # Numeric Attributes
-  print 'Light Node Init'
-  # nAttr = OpenMaya.MFnNumericAttribute()
-  # StemLightNode.mDefAngle = nAttr.create(
-  #  "angle", "a", OpenMaya.MFnNumericData.kFloat, 22.5)
-  # SG.MAKE_INPUT(nAttr)
+  nAttr = OpenMaya.MFnNumericAttribute()
+  StemLightNode.mDefLightRadius = nAttr.create(
+    KEY_DEF_LIGHT_RADIUS[0],
+    KEY_DEF_LIGHT_RADIUS[1],
+    OpenMaya.MFnNumericData.kFloat, 0.6)
+  SG.MAKE_INPUT(nAttr)
+
+  # Add attributes
+  StemLightNode.addAttribute(StemLightNode.mDefLightRadius)
+
+  # Attributes effects
+  # StemLightNode.attributeAffects(
+  #   StemLightNode.mDefLightRadius,
+  #   StemLightNode.XXX)

@@ -20,11 +20,7 @@ import StemSpaceNode as SS
 # StemUI Class - represents the UI in the Maya STEM Plugin
 #------------------------------------------------------------------------------#
 
-##############################################################
-###  Custom Drop Down Menu   ########################
-##############################################################
-# TODO MOVE UI into separate class
-STEM_DROP_DOWN_MENU_NAME = "kStemSystemDropDownMenu"
+STEM_DROP_DOWN_MENU_NAME = 'kStemSystemDropDownMenu'
 
 class StemUIMenu(object):
 

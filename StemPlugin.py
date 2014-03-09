@@ -30,11 +30,11 @@ STEM_SYSTEM_MENU = SU.StemUIMenu()
 
 # initialize the script plug-in
 def initializePlugin(mobject):
-  print "Trying to init"
+  print 'Trying to init'
   mplugin = OpenMayaMPx.MFnPlugin(mobject,
     SG.STEM_AUTHORS,
     SG.STEM_VERSION,
-    "Any")
+    'Any')
 
   try:
     # Register StemNode
@@ -57,10 +57,10 @@ def initializePlugin(mobject):
       SL.StemLightNodeCreator,
       SL.StemLightNodeInitializer,
       OpenMayaMPx.MPxNode.kLocatorNode)
-      
+
   except:
     sys.stderr.write(
-      "Failed to register node: %s\n" % SI.STEM_INSTANCE_NODE_TYPE_NAME)
+      'Failed to register node: %s\n' % SI.STEM_INSTANCE_NODE_TYPE_NAME)
     # uninitialize the script plug-in
 
 def uninitializePlugin(mobject):
@@ -82,4 +82,4 @@ def uninitializePlugin(mobject):
       cmds.deleteUI(STEM_SYSTEM_MENU.name)
   except:
     sys.stderr.write(
-      "Failed to unregister node: %s\n" % SI.STEM_INSTANCE_NODE_TYPE_NAME)
+      'Failed to unregister node: %s\n' % SI.STEM_INSTANCE_NODE_TYPE_NAME)
