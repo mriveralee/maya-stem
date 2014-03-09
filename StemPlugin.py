@@ -56,7 +56,7 @@ def initializePlugin(mobject):
       SL.StemLightNodeInitializer)
   except:
     sys.stderr.write(
-    "Failed to register node: %s\n" % SI.STEM_INSTANCE_NODE_TYPE_NAME)
+      "Failed to register node: %s\n" % SI.STEM_INSTANCE_NODE_TYPE_NAME)
     # uninitialize the script plug-in
 
 def uninitializePlugin(mobject):
@@ -77,4 +77,5 @@ def uninitializePlugin(mobject):
       #print 'removing menu'
       cmds.deleteUI(STEM_SYSTEM_MENU.name)
   except:
-    sys.stderr.write( "Failed to unregister node: %s\n" % SI.STEM_INSTANCE_NODE_TYPE_NAME )
+    sys.stderr.write(
+      "Failed to unregister node: %s\n" % SI.STEM_INSTANCE_NODE_TYPE_NAME)

@@ -12,6 +12,9 @@ from pymel.core import *
 from functools import partial
 
 import StemGlobal as SG
+import StemInstanceNode as SI
+import StemLightNode as SL
+import StemSpaceNode as SS
 
 #------------------------------------------------------------------------------#
 # StemUI Class - represents the UI in the Maya STEM Plugin
@@ -30,24 +33,20 @@ class StemUIMenu(object):
   def printbutton(self):
     print 'Button clicked'
 
-  def makeRNNetwork(self):
-      cmd = 'sphere; instancer; createNode randomNode; connectAttr nurbsSphere1.matrix instancer1.inputHierarchy[0]; '
-      cmd += 'connectAttr randomNode1.outPoints instancer1.inputPoints;'
-      maya.mel.eval(cmd)
+  def makeStemInstanceNode(self):
+    cmds.createNode(SI.STEM_INSTANCE_NODE_TYPE_NAME)
 
-  def makeRNNetworkSelected(self):
-    cmd = 'sphere; instancer; createNode randomNode; connectAttr nurbsSphere1.matrix instancer1.inputHierarchy[0]; '
-    cmd += 'connectAttr randomNode1.mBranches instancer1.outPoints;'
-    maya.mel.eval(cmd)
+  def makeStemSpaceResourceNode(self):
+    cmds.createNode(SS.STEM_SPACE_NODE_TYPE_NAME)
 
-  def makeLSINNetwork(self):
-    cmd = 'sphere; instancer; createNode StemInstanceNode; connectAttr nurbsSphere1.matrix instancer1.inputHierarchy[0]; '
-    cmd += 'connectAttr StemInstanceNode.mBranches instancer1.inputPoints; connectAttr StemInstanceNode.mFlowers instancer1.inputPoints;'
-    maya.mel.eval(cmd)
+  def makeStemLightResourceNode(self):
+    cmds.createNode(SL.STEM_LIGHT_NODE_TYPE_NAME)
 
-  def makeLSINNetworkSelected(self):
-    cmd = 'sphere; instancer; createNode randomNode; connectAttr nurbsSphere1.matrix instancer1.inputHierarchy[0]; '
-    cmd += 'connectAttr StemInstanceNode.mBranches instancer1.inputPoints; connectAttr StemInstanceNode.mFlowers instancer1.inputPoints;'
+  def makeUsingMelExample(self):
+    cmd = ('sphere; instancer; createNode StemInstanceNode; '
+      'connectAttr nurbsSphere1.matrix instancer1.inputHierarchy[0]; '
+      'connectAttr StemInstanceNode.mBranches instancer1.inputPoints; '
+      'connectAttr StemInstanceNode.mFlowers instancer1.inputPoints; ')
     maya.mel.eval(cmd)
 
   def openGitHubPage(self):
@@ -67,32 +66,40 @@ class StemUIMenu(object):
       cmds.deleteUI(self.name)
 
     dropDownMenu = cmds.menu(
-    STEM_DROP_DOWN_MENU_NAME,
-    label='STEM',
-    parent=gMainWindow,
-    tearOff=True)
+      STEM_DROP_DOWN_MENU_NAME,
+      label='STEM',
+      parent=gMainWindow,
+      tearOff=True)
+
+    # Create Stem Instance Node
     cmds.menuItem(
-    label='Create Stem Instance Node',
-    parent=dropDownMenu,
-    command=pm.Callback(self.makeRNNetwork))
+      label='Create Stem Instance Node',
+      parent=dropDownMenu,
+      command=pm.Callback(self.makeStemInstanceNode))
+
+    # Create Space Resource Node
     cmds.menuItem(
-    label='Create Space Resouce Node',
-    parent=dropDownMenu,
-    command=pm.Callback(self.makeRNNetworkSelected))
+      label='Create Space Resouce Node',
+      parent=dropDownMenu,
+      command=pm.Callback(self.makeStemSpaceResourceNode))
+
+    # Create Light Resource Node
     cmds.menuItem(
-    label='Create Light Resource Node',
-    parent=dropDownMenu,
-    command=pm.Callback(self.makeLSINNetwork))
+      label='Create Light Resource Node',
+      parent=dropDownMenu,
+      command=pm.Callback(self.makeStemLightResourceNode))
     #cmds.menuItem(divider=True)
+    # Show help menu
     cmds.menuItem(
-    label='Help',
-    parent=dropDownMenu,
-    command=pm.Callback(self.openHelpPage))
+      label='Help',
+      parent=dropDownMenu,
+      command=pm.Callback(self.openHelpPage))
+
     # Show the Source Code
     cmds.menuItem(
-    label='Source Code',
-    parent=dropDownMenu,
-    command=pm.Callback(self.openGitHubPage))
+      label='Source Code',
+      parent=dropDownMenu,
+      command=pm.Callback(self.openGitHubPage))
 
   '''
   '' Returns true if this menu exists in Maya's top option menu

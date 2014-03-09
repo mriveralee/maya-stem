@@ -16,10 +16,12 @@ from functools import partial
 # Global Functions for Stem Maya
 #------------------------------------------------------------------------------#
 
-STEM_AUTHORS = "Michael Rivera & Judy Trinh"
+STEM_AUTHORS = "Michael Rivera (mriveralee) & Judy Trinh (judytrinh)"
 STEM_VERSION = "0.1"
 STEM_GITHUB_SITE = 'https://github.com/mriveralee/maya-stem/'
 STEM_HELP_SITE = 'http://github.com/mriveralee/maya-stem/issues'
+
+
 
 # Useful functions for declaring attributes as inputs or outputs.
 def MAKE_INPUT(attr):

@@ -22,7 +22,7 @@ import StemGlobal as SG
 #------------------------------------------------------------------------------#
 
 # The Stem Node Name
-STEM_LIGHT_NODE_TYPE_NAME = "kStemLightNode"
+STEM_LIGHT_NODE_TYPE_NAME = "StemLightNode"
 
 # The Stem Node Id
 STEM_LIGHT_NODE_ID = OpenMaya.MTypeId(0xFA235)
@@ -53,5 +53,6 @@ def StemLightNodeInitializer():
   # Numeric Attributes
   print 'Light Node Init'
   # nAttr = OpenMaya.MFnNumericAttribute()
-  # StemLightNode.mDefAngle = nAttr.create("angle", "a", OpenMaya.MFnNumericData.kFloat, 22.5)
+  # StemLightNode.mDefAngle = nAttr.create(
+  #  "angle", "a", OpenMaya.MFnNumericData.kFloat, 22.5)
   # SG.MAKE_INPUT(nAttr)

@@ -22,7 +22,7 @@ import StemGlobal as SG
 #------------------------------------------------------------------------------#
 
 # The Stem Node Name
-STEM_SPACE_NODE_TYPE_NAME = "kStemSpaceNode"
+STEM_SPACE_NODE_TYPE_NAME = "StemSpaceNode"
 
 # The Stem Node Id
 STEM_SPACE_NODE_ID = OpenMaya.MTypeId(0xFA236)

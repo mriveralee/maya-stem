@@ -17,15 +17,27 @@ import StemGlobal as SG
 
 #------------------------------------------------------------------------------#
 # StemInstanceNode Class - Subclassed Maya Mpx.Node that implements the
-# Self-organizing presented in Self-organizing tree models for image synthesis by
-# Pałubicki, W., et al.
+# Self-organizing presented in Self-organizing tree models for image synthesis
+# by Pałubicki, W., et al.
 #------------------------------------------------------------------------------#
 
 # The Stem Node Name
-STEM_INSTANCE_NODE_TYPE_NAME = "kStemInstanceNode"
+STEM_INSTANCE_NODE_TYPE_NAME = "StemInstanceNode"
 
 # The Stem Node Id
 STEM_INSTANCE_NODE_ID = OpenMaya.MTypeId(0xFA234)
+
+# Input Keys
+KEY_ITERATIONS = 'iterations', 'iter'
+KEY_TIME = 'time', 'tm'
+KEY_GRAMMAR = 'grammar', 'gm'
+KEY_ANGLE = 'angle', 'ang'
+KEY_STEP_SIZE = 'stepSize' , 'ss'
+
+# Output Keys
+KEY_BRANCHES = 'branches', 'br'
+KEY_FLOWERS = 'flowers', 'fl'
+KEY_OUTPUT = 'outputMesh', 'out'
 
 # Node definition
 class StemInstanceNode(OpenMayaMPx.MPxNode):
@@ -61,12 +73,15 @@ class StemInstanceNode(OpenMayaMPx.MPxNode):
 
   # compute
   def compute(self,plug,data):
+    return
     if plug == StemInstanceNode.outputMesh:
 
-      # Create branch segments array from LSystemBranches use id, position, aimDirection, scale
+      # Create branch segments array from LSystemBranches use id, position,
+      # aimDirection, scale
       # Note: Can change input geometry of instancer
 
-      # Create Flowers array from LSystemGeometry use id, position, aim direction, scale
+      # Create Flowers array from LSystemGeometry use id, position,
+      # aim direction, scale
       # Note: Can change input geometry of instancer
 
       # Time
@@ -96,6 +111,7 @@ class StemInstanceNode(OpenMayaMPx.MPxNode):
       #self.createPoints(iters, angle, step, grammarFile, newOutputData)
 
       # The New mesh!
+
       self.createPoints(iters, angle, step, grammarFile, data)
 
       # Set new output data
@@ -115,11 +131,13 @@ class StemInstanceNode(OpenMayaMPx.MPxNode):
     pointsAAD = OpenMaya.MFnArrayAttrsData() #the MFnArrayAttrsData
     pointsObject = pointsAAD.create() #the MObject
 
-    # Create the vectors for “position” and “id”. Names and types must match # table above.
+    # Create the vectors for “position” and “id”. Names and types must
+    # match # table above.
     positionArray = pointsAAD.vectorArray('position')
     idArray = pointsAAD.doubleArray('id')
 
-    # Create the vectors for “position” and “id”. Names and types must match # table above.
+    # Create the vectors for “position” and “id”. Names and types must
+    # match # table above.
     scaleArray = pointsAAD.vectorArray('scale')
     aimDirArray = pointsAAD.vectorArray('aimDirection')
 
@@ -147,11 +165,13 @@ class StemInstanceNode(OpenMayaMPx.MPxNode):
     pointsAAD = OpenMaya.MFnArrayAttrsData() #the MFnArrayAttrsData
     pointsObject = pointsAAD.create() #the MObject
 
-    # Create the vectors for “position” and “id”. Names and types must match # table above.
+    # Create the vectors for “position” and “id”. Names and types must
+    # match # table above.
     positionArray = pointsAAD.vectorArray('position')
     idArray = pointsAAD.doubleArray('id')
 
-    # Create the vectors for “position” and “id”. Names and types must match # table above.
+    # Create the vectors for “position” and “id”. Names and types must
+    # match # table above.
     scaleArray = pointsAAD.vectorArray('scale')
     aimDirArray = pointsAAD.vectorArray('aimDirection')
 
@@ -186,11 +206,13 @@ class StemInstanceNode(OpenMayaMPx.MPxNode):
       fAAD = OpenMaya.MFnArrayAttrsData() #the MFnArrayAttrsData
       fObject = fAAD.create() #the MObject
 
-      # Create the vectors for “position” and “id”. Names and types must match # table above.
+      # Create the vectors for “position” and “id”. Names and types must
+      # match # table above.
       positionArray = fAAD.vectorArray('position')
       idArray = fAAD.doubleArray('id')
 
-      # Create the vectors for “position” and “id”. Names and types must match # table above.
+      # Create the vectors for “position” and “id”. Names and types must
+      # match # table above.
       scaleArray = fAAD.vectorArray('scale')
       aimDirArray = fAAD.vectorArray('aimDirection')
 
@@ -201,7 +223,8 @@ class StemInstanceNode(OpenMayaMPx.MPxNode):
         start = OpenMaya.MVector(f.at(0), f.at(1), f.at(2))
         sFactor = (1 - flowers.size() / (i + 1))
         scale = OpenMaya.MVector(1.1 * sFactor, 1.1 * sFactor, 1.1 * sFactor)
-        aim = OpenMaya.MVector(random.random(), random.random(), random.random())
+        aim = OpenMaya.MVector(
+          random.random(), random.random(), random.random())
 
         # Append
         positionArray.append(start)
@@ -226,44 +249,69 @@ def StemInstanceNodeInitializer():
   #SG.MAKE_INPUT(nAttr)
   # Numeric Attributes
   nAttr = OpenMaya.MFnNumericAttribute()
-  StemInstanceNode.mDefAngle = nAttr.create("angle", "a", OpenMaya.MFnNumericData.kFloat, 22.5)
+  StemInstanceNode.mDefAngle = nAttr.create(
+    KEY_ANGLE[0],
+    KEY_ANGLE[1],
+    OpenMaya.MFnNumericData.kFloat, 22.5)
   SG.MAKE_INPUT(nAttr)
 
   # Step size
   nAttr = OpenMaya.MFnNumericAttribute()
-  StemInstanceNode.mDefStepSize = nAttr.create("stepSize", "s", OpenMaya.MFnNumericData.kFloat, 1.0)
+  StemInstanceNode.mDefStepSize = nAttr.create(
+    KEY_STEP_SIZE[0],
+    KEY_STEP_SIZE[1],
+    OpenMaya.MFnNumericData.kFloat, 1.0)
+
   SG.MAKE_INPUT(nAttr)
 
   # Iterations
   nAttr = OpenMaya.MFnNumericAttribute()
-  StemInstanceNode.mIterations = nAttr.create("iterations", "iter", OpenMaya.MFnNumericData.kLong, 1)
+  StemInstanceNode.mIterations = nAttr.create(
+    KEY_ITERATIONS[0],
+    KEY_ITERATIONS[1],
+    OpenMaya.MFnNumericData.kLong, 1)
   SG.MAKE_INPUT(nAttr)
 
   # Time
   uAttr = OpenMaya.MFnUnitAttribute()
-  StemInstanceNode.time = uAttr.create("time", "tm", OpenMaya.MFnUnitAttribute.kTime, 0)
+  StemInstanceNode.time = uAttr.create(
+    KEY_TIME[0],
+    KEY_TIME[1],
+    OpenMaya.MFnUnitAttribute.kTime, 0)
   SG.MAKE_INPUT(uAttr)
 
   # Grammar File
   tAttr = OpenMaya.MFnTypedAttribute()
-  StemInstanceNode.mDefGrammarFile = tAttr.create("grammar", "g", OpenMaya.MFnData.kString)
+  StemInstanceNode.mDefGrammarFile = tAttr.create(
+    KEY_GRAMMAR[0],
+    KEY_GRAMMAR[1],
+    OpenMaya.MFnData.kString)
   SG.MAKE_INPUT(tAttr)
 
   # Branch Segments
   tAttr = OpenMaya.MFnTypedAttribute()
-  StemInstanceNode.mBranches =  tAttr.create("branches", "b", OpenMaya.MFnArrayAttrsData.kDynArrayAttrs)
+  StemInstanceNode.mBranches =  tAttr.create(
+    KEY_BRANCHES[0],
+    KEY_BRANCHES[1],
+    OpenMaya.MFnArrayAttrsData.kDynArrayAttrs)
   SG.MAKE_OUTPUT(tAttr)
   # SG.MAKE_INPUT(tAttr)
 
   # Flowers
   tAttr = OpenMaya.MFnTypedAttribute()
-  StemInstanceNode.mFlowers =  tAttr.create("flowers", "f", OpenMaya.MFnArrayAttrsData.kDynArrayAttrs)
+  StemInstanceNode.mFlowers =  tAttr.create(
+    KEY_FLOWERS[0],
+    KEY_FLOWERS[1],
+    OpenMaya.MFnArrayAttrsData.kDynArrayAttrs)
   SG.MAKE_OUTPUT(tAttr)
   #SG.MAKE_INPUT(tAttr)
 
   # Output mesh
   tAttr = OpenMaya.MFnTypedAttribute()
-  StemInstanceNode.outputMesh = tAttr.create("outputMesh", "out", OpenMaya.MFnData.kMesh)
+  StemInstanceNode.outputMesh = tAttr.create(
+    KEY_OUTPUT[0],
+    KEY_OUTPUT[1],
+    OpenMaya.MFnData.kMesh)
   SG.MAKE_OUTPUT(tAttr)
 
   # add Attributues
@@ -271,22 +319,51 @@ def StemInstanceNodeInitializer():
   StemInstanceNode.addAttribute(StemInstanceNode.mDefStepSize)
   StemInstanceNode.addAttribute(StemInstanceNode.mDefGrammarFile)
   StemInstanceNode.addAttribute(StemInstanceNode.mIterations)
+
   StemInstanceNode.addAttribute(StemInstanceNode.time)
   StemInstanceNode.addAttribute(StemInstanceNode.outputMesh)
   StemInstanceNode.addAttribute(StemInstanceNode.mFlowers)
   StemInstanceNode.addAttribute(StemInstanceNode.mBranches)
 
 
-  # Attribute Affects
-  StemInstanceNode.attributeAffects(StemInstanceNode.time, StemInstanceNode.mFlowers)
-  StemInstanceNode.attributeAffects(StemInstanceNode.mIterations, StemInstanceNode.mFlowers)
-  StemInstanceNode.attributeAffects(StemInstanceNode.mDefAngle, StemInstanceNode.mFlowers)
-  StemInstanceNode.attributeAffects(StemInstanceNode.mDefStepSize, StemInstanceNode.mFlowers)
-  StemInstanceNode.attributeAffects(StemInstanceNode.mDefGrammarFile, StemInstanceNode.mFlowers)
+  # Attribute Effects to Flowers
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.time,
+    StemInstanceNode.mFlowers)
 
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mIterations,
+    StemInstanceNode.mFlowers)
 
-  StemInstanceNode.attributeAffects(StemInstanceNode.time, StemInstanceNode.mBranches)
-  StemInstanceNode.attributeAffects(StemInstanceNode.mIterations, StemInstanceNode.mBranches)
-  StemInstanceNode.attributeAffects(StemInstanceNode.mDefAngle, StemInstanceNode.mBranches)
-  StemInstanceNode.attributeAffects(StemInstanceNode.mDefStepSize, StemInstanceNode.mBranches)
-  StemInstanceNode.attributeAffects(StemInstanceNode.mDefGrammarFile, StemInstanceNode.mBranches)
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefAngle,
+    StemInstanceNode.mFlowers)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefStepSize,
+    StemInstanceNode.mFlowers)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefGrammarFile,
+    StemInstanceNode.mFlowers)
+
+  # Attributes Effects to Branches
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.time,
+    StemInstanceNode.mBranches)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mIterations,
+    StemInstanceNode.mBranches)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefAngle,
+    StemInstanceNode.mBranches)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefStepSize,
+    StemInstanceNode.mBranches)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefGrammarFile,
+    StemInstanceNode.mBranches)
