@@ -9,10 +9,6 @@ import maya.OpenMaya as OpenMaya
 import maya.OpenMayaAnim as OpenMayaAnim
 import maya.OpenMayaMPx as OpenMayaMPx
 
-import pymel.all as pm
-from pymel.core import *
-from functools import partial
-
 import StemGlobal as SG
 
 #------------------------------------------------------------------------------#
@@ -27,11 +23,12 @@ STEM_LIGHT_NODE_TYPE_NAME = "StemLightNode"
 # The Stem Node Id
 STEM_LIGHT_NODE_ID = OpenMaya.MTypeId(0xFA235)
 
-class StemLightNode(OpenMayaMPx.MPxNode):
-  # Declare class variables:
-  # TODO - declare the input and output class variables
-  #         i.e. inNumPoints = OpenMaya.MObject()
-  # constructor
+class StemLightNode(OpenMayaMPx.MPxLocatorNode):
+  # Declare class variables
+
+  # Size of drawn sphere
+  mDisplayRadius = 0.5
+
   def __init__(self):
     OpenMayaMPx.MPxNode.__init__(self)
 

@@ -7,10 +7,7 @@ import maya.cmds as cmds
 import maya.OpenMaya as OpenMaya
 import maya.OpenMayaAnim as OpenMayaAnim
 import maya.OpenMayaMPx as OpenMayaMPx
-
-import pymel.all as pm
-from pymel.core import *
-from functools import partial
+import maya.OpenMayaRender as OpenMayaRender
 
 #------------------------------------------------------------------------------#
 # Global Functions for Stem Maya
@@ -20,6 +17,9 @@ STEM_AUTHORS = "Michael Rivera (mriveralee) & Judy Trinh (judytrinh)"
 STEM_VERSION = "0.1"
 STEM_GITHUB_SITE = 'https://github.com/mriveralee/maya-stem/'
 STEM_HELP_SITE = 'http://github.com/mriveralee/maya-stem/issues'
+
+GL_RENDERER = OpenMayaRender.MHardwareRenderer.theRenderer()
+GLFT = GL_RENDERER.glFunctionTable()
 
 
 

@@ -9,10 +9,6 @@ import maya.OpenMaya as OpenMaya
 import maya.OpenMayaAnim as OpenMayaAnim
 import maya.OpenMayaMPx as OpenMayaMPx
 
-import pymel.all as pm
-from pymel.core import *
-from functools import partial
-
 import StemGlobal as SG
 
 #------------------------------------------------------------------------------#

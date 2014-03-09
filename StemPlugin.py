@@ -41,7 +41,8 @@ def initializePlugin(mobject):
     mplugin.registerNode(SI.STEM_INSTANCE_NODE_TYPE_NAME,
       SI.STEM_INSTANCE_NODE_ID,
       SI.StemInstanceNodeCreator,
-      SI.StemInstanceNodeInitializer)
+      SI.StemInstanceNodeInitializer,
+      OpenMayaMPx.MPxNode.kLocatorNode)
 
     # Register StemSpaceNode
     mplugin.registerNode(SS.STEM_SPACE_NODE_TYPE_NAME,

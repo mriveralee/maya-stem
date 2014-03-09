@@ -8,10 +8,7 @@ import maya.cmds as cmds
 import maya.OpenMaya as OpenMaya
 import maya.OpenMayaAnim as OpenMayaAnim
 import maya.OpenMayaMPx as OpenMayaMPx
-
-import pymel.all as pm
-from pymel.core import *
-from functools import partial
+import maya.OpenMayaRender as OpenMayaRender
 
 import StemGlobal as SG
 
@@ -44,12 +41,14 @@ KEY_FLOWERS = 'flowers', 'fl'
 KEY_OUTPUT = 'outputMesh', 'out'
 
 # Node definition
-class StemInstanceNode(OpenMayaMPx.MPxNode):
+class StemInstanceNode(OpenMayaMPx.MPxLocatorNode ):
   # Declare class variables:
-  # TODO - declare the input and output class variables
-  #         i.e. inNumPoints = OpenMaya.MObject()
+
+  # Size of drawn sphere
+  mDisplayRadius = 1.0
 
   # Node Time
+
   time = OpenMaya.MObject()
   mID = OpenMaya.MObject()
 
@@ -74,13 +73,46 @@ class StemInstanceNode(OpenMayaMPx.MPxNode):
   mBranches = OpenMaya.MObject()
   mFlowers = OpenMaya.MObject()
 
-
-
-
-
   # constructor
   def __init__(self):
-    OpenMayaMPx.MPxNode.__init__(self)
+    OpenMayaMPx.MPxLocatorNode.__init__(self)
+
+  # Draw/Onscreen render method
+  def draw(self, view, path, style, status):
+    # circle
+    glFT = SG.GLFT
+    view.beginGL()
+    glFT.glBegin(OpenMayaRender.MGL_POLYGON)
+    for i in range(0,360):
+        rad = (i * 2 * math.pi)/360;
+        glFT.glNormal3f(0.0, 0.0, 1.0)
+        if (i == 360):
+          glFT.glTexCoord3f(
+            self.mDisplayRadius * math.cos(0),
+            self.mDisplayRadius * math.sin(0),
+            0.0)
+          glFT.glVertex3f(
+            self.mDisplayRadius * math.cos(0),
+            self.mDisplayRadius * math.sin(0),
+            0.0)
+        else:
+          glFT.glTexCoord3f(
+            self.mDisplayRadius * math.cos(rad),
+            self.mDisplayRadius * math.sin(rad),
+            0.0)
+          glFT.glVertex3f(
+            self.mDisplayRadius * math.cos(rad),
+            self.mDisplayRadius * math.sin(rad),
+            0.0)
+    glFT.glEnd()
+    view.endGL()
+		# view.beginGL()
+		# SG.GLFT.glBegin(OpenMayaRender.MGL_LINES)
+		# SG.GLFT.glVertex3f(0.0, -0.5, 0.0)
+		# SG.GLFT.glVertex3f(0.0, 0.5, 0.0)
+		# SG.GLFT.glEnd()
+    #
+		# view.endGL()
 
   # compute
   def compute(self,plug,data):
