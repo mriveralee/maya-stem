@@ -34,6 +34,10 @@ KEY_GRAMMAR = 'grammar', 'gm'
 KEY_ANGLE = 'angle', 'ang'
 KEY_STEP_SIZE = 'stepSize' , 'ss'
 
+# Toggle Keys
+KEY_BRANCH_SHEDDING = 'useBranchShedding', 'shed'
+KEY_RESOURCE_DISTRIBUTION = 'useResources', 'resd'
+
 # Output Keys
 KEY_BRANCHES = 'branches', 'br'
 KEY_FLOWERS = 'flowers', 'fl'
@@ -61,9 +65,16 @@ class StemInstanceNode(OpenMayaMPx.MPxNode):
   mDefGrammarFile = OpenMaya.MObject()
   mIterations = OpenMaya.MObject()
 
+  # Stem Option Values
+  mHasResourceDistribution = OpenMaya.MObject()
+  mHasBranchShedding = OpenMaya.MObject()
+
+
   # Other values
   mBranches = OpenMaya.MObject()
   mFlowers = OpenMaya.MObject()
+
+
 
 
 
@@ -261,7 +272,6 @@ def StemInstanceNodeInitializer():
     KEY_STEP_SIZE[0],
     KEY_STEP_SIZE[1],
     OpenMaya.MFnNumericData.kFloat, 1.0)
-
   SG.MAKE_INPUT(nAttr)
 
   # Iterations
@@ -271,6 +281,24 @@ def StemInstanceNodeInitializer():
     KEY_ITERATIONS[1],
     OpenMaya.MFnNumericData.kLong, 1)
   SG.MAKE_INPUT(nAttr)
+
+  # Has Resource Distribution Checkbox (toggles to regular L-system)
+  nAttr = OpenMaya.MFnNumericAttribute()
+  StemInstanceNode.mHasResourceDistribution = nAttr.create(
+    KEY_RESOURCE_DISTRIBUTION[0],
+    KEY_RESOURCE_DISTRIBUTION[1],
+    OpenMaya.MFnNumericData.kBoolean, 1)
+  SG.MAKE_INPUT(nAttr)
+
+  # Has Branch Shedding Checkbox
+  nAttr = OpenMaya.MFnNumericAttribute()
+  StemInstanceNode.mHasBranchShedding = nAttr.create(
+    KEY_BRANCH_SHEDDING[0],
+    KEY_BRANCH_SHEDDING[1],
+    OpenMaya.MFnNumericData.kBoolean, 1)
+  SG.MAKE_INPUT(nAttr)
+
+
 
   # Time
   uAttr = OpenMaya.MFnUnitAttribute()
@@ -295,7 +323,6 @@ def StemInstanceNodeInitializer():
     KEY_BRANCHES[1],
     OpenMaya.MFnArrayAttrsData.kDynArrayAttrs)
   SG.MAKE_OUTPUT(tAttr)
-  # SG.MAKE_INPUT(tAttr)
 
   # Flowers
   tAttr = OpenMaya.MFnTypedAttribute()
@@ -304,7 +331,6 @@ def StemInstanceNodeInitializer():
     KEY_FLOWERS[1],
     OpenMaya.MFnArrayAttrsData.kDynArrayAttrs)
   SG.MAKE_OUTPUT(tAttr)
-  #SG.MAKE_INPUT(tAttr)
 
   # Output mesh
   tAttr = OpenMaya.MFnTypedAttribute()
@@ -315,21 +341,26 @@ def StemInstanceNodeInitializer():
   SG.MAKE_OUTPUT(tAttr)
 
   # add Attributues
+
   StemInstanceNode.addAttribute(StemInstanceNode.mDefAngle)
   StemInstanceNode.addAttribute(StemInstanceNode.mDefStepSize)
   StemInstanceNode.addAttribute(StemInstanceNode.mDefGrammarFile)
+  StemInstanceNode.addAttribute(StemInstanceNode.mHasResourceDistribution)
   StemInstanceNode.addAttribute(StemInstanceNode.mIterations)
+  StemInstanceNode.addAttribute(StemInstanceNode.mHasBranchShedding)
 
-  StemInstanceNode.addAttribute(StemInstanceNode.time)
+
+
+  #StemInstanceNode.addAttribute(StemInstanceNode.time)
   StemInstanceNode.addAttribute(StemInstanceNode.outputMesh)
   StemInstanceNode.addAttribute(StemInstanceNode.mFlowers)
   StemInstanceNode.addAttribute(StemInstanceNode.mBranches)
 
 
   # Attribute Effects to Flowers
-  StemInstanceNode.attributeAffects(
-    StemInstanceNode.time,
-    StemInstanceNode.mFlowers)
+  # StemInstanceNode.attributeAffects(
+  #   StemInstanceNode.time,
+  #   StemInstanceNode.mFlowers)
 
   StemInstanceNode.attributeAffects(
     StemInstanceNode.mIterations,
@@ -345,12 +376,20 @@ def StemInstanceNodeInitializer():
 
   StemInstanceNode.attributeAffects(
     StemInstanceNode.mDefGrammarFile,
+    StemInstanceNode.mFlowers)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mHasResourceDistribution,
+    StemInstanceNode.mFlowers)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mHasBranchShedding,
     StemInstanceNode.mFlowers)
 
   # Attributes Effects to Branches
-  StemInstanceNode.attributeAffects(
-    StemInstanceNode.time,
-    StemInstanceNode.mBranches)
+  # StemInstanceNode.attributeAffects(
+  #   StemInstanceNode.time,
+  #   StemInstanceNode.mBranches)
 
   StemInstanceNode.attributeAffects(
     StemInstanceNode.mIterations,
@@ -366,4 +405,12 @@ def StemInstanceNodeInitializer():
 
   StemInstanceNode.attributeAffects(
     StemInstanceNode.mDefGrammarFile,
+    StemInstanceNode.mBranches)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mHasResourceDistribution,
+    StemInstanceNode.mBranches)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mHasBranchShedding,
     StemInstanceNode.mBranches)
