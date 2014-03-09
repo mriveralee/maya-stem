@@ -25,14 +25,15 @@ import StemUI as SU
 ##############################################################
 ###  INIT FUNCTIONS FOR PLUG-IN  #############################
 ##############################################################
+# The UI Drop Down Menu
 STEM_SYSTEM_MENU = SU.StemUIMenu()
 
 # initialize the script plug-in
 def initializePlugin(mobject):
   print "Trying to init"
   mplugin = OpenMayaMPx.MFnPlugin(mobject,
-    "Mriveralee & Judytrinh",
-    "0.1",
+    SG.STEM_AUTHORS,
+    SG.STEM_VERSION,
     "Any")
 
   try:
@@ -73,7 +74,7 @@ def uninitializePlugin(mobject):
 
     # Delete old UI
     if STEM_SYSTEM_MENU != None:
-      print 'removing menu'
+      #print 'removing menu'
       cmds.deleteUI(STEM_SYSTEM_MENU.name)
   except:
     sys.stderr.write( "Failed to unregister node: %s\n" % SI.STEM_INSTANCE_NODE_TYPE_NAME )

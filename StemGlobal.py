@@ -16,6 +16,8 @@ from functools import partial
 # Global Functions for Stem Maya
 #------------------------------------------------------------------------------#
 
+STEM_AUTHORS = "Michael Rivera & Judy Trinh"
+STEM_VERSION = "0.1"
 STEM_GITHUB_SITE = 'https://github.com/mriveralee/maya-stem/'
 STEM_HELP_SITE = 'http://github.com/mriveralee/maya-stem/issues'
 
