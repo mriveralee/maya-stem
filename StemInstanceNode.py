@@ -41,7 +41,7 @@ KEY_FLOWERS = 'flowers', 'fl'
 KEY_OUTPUT = 'outputMesh', 'out'
 
 # Node definition
-class StemInstanceNode(OpenMayaMPx.MPxLocatorNode ):
+class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   # Declare class variables:
 
   # Size of drawn sphere

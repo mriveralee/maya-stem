@@ -48,13 +48,16 @@ def initializePlugin(mobject):
     mplugin.registerNode(SS.STEM_SPACE_NODE_TYPE_NAME,
       SS.STEM_SPACE_NODE_ID,
       SS.StemSpaceNodeCreator,
-      SS.StemSpaceNodeInitializer)
+      SS.StemSpaceNodeInitializer,
+      OpenMayaMPx.MPxNode.kLocatorNode)
 
     # Register StemLightNode
     mplugin.registerNode(SL.STEM_LIGHT_NODE_TYPE_NAME,
       SL.STEM_LIGHT_NODE_ID,
       SL.StemLightNodeCreator,
-      SL.StemLightNodeInitializer)
+      SL.StemLightNodeInitializer,
+      OpenMayaMPx.MPxNode.kLocatorNode)
+      
   except:
     sys.stderr.write(
       "Failed to register node: %s\n" % SI.STEM_INSTANCE_NODE_TYPE_NAME)
