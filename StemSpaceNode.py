@@ -24,8 +24,16 @@ STEM_SPACE_NODE_TYPE_NAME = 'StemSpaceNode'
 # The Stem Node Id
 STEM_SPACE_NODE_ID = OpenMaya.MTypeId(0xFA236)
 
+# Attribute Keys
+KEY_DEF_SPACE_RADIUS = 'spaceRadius', 'sr'
+
+
 class StemSpaceNode(OpenMayaMPx.MPxLocatorNode):
-  # Declare class variables:
+
+  # Space radius attribute
+  mDefSpaceRadius = OpenMaya.MObject()
+
+  # Display radius of the node (length of drawn lines and circle radius)
   mDisplayRadius = 0.7
 
   # constructor
@@ -84,13 +92,14 @@ def StemSpaceNodeCreator():
   return OpenMayaMPx.asMPxPtr(StemSpaceNode())
 
 def StemSpaceNodeInitializer():
-  #------------------------------------#
-  ############ NUM RAND PTS ##########
-  #------------------------------------#
-  # Num Random Points
-  #SG.MAKE_INPUT(nAttr)
   # Numeric Attributes
+  nAttr = OpenMaya.MFnNumericAttribute()
+  StemSpaceNode.mDefSpaceRadius = nAttr.create(
+    KEY_DEF_SPACE_RADIUS[0],
+    KEY_DEF_SPACE_RADIUS[1],
+    OpenMaya.MFnNumericData.kFloat, 0.6)
+  SG.MAKE_INPUT(nAttr)
+
+  # Add attributes
+  StemSpaceNode.addAttribute(StemSpaceNode.mDefSpaceRadius)
   print 'Space Node Init'
-  # nAttr = OpenMaya.MFnNumericAttribute()
-  # StemLightNode.mDefAngle = nAttr.create("angle", "a", OpenMaya.MFnNumericData.kFloat, 22.5)
-  # SG.MAKE_INPUT(nAttr)

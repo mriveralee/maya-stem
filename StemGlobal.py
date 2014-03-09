@@ -23,8 +23,6 @@ STEM_HELP_SITE = 'http://github.com/mriveralee/maya-stem/issues'
 GL_RENDERER = OpenMayaRender.MHardwareRenderer.theRenderer()
 GLFT = GL_RENDERER.glFunctionTable()
 
-
-
 # Useful functions for declaring attributes as inputs or outputs.
 def MAKE_INPUT(attr):
   attr.setKeyable(1)

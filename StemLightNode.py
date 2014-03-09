@@ -24,18 +24,19 @@ STEM_LIGHT_NODE_TYPE_NAME = 'StemLightNode'
 # The Stem Node Id
 STEM_LIGHT_NODE_ID = OpenMaya.MTypeId(0xFA235)
 
+# Attribute Keys
 KEY_DEF_LIGHT_RADIUS = 'lightRadius', 'lr'
 
 class StemLightNode(OpenMayaMPx.MPxLocatorNode):
-  # Declare class variables
 
+  # Light Radius Attribute
   mDefaultLightRadius = OpenMaya.MObject()
 
   # Size of drawn lines
   mDisplayRadius = 0.6
 
-  # This doesn't change
-  mSphereDisplayRadius = 0.3
+  # Size of drawn circle This doesn't change
+  mCircleDisplayRadius = 0.3
 
   # constructor
   def __init__(self):
@@ -89,21 +90,21 @@ class StemLightNode(OpenMayaMPx.MPxLocatorNode):
         glFT.glNormal3f(0.0, 0.0, 1.0)
         if (i == 360):
           glFT.glTexCoord3f(
-            self.mSphereDisplayRadius * math.cos(0),
-            self.mSphereDisplayRadius * math.sin(0),
+            self.mCircleDisplayRadius * math.cos(0),
+            self.mCircleDisplayRadius * math.sin(0),
             0.0)
           glFT.glVertex3f(
-            self.mSphereDisplayRadius * math.cos(0),
-            self.mSphereDisplayRadius * math.sin(0),
+            self.mCircleDisplayRadius * math.cos(0),
+            self.mCircleDisplayRadius * math.sin(0),
             0.0)
         else:
           glFT.glTexCoord3f(
-            self.mSphereDisplayRadius * math.cos(rad),
-            self.mSphereDisplayRadius * math.sin(rad),
+            self.mCircleDisplayRadius * math.cos(rad),
+            self.mCircleDisplayRadius * math.sin(rad),
             0.0)
           glFT.glVertex3f(
-            self.mSphereDisplayRadius * math.cos(rad),
-            self.mSphereDisplayRadius * math.sin(rad),
+            self.mCircleDisplayRadius * math.cos(rad),
+            self.mCircleDisplayRadius * math.sin(rad),
             0.0)
     glFT.glEnd()
 
@@ -120,9 +121,6 @@ def StemLightNodeCreator():
   return OpenMayaMPx.asMPxPtr(StemLightNode())
 
 def StemLightNodeInitializer():
-  #------------------------------------#
-  ############ NUM RAND PTS ##########
-  #------------------------------------#
   # Numeric Attributes
   nAttr = OpenMaya.MFnNumericAttribute()
   StemLightNode.mDefLightRadius = nAttr.create(
