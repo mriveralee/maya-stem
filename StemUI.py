@@ -11,18 +11,21 @@ import pymel.all as pm
 from pymel.core import *
 from functools import partial
 
+import StemGlobal as SG
+
 #------------------------------------------------------------------------------#
 # StemUI Class - represents the UI in the Maya STEM Plugin
 #------------------------------------------------------------------------------#
-
 
 ##############################################################
 ###  Custom Drop Down Menu   ########################
 ##############################################################
 # TODO MOVE UI into separate class
-DROP_DOWN_MENU_NAME = "kStemSystemDropDownMenu"
+STEM_DROP_DOWN_MENU_NAME = "kStemSystemDropDownMenu"
 
 class StemUIMenu(object):
+
+  name = STEM_DROP_DOWN_MENU_NAME
 
   def printbutton(self):
     print 'Button clicked'
@@ -47,46 +50,52 @@ class StemUIMenu(object):
     cmd += 'connectAttr StemInstanceNode.mBranches instancer1.inputPoints; connectAttr StemInstanceNode.mFlowers instancer1.inputPoints;'
     maya.mel.eval(cmd)
 
+  def openGitHubPage(self):
+    cmds.launch(webPage=SG.STEM_GITHUB_SITE)
+
+  def openHelpPage(self):
+    cmds.launch(webPage=SG.STEM_HELP_SITE)
 
   '''
   '' Initialize the DropDown Menu
   '''
   def __init__(self):
+    print 'Init the menu!'
     gMainWindow = maya.mel.eval('$temp1=$gMainWindow')
-    self.name = DROP_DOWN_MENU_NAME
     # Delete the old window by name if it exists
     if (self.exists()):
       cmds.deleteUI(self.name)
 
-      dropDownMenu = cmds.menu(
-      DROP_DOWN_MENU_NAME,
-      label='LSystemInstance',
-      parent=gMainWindow,
-      tearOff=True)
-      cmds.menuItem(
-      label='Create RN Network',
-      parent=dropDownMenu,
-      command=pm.Callback(self.makeRNNetwork))
-      cmds.menuItem(
-      label='Create RN Network from Selected',
-      parent=dropDownMenu,
-      command=pm.Callback(self.makeRNNetworkSelected))
-      cmds.menuItem(
-      label='Create LSIN Network',
-      parent=dropDownMenu,
-      command=pm.Callback(self.makeLSINNetwork))
-      #cmds.menuItem(divider=True)
-      cmds.menuItem(
-      label='Create LSIN Network',
-      parent=dropDownMenu,
-      command=pm.Callback(self.makeLSINNetworkSelected))
-
+    dropDownMenu = cmds.menu(
+    STEM_DROP_DOWN_MENU_NAME,
+    label='STEM',
+    parent=gMainWindow,
+    tearOff=True)
+    cmds.menuItem(
+    label='Create Stem Instance Node',
+    parent=dropDownMenu,
+    command=pm.Callback(self.makeRNNetwork))
+    cmds.menuItem(
+    label='Create Space Resouce Node',
+    parent=dropDownMenu,
+    command=pm.Callback(self.makeRNNetworkSelected))
+    cmds.menuItem(
+    label='Create Light Resource Node',
+    parent=dropDownMenu,
+    command=pm.Callback(self.makeLSINNetwork))
+    #cmds.menuItem(divider=True)
+    cmds.menuItem(
+    label='Help',
+    parent=dropDownMenu,
+    command=pm.Callback(self.openHelpPage))
+    # Show the Source Code
+    cmds.menuItem(
+    label='Source Code',
+    parent=dropDownMenu,
+    command=pm.Callback(self.openGitHubPage))
 
   '''
   '' Returns true if this menu exists in Maya's top option menu
   '''
   def exists(self):
     return cmds.menu(self.name, query=True, exists=True)
-
-
-STEM_SYSTEM_MENU = StemUIMenu()

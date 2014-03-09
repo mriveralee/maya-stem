@@ -25,6 +25,7 @@ import StemUI as SU
 ##############################################################
 ###  INIT FUNCTIONS FOR PLUG-IN  #############################
 ##############################################################
+STEM_SYSTEM_MENU = SU.StemUIMenu()
 
 # initialize the script plug-in
 def initializePlugin(mobject):
@@ -71,7 +72,8 @@ def uninitializePlugin(mobject):
     mplugin.deregisterNode(SL.STEM_LIGHT_NODE_ID)
 
     # Delete old UI
-    if SU.STEM_SYSTEM_MENU != None:
-      cmds.deleteUI(SU.STEM_SYSTEM_MENU.name)
+    if STEM_SYSTEM_MENU != None:
+      print 'removing menu'
+      cmds.deleteUI(STEM_SYSTEM_MENU.name)
   except:
     sys.stderr.write( "Failed to unregister node: %s\n" % SI.STEM_INSTANCE_NODE_TYPE_NAME )
