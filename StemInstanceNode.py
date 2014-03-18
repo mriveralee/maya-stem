@@ -27,7 +27,7 @@ STEM_INSTANCE_NODE_ID = OpenMaya.MTypeId(0xFA234)
 # Input Keys
 KEY_ITERATIONS = 'iterations', 'iter'
 KEY_TIME = 'time', 'tm'
-KEY_GRAMMAR = 'grammar', 'gm'
+KEY_GRAMMAR = 'grammarFile', 'gf'
 KEY_ANGLE = 'angle', 'ang'
 KEY_STEP_SIZE = 'stepSize' , 'ss'
 
@@ -163,6 +163,15 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Clear up the data
       data.setClean(plug)
 
+  def readGrammarFile(self):
+    txtFileFilter = 'Text Files (*.txt)'
+    fileName = cmds.fileDialog2(fileFilter=txtFileFilter, dialogStyle=2, fileMode=1)
+    if (len(fileName) > 0):
+      f = open(fileName[0], 'r')
+      fileContents = f.read()
+      print fileContents
+      f.close()
+
   ''' Create the Points for this node '''
   def createPoints(self, iters, angle, step, grammarFile, data):
 
@@ -285,11 +294,6 @@ def StemInstanceNodeCreator():
   return OpenMayaMPx.asMPxPtr(StemInstanceNode())
 
 def StemInstanceNodeInitializer():
-  #------------------------------------#
-  ############ NUM RAND PTS ##########
-  #------------------------------------#
-  # Num Random Points
-  #SG.MAKE_INPUT(nAttr)
   # Numeric Attributes
   nAttr = OpenMaya.MFnNumericAttribute()
   StemInstanceNode.mDefAngle = nAttr.create(
