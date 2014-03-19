@@ -116,7 +116,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
   # compute
   def compute(self,plug,data):
-    return
     if plug == StemInstanceNode.outputMesh:
 
       # Create branch segments array from LSystemBranches use id, position,

@@ -86,7 +86,6 @@ class StemSpaceNode(OpenMayaMPx.MPxLocatorNode):
   def compute(self,plug,data):
     print 'Space Node Compute!'
 
-
 # StemNode creator
 def StemSpaceNodeCreator():
   return OpenMayaMPx.asMPxPtr(StemSpaceNode())

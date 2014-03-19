@@ -23,15 +23,26 @@ STEM_HELP_SITE = 'http://github.com/mriveralee/maya-stem/issues'
 GL_RENDERER = OpenMayaRender.MHardwareRenderer.theRenderer()
 GLFT = GL_RENDERER.glFunctionTable()
 
-# Useful functions for declaring attributes as inputs or outputs.
+'''
+'' Functions for declaring attributes as inputs
+'''
 def MAKE_INPUT(attr):
   attr.setKeyable(1)
   attr.setStorable(1)
   attr.setReadable(1)
   attr.setWritable(1)
 
+'''
+'' Function for declaring attribute as output
+'''
 def MAKE_OUTPUT(attr):
   attr.setKeyable(0)
   attr.setStorable(0)
   attr.setReadable(1)
   attr.setWritable(0)
+
+'''
+'' Function for getting all nodes of a type
+'''
+def getNodesByType(nodeType):
+  return cmds.ls(type=nodeType)
