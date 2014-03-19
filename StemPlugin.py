@@ -12,11 +12,11 @@ from pymel.core import *
 from functools import partial
 
 # Import the necessary STEM Plugin Nodes
-import StemGlobal as SG
-import StemInstanceNode as SI
-import StemSpaceNode as SS
-import StemLightNode as SL
-import StemUI as SU
+from StemPluginClasses import StemGlobal as SG
+from StemPluginClasses import StemInstanceNode as SI
+from StemPluginClasses import StemSpaceNode as SS
+from StemPluginClasses import StemLightNode as SL
+from StemPluginClasses import StemUI as SU
 
 #------------------------------------------------------------------------------#
 # StemPlugin Class - Loads/Initializes the STEM Plugin classes
