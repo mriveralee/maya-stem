@@ -11,6 +11,8 @@ import maya.OpenMayaMPx as OpenMayaMPx
 import maya.OpenMayaRender as OpenMayaRender
 
 import StemGlobal as SG
+import StemSpaceNode as SS
+import StemLightNode as SL
 
 #------------------------------------------------------------------------------#
 # StemInstanceNode Class - Subclassed Maya Mpx.Node that implements the
@@ -116,6 +118,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
   # compute
   def compute(self,plug,data):
+    self.calculateOptimalGrowthDirection()
     if plug == StemInstanceNode.outputMesh:
 
       # Create branch segments array from LSystemBranches use id, position,
@@ -162,7 +165,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Clear up the data
       data.setClean(plug)
 
-  ''' Reads a text file that is selected using a file dialog then returns its
+  '''
+  ''  Reads a text file that is selected using a file dialog then returns its
   ''  contents. If no file exists, it returns the empty string
   '''
   def readGrammarFile(self):
@@ -174,6 +178,39 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       f.close()
       return fileContents
     return ""
+
+  '''
+  '' Calculates the optimal growth direction vector for branch growth
+  '''
+  def calculateOptimalGrowthDirection(self):
+    # Get the list of stem nodes
+    resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME) + cmds.ls(type=SS.STEM_SPACE_NODE_TYPE_NAME)
+
+    # The sum of the resource node locations and the number of resource nodes
+    sumLocations = [0.0, 0.0, 0.0]
+    numNodes = len(resNodes)
+
+    if (numNodes == 0):
+      # TODO: handle case where there is no place to go (pick random dir?)
+      return [0.0, 0.0, 0.0]
+
+    # Now go through each node and sum node locations
+    for n in resNodes:
+      # TODO add weighting funciton that include the radius of light/space etc
+      pos = SG.getLocatorWorldPosition(n)
+      sumNodeLocations = SG.sumArrayVectors(sumLocations, pos)
+
+    # Get position of the instance node
+    # TODO: get position of the instance node
+    startPos = [0.0, 0.0, 0.0]  #SG.getLocatorWorldPosition(self)
+
+    # Now average the position to get the optimal grown direction
+    optGrowthDir = [ (sumLocations[0] / numNodes) - startPos[0],
+      (sumLocations[1] / numNodes) - startPos[1],
+      (sumLocations[2] / numNodes) - startPos[2]]
+
+    # return the value
+    return optGrowthDir
 
   ''' Create the Points for this node '''
   def createPoints(self, iters, angle, step, grammarFile, data):

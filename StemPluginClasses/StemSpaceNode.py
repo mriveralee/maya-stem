@@ -12,6 +12,7 @@ import maya.OpenMayaRender as OpenMayaRender
 
 import StemGlobal as SG
 
+
 #------------------------------------------------------------------------------#
 # StemSpaceNode Class - Subclassed Maya Mpx.Node that implements the Space Node
 # for the Self-organizing L-system presented in Self-organizing tree models for
