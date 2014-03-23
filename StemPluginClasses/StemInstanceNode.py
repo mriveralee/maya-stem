@@ -198,7 +198,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     for n in resNodes:
       # TODO add weighting funciton that include the radius of light/space etc
       pos = SG.getLocatorWorldPosition(n)
-      sumNodeLocations = SG.sumArrayVectors(sumLocations, pos)
+      sumLocations = SG.sumArrayVectors(sumLocations, pos)
 
     # Get position of the instance node
     # TODO: get position of the instance node
@@ -209,6 +209,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       (sumLocations[1] / numNodes) - startPos[1],
       (sumLocations[2] / numNodes) - startPos[2]]
 
+    print optGrowthDir
     # return the value
     return optGrowthDir
 
