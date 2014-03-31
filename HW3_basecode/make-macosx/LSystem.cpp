@@ -1,4 +1,4 @@
-#include "LSystem.h"
+#include "LSystem.h"    
 #include <fstream>
 #include <stack>
 
@@ -53,7 +53,7 @@ const std::string& LSystem::getIteration(unsigned int n)
         {
             current = iterate(current);
             iterations.push_back(current);
-        }
+        }        
     }
     return iterations[n];
 }
@@ -78,7 +78,7 @@ void LSystem::loadProgram(const std::string& fileName)
 
 void LSystem::loadProgramFromString(const std::string& program)
 {
-    reset();
+    reset(); 
     mGrammar = program;
 
     size_t index = 0;
@@ -99,7 +99,7 @@ void LSystem::addProduction(std::string line)
     // 1. Strip whitespace
     while ((index = line.find(" ")) != std::string::npos)
     {
-        line.replace(index, 1, "");
+        line.replace(index, 1, ""); 
     }
 
     if (line.size() == 0) return;
@@ -124,7 +124,7 @@ std::string LSystem::iterate(const std::string& input)
     for (unsigned int i = 0; i < input.size(); i++)
     {
         std::string sym = input.substr(i,1);
-        std::string next = productions.count(sym) > 0? productions[sym] : sym;
+        std::string next = productions.count(sym) > 0? productions[sym] : sym; 
         output = output + next;
     }
     return output;
@@ -167,7 +167,7 @@ void LSystem::Turtle::moveForward(float length)
 void LSystem::Turtle::applyUpRot(float degrees)
 {
     math::RotationMatrix<float> mat(2,Deg2Rad*degrees); // Z axis
-    math::RotationMatrix<float> world2local(forward, left, up);
+    math::RotationMatrix<float> world2local(forward, left, up); 
     up =  world2local * mat * vec3(0,0,1);
     left = world2local * mat * vec3(0,1,0);
     forward = world2local * mat * vec3(1,0,0);
@@ -176,7 +176,7 @@ void LSystem::Turtle::applyUpRot(float degrees)
 void LSystem::Turtle::applyLeftRot(float degrees)
 {
     math::RotationMatrix<float> mat(1,Deg2Rad*degrees); // Y axis
-    math::RotationMatrix<float> world2local(forward, left, up);
+    math::RotationMatrix<float> world2local(forward, left, up); 
     up =  world2local * mat * vec3(0,0,1);
     left = world2local * mat * vec3(0,1,0);
     forward = world2local * mat * vec3(1,0,0);
@@ -185,13 +185,13 @@ void LSystem::Turtle::applyLeftRot(float degrees)
 void LSystem::Turtle::applyForwardRot(float degrees)
 {
     math::RotationMatrix<float> mat(0,Deg2Rad*degrees); // X axis
-    math::RotationMatrix<float> world2local(forward, left, up);
+    math::RotationMatrix<float> world2local(forward, left, up); 
     up =  world2local * mat * vec3(0,0,1);
     left = world2local * mat * vec3(0,1,0);
     forward = world2local * mat * vec3(1,0,0);
 }
 
-void LSystem::process(unsigned int n,
+void LSystem::process(unsigned int n, 
     std::vector<Branch>& branches)
 {
     std::vector<Geometry> models;
@@ -201,7 +201,7 @@ void LSystem::process(unsigned int n,
 // TODO:: Finish this function.
 //        This is the function that will be called from Python to generate the branches and flowers.
 //        Notice the argument types. Since we are interfacing with Python, we must simplify the data
-//          types that we are using because Python cannot easily handle the "vec" class that is usually
+//          types that we are using because Python cannot easily handle the "vec" class that is usually 
 //          used in the Branch. Instead, we will return slightly altered data packets:
 //				flowers:  vector of vector of floats: [posx, posy, poz]
 //              branches: vector of vector of floats: [startx, starty, startz, endx, endy, endz]
@@ -212,7 +212,7 @@ void LSystem::process(unsigned int n,
 //           a VectorPyBranch in Python.
 void LSystem::processPy(unsigned int n,
 		std::vector<std::vector<float> >& branches, std::vector<std::vector<float> >& flowers) {
-
+		
 	std::vector<Branch> preBranches;
     std::vector<Geometry> preFlowers;
 
@@ -270,8 +270,8 @@ void LSystem::processPy(unsigned int n,
 // LOOK: This is where the L-System creates the branches and the flowers.
 //        Branches are returns in the "branches" vector and flowers (or other symbols) are
 //        returned in the "models" vector.
-void LSystem::process(unsigned int n,
-    std::vector<Branch>& branches,
+void LSystem::process(unsigned int n, 
+    std::vector<Branch>& branches, 
     std::vector<Geometry>& models)
 {
     Turtle turtle;
@@ -337,7 +337,7 @@ void LSystem::process(unsigned int n,
         }
         else
         {
-			// LOOK: When a different symbol (such as a *) is encountered, the turtle's position
+			// LOOK: When a different symbol (such as a *) is encountered, the turtle's position 
 			//        along with the corresponding symbol is added to the models vector.
             models.push_back(Geometry(turtle.pos, sym));
         }

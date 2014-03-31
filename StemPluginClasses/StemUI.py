@@ -30,7 +30,34 @@ class StemUIMenu(object):
     print 'Button clicked'
 
   def makeStemInstanceNode(self):
-    cmds.createNode(SI.STEM_INSTANCE_NODE_TYPE_NAME)
+    print 'StemInstanceName: '
+    # Make transform and connect mesh to it
+    txNode = cmds.createNode('transform')
+    print txNode
+    meshNode = cmds.createNode('mesh', p=txNode)
+    print meshNode
+    # Set a shading group
+    shadingGroup = cmds.sets(meshNode, addElement='initialShadingGroup')
+    print shadingGroup
+    # Create Lsystem
+    stemNode = cmds.createNode(SI.STEM_INSTANCE_NODE_TYPE_NAME)
+    print stemNode
+    # Connect the nodes with the time
+    print cmds.connectAttr('time1.outTime', stemNode + '.time')
+    print cmds.connectAttr(stemNode+'.outputMesh', meshNode+'.inMesh')
+    #lsysNode = cmds.createNode(SLS.STEMM_LSYSTEM_NODE_TYPE_NODE)
+
+    # cmd = ('createNode transform -n LSystem1; '
+    #   'createNode mesh -n LSystemShape1 -p LSystem1; '
+    #   'sets -add initialShadingGroup LSystemShape1;
+    #   'createNode LSystemNode -n LSystemNode1; '
+    #   'connectAttr time1.outTime LSystemNode1.time; '
+    #   'connectAttr LSystemNode1.outputMesh LSystemShape1.inMesh; ')
+    # #maya.mel.eval(cmd)
+
+  def makeStemLSystemNode(self):
+    print 'make Lsys node'
+    # cmds.createNode(SLS.STEM_LSYSTEM_NODE_TYPE_NAME)
 
   def makeStemSpaceResourceNode(self):
     cmds.createNode(SS.STEM_SPACE_NODE_TYPE_NAME)
@@ -72,6 +99,12 @@ class StemUIMenu(object):
       label='Create Stem Instance Node',
       parent=dropDownMenu,
       command=pm.Callback(self.makeStemInstanceNode))
+
+    # Create Stem LSystem Node
+    # cmds.menuItem(
+    #   label='Create LSystem Node',
+    #   parent=dropDownMenu,
+    #   command=pm.Callback(self.makeStemLSystemNode))
 
     # Create Space Resource Node
     cmds.menuItem(

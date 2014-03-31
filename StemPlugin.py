@@ -37,7 +37,7 @@ def initializePlugin(mobject):
     'Any')
 
   try:
-    # Register StemNode
+    # Register StemInstanceNode
     mplugin.registerNode(SI.STEM_INSTANCE_NODE_TYPE_NAME,
       SI.STEM_INSTANCE_NODE_ID,
       SI.StemInstanceNodeCreator,
@@ -57,6 +57,7 @@ def initializePlugin(mobject):
       SL.StemLightNodeCreator,
       SL.StemLightNodeInitializer,
       OpenMayaMPx.MPxNode.kLocatorNode)
+
 
   except:
     sys.stderr.write(

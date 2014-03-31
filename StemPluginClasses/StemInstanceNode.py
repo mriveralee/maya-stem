@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import sys, math
+import sys, math, ctypes
 import random
-#import LSystem
+import LSystem
 
 import maya
 import maya.cmds as cmds
@@ -41,6 +41,7 @@ KEY_RESOURCE_DISTRIBUTION = 'useResources', 'resd'
 KEY_BRANCHES = 'branches', 'br'
 KEY_FLOWERS = 'flowers', 'fl'
 KEY_OUTPUT = 'outputMesh', 'out'
+KEY_OUTPOINTS = 'outPoints', 'op'
 
 # Node definition
 class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
@@ -118,9 +119,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
   # compute
   def compute(self,plug,data):
-    self.calculateOptimalGrowthDirection()
+    print self.calculateOptimalGrowthDirection()
     if plug == StemInstanceNode.outputMesh:
-
+      print 'is output mesh #2'
       # Create branch segments array from LSystemBranches use id, position,
       # aimDirection, scale
       # Note: Can change input geometry of instancer
@@ -145,14 +146,15 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       angleData = data.inputValue(StemInstanceNode.mDefAngle)
       angle = angleData.asFloat()
 
-      # Grammar File String
+      # Grammar File String and convert from the maya object
       grammarData =  data.inputValue(StemInstanceNode.mDefGrammarFile)
-      grammarFile = grammarData.asString()
+      grammarFile = str(grammarData.asString())
+      #c_char_p(str(grammarFile))
 
       # Get output objects
-      # outputHandle = data.outputValue(StemInstanceNode.outputPoints)
-      # dataCreator = OpenMaya.MFnMeshData()
-      # newOutputData = dataCreator.create()
+      outputHandle = data.outputValue(StemInstanceNode.outputMesh)
+      dataCreator = OpenMaya.MFnMeshData()
+      newOutputData = dataCreator.create()
       #self.createPoints(iters, angle, step, grammarFile, newOutputData)
 
       # The New mesh!
@@ -160,7 +162,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       self.createPoints(iters, angle, step, grammarFile, data)
 
       # Set new output data
-      #outputHandle.set(newOutputData)
+      outputHandle.set(data)
 
       # Clear up the data
       data.setClean(plug)
@@ -169,15 +171,25 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   ''  Reads a text file that is selected using a file dialog then returns its
   ''  contents. If no file exists, it returns the empty string
   '''
-  def readGrammarFile(self):
+  def readGrammarFileUsingDialog(self):
     txtFileFilter = 'Text Files (*.txt)'
-    fileName = cmds.fileDialog2(fileFilter=txtFileFilter, dialogStyle=2, fileMode=1)
-    if (len(fileName) > 0):
-      f = open(fileName[0], 'r')
-      fileContents = f.read()
-      f.close()
-      return fileContents
-    return ""
+    fileNames = cmds.fileDialog2(fileFilter=txtFileFilter, dialogStyle=2, fileMode=1)
+    return self.readGrammarFile(fileNames[0])
+
+  '''
+  ''  Reads a text file that is passed by string
+  ''  contents. If no file exists, it returns the empty string
+  '''
+  def readGrammarFile(self, fileName):
+      if (len(fileName) <= 0):
+        return ""
+      try:
+        f = open(fileName, 'r')
+        fileContents = f.read()
+        f.close()
+        return fileContents
+      except:
+        return ""
 
   '''
   '' Calculates the optimal growth direction vector for branch growth
@@ -239,12 +251,15 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     #------------------------------------#
 
     lsys = LSystem.LSystem()
-    lsys.setDefaultAngle(angle)
-    lsys.setDefaultStep(step)
+    lsys.setDefaultAngle(float(angle))
+    lsys.setDefaultStep(float(step))
 
-    lsys.load(grammarFile)
+    # Get Grammar File Contents & load to lsys
+    grammarContent = self.readGrammarFile(grammarFile)
+    lsys.loadProgramFromString(grammarContent)
     print "Grammar File: " + grammarFile
-    print "Grammar: " + lsys.getGrammarString()
+    print "Grammar File Contents: " + lsys.getGrammarString()
+
 
     branches = LSystem.VectorPyBranch()
     flowers = LSystem.VectorPyBranch()
@@ -252,6 +267,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Run Grammar String
     lsys.processPy(iters, branches, flowers)
 
+    print 'finished lsystem process!'
 
     # Set up the array for adding random points
     pointsData = data.outputValue(StemInstanceNode.mBranches) #the MDataHandle
@@ -273,15 +289,15 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     for i in range(0, branches.size()):
       index = i + 2 * i
       # Make Branch! wooo
-      b = branches.at(i)
+
+      b = branches[i]
+      print 'made it!'
 
       # Get points
-      start = OpenMaya.MVector(b.at(0), b.at(1), b.at(2))
-      end = OpenMaya.MVector(b.at(3), b.at(4), b.at(5))
+      start = OpenMaya.MVector(b[0], b[1], b[2])
+      end = OpenMaya.MVector(b[3], b[4], b[5])
       sFactor = (1 - branches.size() / (i + 1))
       scale = OpenMaya.MVector(1.1 * sFactor, 1.2 * sFactor, 1.1 * sFactor)
-      aim = OpenMaya.MVector(random.random(), random.random(), random.random())
-
 
       # Append
       positionArray.append(start)
@@ -291,44 +307,44 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       scaleArray.append(scale)
       aimDirArray.append(aim)
 
-      # Finish branch set up
-      pointsData.setMObject(pointsObject)
+    # Finish branch set up
+    pointsData.setMObject(pointsObject)
 
-      # Set up the array for adding random points
-      fData = data.outputValue(StemInstanceNode.mBranches) #the MDataHandle
-      fAAD = OpenMaya.MFnArrayAttrsData() #the MFnArrayAttrsData
-      fObject = fAAD.create() #the MObject
+    # Set up the array for adding random points
+    fData = data.outputValue(StemInstanceNode.mBranches) #the MDataHandle
+    fAAD = OpenMaya.MFnArrayAttrsData() #the MFnArrayAttrsData
+    fObject = fAAD.create() #the MObject
 
-      # Create the vectors for “position” and “id”. Names and types must
-      # match # table above.
-      positionArray = fAAD.vectorArray('position')
-      idArray = fAAD.doubleArray('id')
+    # Create the vectors for “position” and “id”. Names and types must
+    # match # table above.
+    positionArray = fAAD.vectorArray('position')
+    idArray = fAAD.doubleArray('id')
 
-      # Create the vectors for “position” and “id”. Names and types must
-      # match # table above.
-      scaleArray = fAAD.vectorArray('scale')
-      aimDirArray = fAAD.vectorArray('aimDirection')
+    # Create the vectors for “position” and “id”. Names and types must
+    # match # table above.
+    scaleArray = fAAD.vectorArray('scale')
+    aimDirArray = fAAD.vectorArray('aimDirection')
 
-      # FLOWER POWER
-      for i in range(0, flowers.size()):
-        index = i + 2 * i * branches.size()
-        f = flowers.at(i)
-        start = OpenMaya.MVector(f.at(0), f.at(1), f.at(2))
-        sFactor = (1 - flowers.size() / (i + 1))
-        scale = OpenMaya.MVector(1.1 * sFactor, 1.1 * sFactor, 1.1 * sFactor)
-        aim = OpenMaya.MVector(
-          random.random(), random.random(), random.random())
+    # FLOWER POWER
+    for i in range(0, flowers.size()):
+      index = i + 2 * i * branches.size()
+      f = flowers[i]
+      start = OpenMaya.MVector(f[0], f[1], f[2])
+      sFactor = (1 - flowers.size() / (i + 1))
+      scale = OpenMaya.MVector(1.1 * sFactor, 1.1 * sFactor, 1.1 * sFactor)
+      aim = OpenMaya.MVector(
+        random.random(), random.random(), random.random())
 
-        # Append
-        positionArray.append(start)
-        idArray.append(index)
-        scaleArray(scale)
-        aimDirArray.append(aim)
+      # Append
+      positionArray.append(start)
+      idArray.append(index)
+      scaleArray(scale)
+      aimDirArray.append(aim)
 
-        # Now set the flower data :)
-        fData.setMObject(fObject)
+    # Now set the flower data :)
+    fData.setMObject(fObject)
 
-        print 'create mesh!'
+    print 'create mesh!'
 
 # StemNode creator
 def StemInstanceNodeCreator():
@@ -417,6 +433,16 @@ def StemInstanceNodeInitializer():
     OpenMaya.MFnData.kMesh)
   SG.MAKE_OUTPUT(tAttr)
 
+
+  # Outpoints
+  StemInstanceNode.outPoints = tAttr.create(
+    KEY_OUTPOINTS[0],
+    KEY_OUTPOINTS[1],
+    OpenMaya.MFnArrayAttrsData.kDynArrayAttrs)
+  SG.MAKE_OUTPUT(tAttr)
+
+
+
   # add Attributues
 
   StemInstanceNode.addAttribute(StemInstanceNode.mDefAngle)
@@ -428,16 +454,19 @@ def StemInstanceNodeInitializer():
 
 
 
-  #StemInstanceNode.addAttribute(StemInstanceNode.time)
+  StemInstanceNode.addAttribute(StemInstanceNode.time)
   StemInstanceNode.addAttribute(StemInstanceNode.outputMesh)
   StemInstanceNode.addAttribute(StemInstanceNode.mFlowers)
   StemInstanceNode.addAttribute(StemInstanceNode.mBranches)
 
+  StemInstanceNode.addAttribute(StemInstanceNode.outPoints)
+  # LSystemInstanceNode.addAttribute(LSystemInstanceNode.outPoints)
+
 
   # Attribute Effects to Flowers
-  # StemInstanceNode.attributeAffects(
-  #   StemInstanceNode.time,
-  #   StemInstanceNode.mFlowers)
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.time,
+    StemInstanceNode.mFlowers)
 
   StemInstanceNode.attributeAffects(
     StemInstanceNode.mIterations,
@@ -463,10 +492,10 @@ def StemInstanceNodeInitializer():
     StemInstanceNode.mHasBranchShedding,
     StemInstanceNode.mFlowers)
 
-  # Attributes Effects to Branches
-  # StemInstanceNode.attributeAffects(
-  #   StemInstanceNode.time,
-  #   StemInstanceNode.mBranches)
+  #Attributes Effects to Branches
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.time,
+    StemInstanceNode.mBranches)
 
   StemInstanceNode.attributeAffects(
     StemInstanceNode.mIterations,
@@ -491,3 +520,33 @@ def StemInstanceNodeInitializer():
   StemInstanceNode.attributeAffects(
     StemInstanceNode.mHasBranchShedding,
     StemInstanceNode.mBranches)
+
+
+  #Attributes Effects to Branches
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.time,
+    StemInstanceNode.outputMesh)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mIterations,
+    StemInstanceNode.outputMesh)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefAngle,
+    StemInstanceNode.outputMesh)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefStepSize,
+    StemInstanceNode.outputMesh)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefGrammarFile,
+    StemInstanceNode.outputMesh)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mHasResourceDistribution,
+    StemInstanceNode.outputMesh)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mHasBranchShedding,
+    StemInstanceNode.outputMesh)
