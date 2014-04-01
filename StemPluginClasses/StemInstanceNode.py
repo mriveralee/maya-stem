@@ -13,6 +13,7 @@ import maya.OpenMayaRender as OpenMayaRender
 import StemGlobal as SG
 import StemSpaceNode as SS
 import StemLightNode as SL
+import StemCylinder as SC
 
 #------------------------------------------------------------------------------#
 # StemInstanceNode Class - Subclassed Maya Mpx.Node that implements the
@@ -42,6 +43,9 @@ KEY_BRANCHES = 'branches', 'br'
 KEY_FLOWERS = 'flowers', 'fl'
 KEY_OUTPUT = 'outputMesh', 'out'
 KEY_OUTPOINTS = 'outPoints', 'op'
+
+# Default Grammar File
+DEFAULT_GRAMMAR_FILE = "./StemPluginClasses/trees/simple1.txt"
 
 # Node definition
 class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
@@ -158,14 +162,16 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       #self.createPoints(iters, angle, step, grammarFile, newOutputData)
 
       # The New mesh!
-
-      self.createPoints(iters, angle, step, grammarFile, data)
-
-      # Set new output data
-      outputHandle.set(data)
+      #self.createPoints(iters, angle, step, grammarFile, data)
+      meshResult = self.createMesh(iters, angle, step, grammarFile, data)
+      if (meshResult is not None):
+        # Set new output data
+        print 'Set new mesh!'
+        outputHandle.set(data)
 
       # Clear up the data
       data.setClean(plug)
+      print 'cleaned plug!'
 
   '''
   ''  Reads a text file that is selected using a file dialog then returns its
@@ -225,7 +231,82 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # return the value
     return optGrowthDir
 
-  ''' Create the Points for this node '''
+  '''
+  '' Creates a Cylinder Mesh based on the LSystem
+  '''
+  def createMesh(self, iters, angle, step, grammarFile, data):
+    #------------------------------------#
+    ############# LSYSTEM INIT ###########
+    #------------------------------------#
+    # Get Grammar File Contents & load to lsys
+    grammarContent = self.readGrammarFile(grammarFile)
+
+    if len(grammarContent) == 0:
+      print "Invalid Grammar File!"
+      return None
+
+    # Create LSystem from the parameters
+    lsys = LSystem.LSystem()
+    lsys.setDefaultAngle(float(angle))
+    lsys.setDefaultStep(float(step))
+    lsys.loadProgramFromString(grammarContent)
+    print "Grammar File: " + grammarFile
+    print "Grammar File Contents: " + lsys.getGrammarString()
+
+
+    branches = LSystem.VectorPyBranch()
+    flowers = LSystem.VectorPyBranch()
+
+    # Run Grammar String
+    lsys.processPy(iters, branches, flowers)
+
+    print 'finished lsystem process for creating Mesh!'
+    print ('Branches: ', branches.size())
+
+    cPoints = OpenMaya.MPointArray()
+    cFaceCounts = OpenMaya.MIntArray()
+    cFaceConnects = OpenMaya.MIntArray()
+
+    for i in range(0, branches.size()):
+      print i
+      b = branches[i]
+      print 'made it!'
+
+      # Get points
+      start = OpenMaya.MPoint(b[0], b[1], b[2])
+      end = OpenMaya.MPoint(b[3], b[4], b[5])
+      radius = 0.25
+
+      # Create a cylinder from the end points
+      cyMesh = SC.StemCylinder(start, end, radius)
+
+      # Append the Cylinder's mesh to our main mesh
+      cyMesh.appendToMesh(cPoints, cFaceCounts, cFaceConnects)
+      print 'appended to mesh'
+
+    print("point Length: ", cPoints.length())
+    print("faceCount Length: ", cFaceCounts.length())
+    print("faceConnect Length: ", cFaceConnects.length())
+
+    if (cPoints.length() == 0
+      or cFaceCounts.length() == 0
+      or cFaceConnects.length() == 0):
+      print 'No LSystem generated!'
+      return None
+
+
+    status = OpenMaya.MStatus()
+    meshFs = OpenMaya.MFnMesh()
+    newMesh = meshFs.create(int(cPoints.length()), int(cFaceCounts.length()),
+      cPoints, cFaceCounts, cFaceConnects)
+    return newMesh
+
+
+
+
+  '''
+  '' Create the Points for this node
+  '''
   def createPoints(self, iters, angle, step, grammarFile, data):
 
     #------------------------------------------------#
@@ -332,8 +413,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       start = OpenMaya.MVector(f[0], f[1], f[2])
       sFactor = (1 - flowers.size() / (i + 1))
       scale = OpenMaya.MVector(1.1 * sFactor, 1.1 * sFactor, 1.1 * sFactor)
-      aim = OpenMaya.MVector(
-        random.random(), random.random(), random.random())
+      aim = OpenMaya.MVector(random.random(), random.random(), random.random())
 
       # Append
       positionArray.append(start)
@@ -402,11 +482,13 @@ def StemInstanceNodeInitializer():
   SG.MAKE_INPUT(uAttr)
 
   # Grammar File
+  defStringData = OpenMaya.MFnStringData().create(DEFAULT_GRAMMAR_FILE)
   tAttr = OpenMaya.MFnTypedAttribute()
   StemInstanceNode.mDefGrammarFile = tAttr.create(
     KEY_GRAMMAR[0],
     KEY_GRAMMAR[1],
-    OpenMaya.MFnData.kString)
+    OpenMaya.MFnData.kString,
+    defStringData)
   SG.MAKE_INPUT(tAttr)
 
   # Branch Segments
@@ -458,10 +540,7 @@ def StemInstanceNodeInitializer():
   StemInstanceNode.addAttribute(StemInstanceNode.outputMesh)
   StemInstanceNode.addAttribute(StemInstanceNode.mFlowers)
   StemInstanceNode.addAttribute(StemInstanceNode.mBranches)
-
   StemInstanceNode.addAttribute(StemInstanceNode.outPoints)
-  # LSystemInstanceNode.addAttribute(LSystemInstanceNode.outPoints)
-
 
   # Attribute Effects to Flowers
   StemInstanceNode.attributeAffects(
