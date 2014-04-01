@@ -163,11 +163,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
       # The New mesh!
       #self.createPoints(iters, angle, step, grammarFile, data)
-      meshResult = self.createMesh(iters, angle, step, grammarFile, data)
+      meshResult = self.createMesh(iters, angle, step, grammarFile, data, newOutputData)
       if (meshResult is not None):
         # Set new output data
         print 'Set new mesh!'
-        outputHandle.set(data)
+        outputHandle.set(newOutputData)
 
       # Clear up the data
       data.setClean(plug)
@@ -234,7 +234,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   '' Creates a Cylinder Mesh based on the LSystem
   '''
-  def createMesh(self, iters, angle, step, grammarFile, data):
+  def createMesh(self, iters, angle, step, grammarFile, data, newOutputData):
     #------------------------------------#
     ############# LSYSTEM INIT ###########
     #------------------------------------#
@@ -261,8 +261,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     lsys.processPy(iters, branches, flowers)
 
     print 'finished lsystem process for creating Mesh!'
-    print ('Branches: ', branches.size())
 
+    # Set up cylinder mesh
     cPoints = OpenMaya.MPointArray()
     cFaceCounts = OpenMaya.MIntArray()
     cFaceConnects = OpenMaya.MIntArray()
@@ -270,8 +270,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     for i in range(0, branches.size()):
       print i
       b = branches[i]
-      print 'made it!'
-
       # Get points
       start = OpenMaya.MPoint(b[0], b[1], b[2])
       end = OpenMaya.MPoint(b[3], b[4], b[5])
@@ -298,7 +296,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     status = OpenMaya.MStatus()
     meshFs = OpenMaya.MFnMesh()
     newMesh = meshFs.create(int(cPoints.length()), int(cFaceCounts.length()),
-      cPoints, cFaceCounts, cFaceConnects)
+      cPoints, cFaceCounts, cFaceConnects, newOutputData, status)
     return newMesh
 
 

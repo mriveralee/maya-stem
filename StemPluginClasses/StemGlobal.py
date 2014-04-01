@@ -54,6 +54,50 @@ def sumArrayVectors(v1, v2):
   v3 = [ v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2] ]
   return v3
 
+'''
+'' Add two MPoints OR MVectors
+'''
+def sumMayaVectors(v1, v2):
+  if type(v1) != type(v2):
+    print 'Vectors must be both MPoint or MVector'
+    return None
+  elif type(v1) is type(OpenMaya.MPoint()):
+    v3 = OpenMaya.MPoint(v1.x + v2.x,
+      v1.y + v2.y,
+      v1.z + v2.z,
+      v1.w + v2.w)
+    return v3
+  elif type(v1) is type(OpenMaya.MVector()):
+    v3 = OpenMaya.MVector(
+      v1.x + v2.x,
+      v1.y + v2.y,
+      v1.z + v2.z)
+    return v3
+  else:
+    return None
+
+
+'''
+'' Sets the row of a Maya MMatrix
+'''
+def setRow(matrix, newVector, row):
+  OpenMaya.MScriptUtil.setDoubleArray(matrix[row], 0, newVector.x)
+  OpenMaya.MScriptUtil.setDoubleArray(matrix[row], 1, newVector.y)
+  OpenMaya.MScriptUtil.setDoubleArray(matrix[row], 2, newVector.z)
+
+  # Handle case where vector passed has 4-Dimensions
+  if type(newVector) is type(OpenMaya.MPoint()):
+    OpenMaya.MScriptUtil.setDoubleArray(matrix[row], 3, newVector.w)
+  return
+
+'''
+'' Sets a cell of a Maya MMatrix
+'''
+def setCell(matrix, value, row, column):
+  OpenMaya.MScriptUtil.setDoubleArray( matrix[row], column, value )
+
+
+
 
 '''
 '' Computes the parent

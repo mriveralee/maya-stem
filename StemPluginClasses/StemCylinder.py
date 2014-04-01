@@ -7,6 +7,8 @@ import maya.OpenMaya as OpenMaya
 import maya.OpenMayaAnim as OpenMayaAnim
 import maya.OpenMayaMPx as OpenMayaMPx
 
+import StemGlobal as SG
+
  # Global Mesh Variables
 G_POINTS = OpenMaya.MPointArray()
 G_NORMALS =  OpenMaya.MVectorArray()
@@ -69,15 +71,11 @@ def initCylinderMesh(r):
 '' Stem Cylinder Class for creating a cylinder based mesh for LSystems
 '''
 class StemCylinder():
-  # Stem Variablees
-  mStart = OpenMaya.MPoint()
-  mEnd = OpenMaya.MPoint()
-  mRadius = 0.25
 
   def __init__(self, start, end, radius=0.25):
-    mStart = start
-    mEnd = end
-    mRadius = radius
+    self.mStart = start
+    self.mEnd = end
+    self.mRadius = radius
     print 'Making cylinder'
     if (G_POINTS.length() == 0):
       initCylinderMesh(radius)
@@ -87,13 +85,13 @@ class StemCylinder():
   '' Appends the cylinder to the mesh
   '''
   def appendToMesh(self, points, faceCounts, faceConnects):
-    cpoints = OpenMaya.MPointArray()
-    cnormals = OpenMaya.MVectorArray()
-    self.transform(cpoints, cnormals)
+    (cpoints, cnormals) = self.transform(
+      OpenMaya.MPointArray(),
+      OpenMaya.MVectorArray())
 
     startIndex = points.length()
     # append points
-    for i in range(0, points.length()):
+    for i in range(0, cpoints.length()):
       points.append(cpoints[i])
 
     for i in range(0, G_FACE_COUNTS.length()):
@@ -102,7 +100,7 @@ class StemCylinder():
     for i in range(0, G_FACE_CONNECTS.length()):
       faceConnects.append(G_FACE_CONNECTS[i] + startIndex)
 
-    print 'Finished Appending to Mesh!'
+    return (points, faceCounts, faceConnects)
 
 
   '''
@@ -110,17 +108,16 @@ class StemCylinder():
   '''
   def getMesh(self, points, faceCounts, faceConnects):
     cnormals = OpenMaya.MVectorArray()
-    self.transform(points, cnormals)
+    (cpoints, cnormals) = self.transform(points, cnormals)
     faceCounts = G_FACE_COUNTS
     faceConnects = G_FACE_CONNECTS
-    return (points, faceCounts, faceConnects)
+    return (cpoints, faceCounts, faceConnects)
 
 
   '''
   '' Transforms apoints to match
   '''
   def transform(self, points, normals):
-    print 'Transforming points'
     forward = self.mEnd - self.mStart
     s = forward.length()
     forward.normalize()
@@ -133,34 +130,37 @@ class StemCylinder():
       left = up^forward
     else:
       up = forward ^ left
+
     # Construct matrix
     mat = OpenMaya.MMatrix()
-    print 'constructing matrix'
-    mat[0][0] = forward[0]
-    print 'assigned 0,0'
-    mat[0][1] = left[0]
-    mat[0][2] = up[0]
-    mat[0][3] = 0
-    mat[1][0] = forward[1]
-    mat[1][1] = left[1]
-    mat[1][2] = up[1]
-    mat[1][3] = 0
-    mat[2][0] = forward[2]
-    mat[2][1] = left[2]
-    mat[2][2] = up[2]
-    mat[2][3] = 0
-    mat[3][0] = 0
-    mat[3][1] = 0
-    mat[3][2] = 0
-    mat[3][3] = 1
+    row0 = OpenMaya.MPoint(forward[0], left[0], up[0], 0)
+    row1 = OpenMaya.MPoint(forward[1], left[1], up[1], 0)
+    row2 = OpenMaya.MPoint(forward[2], left[2], up[2], 0)
+    row3 = OpenMaya.MPoint(0, 0, 0, 1)
+
+    # Set the values in the Matrix
+    SG.setRow(mat, row0, 0)
+    SG.setRow(mat, row1, 1)
+    SG.setRow(mat, row2, 2)
+    SG.setRow(mat, row3, 3)
+
+    # Take the transpose of the matrix
     matTrans = mat.transpose()
-    print 'finished matrix'
+
+    # Add points and normals
     for i in range(0, G_POINTS.length()):
       p = G_POINTS[i]
-      p.x = p.x * s # scale
-      p = p * matTrans + self.mStart #transform
+      # Scale
+      p.x = p.x * s
+
+      # Transform
+      p = p * matTrans
+      p = SG.sumMayaVectors(p, self.mStart) #transform
+
+      # Points Vector
       points.append(p)
 
       # Normal Vector
       n = G_NORMALS[i] * matTrans
       normals.append(n)
+    return (points, normals)
