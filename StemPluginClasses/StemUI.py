@@ -82,7 +82,7 @@ class StemUIMenu(object):
   '' Initialize the DropDown Menu
   '''
   def __init__(self):
-    print 'Init the menu!'
+    # print 'Init the menu!'
     gMainWindow = maya.mel.eval('$temp1=$gMainWindow')
     # Delete the old window by name if it exists
     if (self.exists()):

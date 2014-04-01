@@ -30,7 +30,7 @@ STEM_SYSTEM_MENU = SU.StemUIMenu()
 
 # initialize the script plug-in
 def initializePlugin(mobject):
-  print 'Trying to init'
+  # print 'Trying to init'
   mplugin = OpenMayaMPx.MFnPlugin(mobject,
     SG.STEM_AUTHORS,
     SG.STEM_VERSION,

@@ -123,17 +123,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
   # compute
   def compute(self,plug,data):
-    print self.calculateOptimalGrowthDirection()
     if plug == StemInstanceNode.outputMesh:
-      print 'is output mesh #2'
-      # Create branch segments array from LSystemBranches use id, position,
-      # aimDirection, scale
-      # Note: Can change input geometry of instancer
-
-      # Create Flowers array from LSystemGeometry use id, position,
-      # aim direction, scale
-      # Note: Can change input geometry of instancer
-
+      print 'Optimal Growth direction', self.calculateOptimalGrowthDirection()
       # Time
       timeData = data.inputValue(StemInstanceNode.time)
       t = timeData.asInt()
@@ -156,46 +147,24 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       #c_char_p(str(grammarFile))
 
       # Get output objects
-      outputHandle = data.outputValue(StemInstanceNode.outputMesh)
+      outputHandle = data.outputValue(self.outputMesh)
       dataCreator = OpenMaya.MFnMeshData()
       newOutputData = dataCreator.create()
-      #self.createPoints(iters, angle, step, grammarFile, newOutputData)
 
       # The New mesh!
-      #self.createPoints(iters, angle, step, grammarFile, data)
-      meshResult = self.createMesh(iters, angle, step, grammarFile, data, newOutputData)
-      if (meshResult is not None):
-        # Set new output data
-        print 'Set new mesh!'
-        outputHandle.set(newOutputData)
+      meshResult = self.createMesh(
+        iters, angle, step, grammarFile,
+        data, newOutputData)
 
-      # Clear up the data
-      data.setClean(plug)
-      print 'cleaned plug!'
+      # Make sure we have a valid mesh
+      if (meshResult != None):
+        # Set new output data/mesh
+        outputHandle.setMObject(newOutputData)
 
-  '''
-  ''  Reads a text file that is selected using a file dialog then returns its
-  ''  contents. If no file exists, it returns the empty string
-  '''
-  def readGrammarFileUsingDialog(self):
-    txtFileFilter = 'Text Files (*.txt)'
-    fileNames = cmds.fileDialog2(fileFilter=txtFileFilter, dialogStyle=2, fileMode=1)
-    return self.readGrammarFile(fileNames[0])
+        # Clear up the data
+        data.setClean(plug)
 
-  '''
-  ''  Reads a text file that is passed by string
-  ''  contents. If no file exists, it returns the empty string
-  '''
-  def readGrammarFile(self, fileName):
-      if (len(fileName) <= 0):
-        return ""
-      try:
-        f = open(fileName, 'r')
-        fileContents = f.read()
-        f.close()
-        return fileContents
-      except:
-        return ""
+        print 'StemInstance Generated!'
 
   '''
   '' Calculates the optimal growth direction vector for branch growth
@@ -260,7 +229,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Run Grammar String
     lsys.processPy(iters, branches, flowers)
 
-    print 'finished lsystem process for creating Mesh!'
 
     # Set up cylinder mesh
     cPoints = OpenMaya.MPointArray()
@@ -268,7 +236,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     cFaceConnects = OpenMaya.MIntArray()
 
     for i in range(0, branches.size()):
-      print i
       b = branches[i]
       # Get points
       start = OpenMaya.MPoint(b[0], b[1], b[2])
@@ -280,11 +247,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
       # Append the Cylinder's mesh to our main mesh
       cyMesh.appendToMesh(cPoints, cFaceCounts, cFaceConnects)
-      print 'appended to mesh'
 
-    print("point Length: ", cPoints.length())
-    print("faceCount Length: ", cFaceCounts.length())
-    print("faceConnect Length: ", cFaceConnects.length())
+    # print("point Length: ", cPoints.length())
+    # print("faceCount Length: ", cFaceCounts.length())
+    # print("faceConnect Length: ", cFaceConnects.length())
 
     if (cPoints.length() == 0
       or cFaceCounts.length() == 0
@@ -295,12 +261,12 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     status = OpenMaya.MStatus()
     meshFs = OpenMaya.MFnMesh()
-    newMesh = meshFs.create(int(cPoints.length()), int(cFaceCounts.length()),
-      cPoints, cFaceCounts, cFaceConnects, newOutputData, status)
-    return newMesh
+    # Now create the new mesh!
+    newMesh = meshFs.create(
+      int(cPoints.length()), int(cFaceCounts.length()),
+      cPoints, cFaceCounts, cFaceConnects, newOutputData)
 
-
-
+    return meshFs
 
   '''
   '' Create the Points for this node
@@ -423,6 +389,32 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     fData.setMObject(fObject)
 
     print 'create mesh!'
+
+
+  '''
+  ''  Reads a text file that is selected using a file dialog then returns its
+  ''  contents. If no file exists, it returns the empty string
+  '''
+  def readGrammarFileUsingDialog(self):
+    txtFileFilter = 'Text Files (*.txt)'
+    fileNames = cmds.fileDialog2(fileFilter=txtFileFilter, dialogStyle=2, fileMode=1)
+    return self.readGrammarFile(fileNames[0])
+
+  '''
+  ''  Reads a text file that is passed by string
+  ''  contents. If no file exists, it returns the empty string
+  '''
+  def readGrammarFile(self, fileName):
+      if (len(fileName) <= 0):
+        return ""
+      try:
+        f = open(fileName, 'r')
+        fileContents = f.read()
+        f.close()
+        return fileContents
+      except:
+        return ""
+
 
 # StemNode creator
 def StemInstanceNodeCreator():

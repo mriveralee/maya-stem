@@ -16,7 +16,6 @@ G_FACE_COUNTS =  OpenMaya.MIntArray()
 G_FACE_CONNECTS =  OpenMaya.MIntArray()
 
 def initCylinderMesh(r):
-  print 'initCylinderMesh x1'
   numslices = 10
   angle = math.pi * 2 / numslices
 
@@ -76,7 +75,6 @@ class StemCylinder():
     self.mStart = start
     self.mEnd = end
     self.mRadius = radius
-    print 'Making cylinder'
     if (G_POINTS.length() == 0):
       initCylinderMesh(radius)
 
