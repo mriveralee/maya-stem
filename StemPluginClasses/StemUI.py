@@ -45,6 +45,7 @@ class StemUIMenu(object):
     # Connect the nodes with the time
     print cmds.connectAttr('time1.outTime', stemNode + '.time')
     print cmds.connectAttr(stemNode+'.outputMesh', meshNode+'.inMesh')
+    print maya.mel.eval('rotate -90deg 0 0 ' + txNode + ' ' + stemNode)
     #lsysNode = cmds.createNode(SLS.STEMM_LSYSTEM_NODE_TYPE_NODE)
 
     # cmd = ('createNode transform -n LSystem1; '
