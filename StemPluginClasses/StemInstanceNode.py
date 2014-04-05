@@ -44,8 +44,13 @@ KEY_FLOWERS = 'flowers', 'fl'
 KEY_OUTPUT = 'outputMesh', 'out'
 KEY_OUTPOINTS = 'outPoints', 'op'
 
+# Bud List Keys
+KEY_BUD = 'bud'
+KEY_RESOURCE_NODE_LIST = 'resNodes'
+
+
 # Default Grammar File
-DEFAULT_GRAMMAR_FILE = "./StemPluginClasses/trees/simple1.txt"
+DEFAULT_GRAMMAR_FILE = './StemPluginClasses/trees/simple1.txt'
 
 
 # Node definition
@@ -97,6 +102,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     glFT = SG.GLFT
     view.beginGL()
     glFT.glBegin(OpenMayaRender.MGL_POLYGON)
+    glFT.glColor4f(0.8, 0.0, 0.0, 0.5)
     for i in range(0,360):
         rad = (i * 2 * math.pi)/360;
         glFT.glNormal3f(0.0, 0.0, 1.0)
@@ -220,7 +226,50 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # for each light resource node
     resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
     buds = self.createBudList(self.getRootInternode())
+    # Create a map of bud to list of resNodes
+    print buds
+    print resNodes
+    # Make optimal bud->nodeList  array
 
+
+    # Determine the nodes that are closest to particular buds
+    # Create an adjacency list (dictionary) that stores the adj list
+    allBudsAdjacencyList = {}
+    for n in resnodes:
+      # Get position of resNode
+      nPos = SG.getLocatorWorldPosition(n)
+
+      # Init optimal bud and set the minDist to be max
+      optimalBud = None
+      minDist = 100000000
+
+      # Search through the list of buds and find the closest bud
+      for b in buds:
+        # Get distance between bud and resNode
+        currentDist = SG.getDistance(b.mEnd, nPos)
+
+        # Update optimal bud if necessary
+        if currentDist < minDist:
+          optimalBud = b
+          minDist = currentDist
+
+      # Now append the resNode to the bud's adjacency list
+      budKey = str(b)
+
+      # Check if list already exists, if it does just append
+      if budNodeAdjList.has_key(budKey):
+        # Get the budResNode pair of the bud
+        budPair = allBudsAdjacencyList.get(budKey)
+
+        # Get list of resNodes for the budPair
+        budResNodes = budPair.get(KEY_RESOURCE_NODE_LIST)
+
+        # Append to the list
+        budResNodes.append(n)
+      else:
+        # Create the bud node pair and add it to the adjacency list
+        budPair = {KEY_BUD: budKey, KEY_RESOURCE_NODE_LIST: [n]}
+        allBudsAdjacencyList[budKey] = budPair
 
     return [('bud', 'angle')]
 
