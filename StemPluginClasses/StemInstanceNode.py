@@ -2,6 +2,7 @@
 import sys, math, ctypes
 import random
 import LSystem
+from collections import deque
 
 import maya
 import maya.cmds as cmds
@@ -278,6 +279,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           iBranch.mInternodeChildren.append(jBranch)
           jBranch.mInternodeParent = iBranch
 
+    # TODO - remove this later, using for testing
+    # if (len(self.mInternodes) > 0):
+    #   self.getReverseBfsTraversal(self.mInternodes[0])
 
     # TODO - Handle flowers (uncomment when needed)
     # for i in range(0, flowers.size()):
@@ -329,6 +333,20 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       except:
         return ""
 
+  '''
+  ''  Performs a BFS traversal from the root and pushes each node
+  ''  onto a stack along the way, returning a reverse BFS order.
+  '''
+  def getReverseBfsTraversal(self, root):
+    queue = deque([root])
+    stack = []
+
+    while (len(queue) > 0):
+      b = queue.popleft()
+      queue.extend(b.mInternodeChildren)
+      stack.append(b)
+
+    return stack
 
 # StemNode creator
 def StemInstanceNodeCreator():
