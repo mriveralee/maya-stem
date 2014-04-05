@@ -81,8 +81,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mBranches = OpenMaya.MObject()
   mFlowers = OpenMaya.MObject()
 
-  # Branch and Bud Datastructures
+  # Branch and Bud Data Structures
   mInternodes = []
+  mBudAnglePairs = []
 
   # constructor
   def __init__(self):
@@ -203,7 +204,25 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     print optGrowthDir
     # return the value
     return optGrowthDir
+  '''
+  '' Finds the optimal growth direction angles and their bud growth pairs for
+  '' each bud in the tree
+  '''
+  def getOptimateGrowthDirs(self):
+    # Take the list of light resource nodes
+    # Take the list of buds - get
+    # for each light resource node
+    budList = self.createBudList()
+    return None
 
+  '''
+  '' Creates a list of buds based on this instanceNode's internode list
+  '' Returns an empty array if no buds are present
+  '''
+  def createBudList(self):
+    # Creates a list of buds based on the internodes list-
+    # A bud is defined as the end point of an internode that has no children
+    return [('bud', 'angle')]
   '''
   '' Creates a Cylinder Mesh based on the LSystem
   '''
@@ -226,7 +245,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     print "Grammar File: " + grammarFile
     print "Grammar File Contents: " + lsys.getGrammarString()
 
-
+    # The branches and flowers objects
     branches = LSystem.VectorPyBranch()
     flowers = LSystem.VectorPyBranch()
 
@@ -260,6 +279,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           iBranch.mInternodeChildren.append(jBranch)
           jBranch.mInternodeParent = iBranch
 
+
+    # TODO - Handle flowers (uncomment when needed)
+    # for i in range(0, flowers.size()):
+    #   f = flowers[i]
+    #   centerLoc = OpenMaya.MVector(f[0], f[1], f[2])
+    #   print 'create flower!'
+
     # print("point Length: ", cPoints.length())
     # print("faceCount Length: ", cFaceCounts.length())
     # print("faceConnect Length: ", cFaceConnects.length())
@@ -279,129 +305,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       cPoints, cFaceCounts, cFaceConnects, newOutputData)
 
     return meshFs
-
-  '''
-  '' Create the Points for this node
-  '''
-  def createPoints(self, iters, angle, step, grammarFile, data):
-
-    #------------------------------------------------#
-    ############ POINTS DATA FOR ATTR_ARRAY ##########
-    #------------------------------------------------#
-    # Set up the array for adding random points
-    pointsData = data.outputValue(StemInstanceNode.outPoints) #the MDataHandle
-    pointsAAD = OpenMaya.MFnArrayAttrsData() #the MFnArrayAttrsData
-    pointsObject = pointsAAD.create() #the MObject
-
-    # Create the vectors for “position” and “id”. Names and types must
-    # match # table above.
-    positionArray = pointsAAD.vectorArray('position')
-    idArray = pointsAAD.doubleArray('id')
-
-    # Create the vectors for “position” and “id”. Names and types must
-    # match # table above.
-    scaleArray = pointsAAD.vectorArray('scale')
-    aimDirArray = pointsAAD.vectorArray('aimDirection')
-
-    #------------------------------------#
-    ############# LSYSTEM INIT ###########
-    #------------------------------------#
-
-    lsys = LSystem.LSystem()
-    lsys.setDefaultAngle(float(angle))
-    lsys.setDefaultStep(float(step))
-
-    # Get Grammar File Contents & load to lsys
-    grammarContent = self.readGrammarFile(grammarFile)
-    lsys.loadProgramFromString(grammarContent)
-    print "Grammar File: " + grammarFile
-    print "Grammar File Contents: " + lsys.getGrammarString()
-
-
-    branches = LSystem.VectorPyBranch()
-    flowers = LSystem.VectorPyBranch()
-
-    # Run Grammar String
-    lsys.processPy(iters, branches, flowers)
-
-    print 'finished lsystem process!'
-
-    # Set up the array for adding random points
-    pointsData = data.outputValue(StemInstanceNode.mBranches) #the MDataHandle
-    pointsAAD = OpenMaya.MFnArrayAttrsData() #the MFnArrayAttrsData
-    pointsObject = pointsAAD.create() #the MObject
-
-    # Create the vectors for “position” and “id”. Names and types must
-    # match # table above.
-    positionArray = pointsAAD.vectorArray('position')
-    idArray = pointsAAD.doubleArray('id')
-
-    # Create the vectors for “position” and “id”. Names and types must
-    # match # table above.
-    scaleArray = pointsAAD.vectorArray('scale')
-    aimDirArray = pointsAAD.vectorArray('aimDirection')
-
-
-    # BRANCH ME OUT
-    for i in range(0, branches.size()):
-      index = i + 2 * i
-      # Make Branch! wooo
-
-      b = branches[i]
-      print 'made it!'
-
-      # Get points
-      start = OpenMaya.MVector(b[0], b[1], b[2])
-      end = OpenMaya.MVector(b[3], b[4], b[5])
-      sFactor = (1 - branches.size() / (i + 1))
-      scale = OpenMaya.MVector(1.1 * sFactor, 1.2 * sFactor, 1.1 * sFactor)
-
-      # Append
-      positionArray.append(start)
-      positionArray.append(end)
-      idArray.append(index)
-      idArray.append(index + 1)
-      scaleArray.append(scale)
-      aimDirArray.append(aim)
-
-    # Finish branch set up
-    pointsData.setMObject(pointsObject)
-
-    # Set up the array for adding random points
-    fData = data.outputValue(StemInstanceNode.mBranches) #the MDataHandle
-    fAAD = OpenMaya.MFnArrayAttrsData() #the MFnArrayAttrsData
-    fObject = fAAD.create() #the MObject
-
-    # Create the vectors for “position” and “id”. Names and types must
-    # match # table above.
-    positionArray = fAAD.vectorArray('position')
-    idArray = fAAD.doubleArray('id')
-
-    # Create the vectors for “position” and “id”. Names and types must
-    # match # table above.
-    scaleArray = fAAD.vectorArray('scale')
-    aimDirArray = fAAD.vectorArray('aimDirection')
-
-    # FLOWER POWER
-    for i in range(0, flowers.size()):
-      index = i + 2 * i * branches.size()
-      f = flowers[i]
-      start = OpenMaya.MVector(f[0], f[1], f[2])
-      sFactor = (1 - flowers.size() / (i + 1))
-      scale = OpenMaya.MVector(1.1 * sFactor, 1.1 * sFactor, 1.1 * sFactor)
-      aim = OpenMaya.MVector(random.random(), random.random(), random.random())
-
-      # Append
-      positionArray.append(start)
-      idArray.append(index)
-      scaleArray(scale)
-      aimDirArray.append(aim)
-
-    # Now set the flower data :)
-    fData.setMObject(fObject)
-
-    print 'create mesh!'
-
 
   '''
   ''  Reads a text file that is selected using a file dialog then returns its
