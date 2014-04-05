@@ -256,8 +256,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     for iBranch in INTERNODES:
       for jBranch in INTERNODES:
         if (iBranch.mEnd == jBranch.mStart):
-          iBranch.INTERNODE_CHILDREN.append(jBranch)
-          jBranch.INTERNODE_PARENT = iBranch
+          iBranch.mInternodeChildren.append(jBranch)
+          jBranch.mInternodeParent = iBranch
 
     # print("point Length: ", cPoints.length())
     # print("faceCount Length: ", cFaceCounts.length())
