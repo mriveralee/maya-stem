@@ -47,8 +47,6 @@ KEY_OUTPOINTS = 'outPoints', 'op'
 # Default Grammar File
 DEFAULT_GRAMMAR_FILE = "./StemPluginClasses/trees/simple1.txt"
 
-# Branch and Bud Datastructures
-INTERNODES = []
 
 # Node definition
 class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
@@ -82,6 +80,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   # Other values
   mBranches = OpenMaya.MObject()
   mFlowers = OpenMaya.MObject()
+
+  # Branch and Bud Datastructures
+  mInternodes = []
 
   # constructor
   def __init__(self):
@@ -247,14 +248,14 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
       # Create a cylinder from the end points
       cyMesh = SC.StemCylinder(start, end, radius)
-      INTERNODES.append(cyMesh)
+      self.mInternodes.append(cyMesh)
 
       # Append the Cylinder's mesh to our main mesh
       cyMesh.appendToMesh(cPoints, cFaceCounts, cFaceConnects)
 
    # Create parent/child heirarchy
-    for iBranch in INTERNODES:
-      for jBranch in INTERNODES:
+    for iBranch in self.mInternodes:
+      for jBranch in self.mInternodes:
         if (iBranch.mEnd == jBranch.mStart):
           iBranch.mInternodeChildren.append(jBranch)
           jBranch.mInternodeParent = iBranch
