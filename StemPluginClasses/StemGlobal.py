@@ -76,6 +76,13 @@ def sumMayaVectors(v1, v2):
   else:
     return None
 
+'''
+'' Gets the Euclidean distance of two vectors in Maya space
+'''
+def getDistance(v1, v2):
+  dist = math.sqrt((v1.x + v2.x) + (v1.y + v2.y) + (v1.z + v2.z))
+  return dist
+
 
 '''
 '' Sets the row of a Maya MMatrix
@@ -97,10 +104,8 @@ def setCell(matrix, value, row, column):
   OpenMaya.MScriptUtil.setDoubleArray( matrix[row], column, value )
 
 
-
-
 '''
-'' Computes the parent
+'' Computes position of a locator node in 3D space
 '''
 def getLocatorWorldPosition(locatorNode):
   if locatorNode is None:
