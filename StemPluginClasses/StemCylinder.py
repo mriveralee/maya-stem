@@ -75,6 +75,8 @@ class StemCylinder():
     self.mStart = start
     self.mEnd = end
     self.mRadius = radius
+    self.INTERNODE_PARENT = None
+    self.INTERNODE_CHILDREN = []
     if (G_POINTS.length() == 0):
       initCylinderMesh(radius)
 
