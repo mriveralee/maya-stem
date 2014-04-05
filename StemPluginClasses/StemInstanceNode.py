@@ -89,7 +89,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def __init__(self):
     OpenMayaMPx.MPxLocatorNode.__init__(self)
 
-  # Draw/Onscreen render method
+  '''
+  '' Draw/Onscreen render method for displaying this node
+  '''
   def draw(self, view, path, style, status):
     # circle
     glFT = SG.GLFT
@@ -126,7 +128,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     #
 		# view.endGL()
 
-  # compute
+  '''
+  '' Computes input/output updates for the node
+  '''
   def compute(self,plug,data):
     if plug == StemInstanceNode.outputMesh:
       print 'Optimal Growth direction', self.calculateOptimalGrowthDirection()
@@ -176,7 +180,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def calculateOptimalGrowthDirection(self):
     # Get the list of stem nodes
-    #resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME) + cmds.ls(type=SS.STEM_SPACE_NODE_TYPE_NAME)
+    # resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
+    #   + cmds.ls(type=SS.STEM_SPACE_NODE_TYPE_NAME)
     resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
     # The sum of the resource node locations and the number of resource nodes
     sumLocations = [0.0, 0.0, 0.0]
@@ -204,6 +209,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     print optGrowthDir
     # return the value
     return optGrowthDir
+
   '''
   '' Finds the optimal growth direction angles and their bud growth pairs for
   '' each bud in the tree
@@ -212,17 +218,37 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Take the list of light resource nodes
     # Take the list of buds - get
     # for each light resource node
-    budList = self.createBudList()
-    return None
+    resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
+    buds = self.createBudList(self.getRootInternode())
+
+
+    return [('bud', 'angle')]
 
   '''
   '' Creates a list of buds based on this instanceNode's internode list
   '' Returns an empty array if no buds are present
   '''
-  def createBudList(self):
+  def createBudList(self, node):
     # Creates a list of buds based on the internodes list-
     # A bud is defined as the end point of an internode that has no children
-    return [('bud', 'angle')]
+    if node is None:
+      return []
+    elif self.mInternodeChildren is None or len(self.mInternodeChildren) == 0:
+      return [node]
+    else:
+      childBuds = []
+      for child in self.mInternodeChildren:
+        childBuds = childBuds + self.createBudList(child)
+      return childBuds
+
+  '''
+  '' Returns the root internode of the Stem tree
+  '''
+  def getRootInternode(self):
+    if len(self.mInternodes) == 0:
+      return None
+    return self.mInternodes[0]
+
   '''
   '' Creates a Cylinder Mesh based on the LSystem
   '''
