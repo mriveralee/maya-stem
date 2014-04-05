@@ -14,7 +14,6 @@ from functools import partial
 import StemGlobal as SG
 import StemInstanceNode as SI
 import StemLightNode as SL
-import StemSpaceNode as SS
 
 #------------------------------------------------------------------------------#
 # StemUI Class - represents the UI in the Maya STEM Plugin
@@ -61,7 +60,8 @@ class StemUIMenu(object):
     # cmds.createNode(SLS.STEM_LSYSTEM_NODE_TYPE_NAME)
 
   def makeStemSpaceResourceNode(self):
-    cmds.createNode(SS.STEM_SPACE_NODE_TYPE_NAME)
+    print 'Not implemented'
+    #cmds.createNode(SS.STEM_SPACE_NODE_TYPE_NAME)
 
   def makeStemLightResourceNode(self):
     cmds.createNode(SL.STEM_LIGHT_NODE_TYPE_NAME)
@@ -101,17 +101,11 @@ class StemUIMenu(object):
       parent=dropDownMenu,
       command=pm.Callback(self.makeStemInstanceNode))
 
-    # Create Stem LSystem Node
-    # cmds.menuItem(
-    #   label='Create LSystem Node',
-    #   parent=dropDownMenu,
-    #   command=pm.Callback(self.makeStemLSystemNode))
-
     # Create Space Resource Node
-    cmds.menuItem(
-      label='Create Space Resouce Node',
-      parent=dropDownMenu,
-      command=pm.Callback(self.makeStemSpaceResourceNode))
+    # cmds.menuItem(
+    #   label='Create Space Resouce Node',
+    #   parent=dropDownMenu,
+    #   command=pm.Callback(self.makeStemSpaceResourceNode))
 
     # Create Light Resource Node
     cmds.menuItem(

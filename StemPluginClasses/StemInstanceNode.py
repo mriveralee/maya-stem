@@ -11,7 +11,6 @@ import maya.OpenMayaMPx as OpenMayaMPx
 import maya.OpenMayaRender as OpenMayaRender
 
 import StemGlobal as SG
-import StemSpaceNode as SS
 import StemLightNode as SL
 import StemCylinder as SC
 
@@ -176,8 +175,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def calculateOptimalGrowthDirection(self):
     # Get the list of stem nodes
-    resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME) + cmds.ls(type=SS.STEM_SPACE_NODE_TYPE_NAME)
-
+    #resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME) + cmds.ls(type=SS.STEM_SPACE_NODE_TYPE_NAME)
+    resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
     # The sum of the resource node locations and the number of resource nodes
     sumLocations = [0.0, 0.0, 0.0]
     numNodes = len(resNodes)

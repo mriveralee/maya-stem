@@ -14,7 +14,6 @@ from functools import partial
 # Import the necessary STEM Plugin Nodes
 from StemPluginClasses import StemGlobal as SG
 from StemPluginClasses import StemInstanceNode as SI
-from StemPluginClasses import StemSpaceNode as SS
 from StemPluginClasses import StemLightNode as SL
 from StemPluginClasses import StemUI as SU
 
@@ -45,11 +44,11 @@ def initializePlugin(mobject):
       OpenMayaMPx.MPxNode.kLocatorNode)
 
     # Register StemSpaceNode
-    mplugin.registerNode(SS.STEM_SPACE_NODE_TYPE_NAME,
-      SS.STEM_SPACE_NODE_ID,
-      SS.StemSpaceNodeCreator,
-      SS.StemSpaceNodeInitializer,
-      OpenMayaMPx.MPxNode.kLocatorNode)
+    # mplugin.registerNode(SS.STEM_SPACE_NODE_TYPE_NAME,
+    #   SS.STEM_SPACE_NODE_ID,
+    #   SS.StemSpaceNodeCreator,
+    #   SS.StemSpaceNodeInitializer,
+    #   OpenMayaMPx.MPxNode.kLocatorNode)
 
     # Register StemLightNode
     mplugin.registerNode(SL.STEM_LIGHT_NODE_TYPE_NAME,
@@ -72,7 +71,7 @@ def uninitializePlugin(mobject):
     mplugin.deregisterNode(SI.STEM_INSTANCE_NODE_ID)
 
     # Unregister StemSpaceNode
-    mplugin.deregisterNode(SS.STEM_SPACE_NODE_ID)
+    # mplugin.deregisterNode(SS.STEM_SPACE_NODE_ID)
 
     # Unregister StemLightNode
     mplugin.deregisterNode(SL.STEM_LIGHT_NODE_ID)
