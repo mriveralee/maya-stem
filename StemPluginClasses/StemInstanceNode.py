@@ -49,7 +49,13 @@ KEY_BUD = 'bud'
 KEY_RESOURCE_NODE_LIST = 'resNodes'
 
 # Default Grammar File
-DEFAULT_GRAMMAR_FILE = './StemPluginClasses/trees/simple1.txt'
+DEFAULT_GRAMMAR_FILE = './StemPluginClasses/trees/simple4.txt'
+
+# Default LSystem Step Size
+DEFAULT_STEP_SIZE = 1.0
+
+# Default Angle
+DEFAULT_ANGLE = 42.5
 
 
 # Node definition
@@ -89,6 +95,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mInternodes = []
   mBudAnglePairs = []
 
+
+  # LSystem Variables
+  mLSystem = LSystem.LSystem()
+  mPrevGrammarFile = None
+  mPrevGrammarContent = None
   # constructor
   def __init__(self):
     OpenMayaMPx.MPxLocatorNode.__init__(self)
@@ -140,7 +151,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def compute(self,plug,data):
     if plug == StemInstanceNode.outputMesh:
-      print 'Optimal Growth direction Caculating', self.getBudOptimalGrowthDirs()
+      print 'Optimal Growth direction Calculating', self.getBudOptimalGrowthDirs()
       # Time
       timeData = data.inputValue(StemInstanceNode.time)
       t = timeData.asInt()
@@ -198,8 +209,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     if len(buds) == 0:
       # TODO: Figure out how to get this stemInstanceNode's maya name from
       # within this class
-      budPosition = SG.getLocatorWorldPosition(None)
-      buds = [SC.StemCylinder(budPosition, budPosition)]
+      # budPosition = SG.getLocatorWorldPosition(None)
+      print 'Using rootbud!'
+      rootBudPos = OpenMaya.MPoint(0, 0, 0)
+      buds = [SC.StemCylinder(rootBudPos, rootBudPos)]
 
     # Make optimal bud-node adjacency list
     allBudsAdjList = self.createBudResNodeAdjacencyList(buds, resNodes)
@@ -210,7 +223,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Now compute the optimal growth dir
     for budNodePair in allBudsAdjList:
       # Separate the pair (bud, nodes)
-      print 'Bud Node Pair!', budNodePair
+      # print 'Bud Node Pair!', budNodePair
       bud = budNodePair.get(KEY_BUD)
       budNodes = budNodePair.get(KEY_RESOURCE_NODE_LIST)
 
@@ -231,17 +244,32 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         (sumNodePositions[1] / numNodes) - budPosition[1],
         (sumNodePositions[2] / numNodes) - budPosition[2]]
 
-      # Create the optimal growth pair
-      print 'made pair'
-      bPos = [budPosition.x, budPosition.y, budPosition.z]
-      #growthPair = (budPosition, budOptGrowthDir)
-      growthPair = (bPos, budOptGrowthDir)
+      # Compute OptimalGrowthPoint
+      optPt = SG.sumArrayVectors(budPosition, budOptGrowthDir)
+
+      # Dot prod and length of the vectors for optGrowthAngle
+      optPtLength = SG.getVectorLength(optPt)
+      bPosLength = SG.getVectorLength(budPosition)
+      dotProd = SG.getVectorDotProduct(optPt, budPosition)
+
+      # For getting Optimal growth angles
+      optGrowthAngle = 0
+      if optPtLength != 0 and bPosLength != 0:
+        optGrowthAngle = math.acos(dotProd / (bPosLength * optPtLength))
+        # Convert to degrees
+        optGrowthAngle = optGrowthAngle * 180 / math.pi
+
+      # TODO - decide if we want to use growth Angle OR growth vector...
+      growthPair = (budPosition, budOptGrowthDir)
+      growthAnglePair = (budPosition, optGrowthAngle)
 
       # Now append to the list of pairs
-      optimalGrowthPairs.append(growthPair)
-    print 'Optimal Growth Pairs'
-    print optimalGrowthPairs
-    print '****************************'
+      # optimalGrowthPairs.append(growthPair)
+      optimalGrowthPairs.append(growthAnglePair)
+
+    # print 'Optimal Growth Pairs'
+    # print optimalGrowthPairs
+    # print '****************************'
 
     # Return the Optimal Growth Pairs
     return optimalGrowthPairs
@@ -253,15 +281,20 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def createBudList(self, node):
     # Creates a list of buds based on the internodes list-
     # A bud is defined as the end point of an internode that has no children
-    if node is None:
-      return []
-    elif node.mInternodeChildren is None or len(node.mInternodeChildren) == 0:
-      return [node]
-    else:
-      childBuds = []
-      for child in node.mInternodeChildren:
-        childBuds = childBuds + self.createBudList(child)
-      return childBuds
+    childBuds = []
+    for n in self.mInternodes:
+      if n.mInternodeChildren is None or len(n.mInternodeChildren) == 0:
+        childBuds.append(n)
+    return childBuds
+    # if node is None:
+    #   return []
+    # elif node.mInternodeChildren is None or len(node.mInternodeChildren) == 0:
+    #   return [node]
+    # else:
+    #   childBuds = []
+    #   for child in node.mInternodeChildren:
+    #     childBuds = childBuds + self.createBudList(child)
+    #   return childBuds
 
   '''
   '' Creates a bud to resource node adjacency list where each bud is associated
@@ -280,7 +313,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       minDist = 100000000
 
       # Search through the list of buds and find the closest bud
-      print 'Searching for buds'
       for b in buds:
         # Get distance between bud and resNode
         currentDist = SG.getDistance(b.mEnd, nPos)
@@ -303,6 +335,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
         # Append to the list
         budResNodes.append(n)
+
+        # Update the list
+        allBudsAdjacencyList[budKey][KEY_RESOURCE_NODE_LIST] = budResNodes
+
       else:
         # If it doesn't exist, create the bud node pair
         budPair = {KEY_BUD: optimalBud, KEY_RESOURCE_NODE_LIST: [n]}
@@ -329,26 +365,31 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     ############# LSYSTEM INIT ###########
     #------------------------------------#
     # Get Grammar File Contents & load to lsys
-    grammarContent = self.readGrammarFile(grammarFile)
+
+    if grammarFile != self.mPrevGrammarFile:
+      self.mPrevGrammarContent = self.readGrammarFile(grammarFile)
+      self.mPrevGrammarFile = grammarFile
+
+    grammarContent = self.mPrevGrammarContent
 
     if len(grammarContent) == 0:
       print "Invalid Grammar File!"
       return None
 
     # Create LSystem from the parameters
-    lsys = LSystem.LSystem()
-    lsys.setDefaultAngle(float(angle))
-    lsys.setDefaultStep(float(step))
-    lsys.loadProgramFromString(grammarContent)
+
+    self.mLSystem.setDefaultAngle(float(angle))
+    self.mLSystem.setDefaultStep(float(step))
+    self.mLSystem.loadProgramFromString(grammarContent)
     print "Grammar File: " + grammarFile
-    print "Grammar File Contents: " + lsys.getGrammarString()
+    print "Grammar File Contents: " + self.mLSystem.getGrammarString()
 
     # The branches and flowers objects
     branches = LSystem.VectorPyBranch()
     flowers = LSystem.VectorPyBranch()
 
     # Run Grammar String
-    lsys.processPy(iters, branches, flowers)
+    self.mLSystem.processPy(iters, branches, flowers)
 
 
     # Set up cylinder mesh
@@ -456,7 +497,7 @@ def StemInstanceNodeInitializer():
   StemInstanceNode.mDefAngle = nAttr.create(
     KEY_ANGLE[0],
     KEY_ANGLE[1],
-    OpenMaya.MFnNumericData.kFloat, 22.5)
+    OpenMaya.MFnNumericData.kFloat, DEFAULT_ANGLE)
   SG.MAKE_INPUT(nAttr)
 
   # Step size
@@ -464,7 +505,7 @@ def StemInstanceNodeInitializer():
   StemInstanceNode.mDefStepSize = nAttr.create(
     KEY_STEP_SIZE[0],
     KEY_STEP_SIZE[1],
-    OpenMaya.MFnNumericData.kFloat, 1.0)
+    OpenMaya.MFnNumericData.kFloat, DEFAULT_STEP_SIZE)
   SG.MAKE_INPUT(nAttr)
 
   # Iterations
@@ -490,8 +531,6 @@ def StemInstanceNodeInitializer():
     KEY_BRANCH_SHEDDING[1],
     OpenMaya.MFnNumericData.kBoolean, 1)
   SG.MAKE_INPUT(nAttr)
-
-
 
   # Time
   uAttr = OpenMaya.MFnUnitAttribute()

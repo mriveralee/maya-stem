@@ -48,6 +48,21 @@ def getNodesByType(nodeType):
   return cmds.ls(type=nodeType)
 
 '''
+'' Get length of float vector
+'''
+def getVectorLength(v1):
+  sx = math.pow(v1[0], 2)
+  sy = math.pow(v1[1], 2)
+  sz = math.pow(v1[2], 2)
+  return math.sqrt(sx + sy + sz)
+
+'''
+'' Get dot product of two float vectors
+'''
+def getVectorDotProduct(v1, v2):
+  return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]
+
+'''
 '' Sum two array-based vectors
 '''
 def sumArrayVectors(v1, v2):
