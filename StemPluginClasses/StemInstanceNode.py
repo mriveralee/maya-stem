@@ -455,7 +455,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           jBranch.mInternodeParent = iBranch
 
     # TODO: possibly remove this later, using for testing
-    self.performBHModelResourceDistribution()
+    # self.performBHModelResourceDistribution()
 
     # TODO - Handle flowers (uncomment when needed)
     # for i in range(0, flowers.size()):
@@ -508,8 +508,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         return ""
 
   '''
-  ''  Performs a BFS traversal from the root and pushes each node onto a stack along 
-  ''  the way, returning a list in BFS order. Can be used to get reverse order traversal.
+  ''  Performs a BFS traversal from the root and pushes each node
+  ''  onto a stack along the way, returning a list in BFS order.
+  ''  Can be used to get reverse order traversal.
   '''
   def getBfsTraversal(self, root):
     if root is None:
@@ -537,6 +538,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       return
     if (len(internode.mInternodeChildren) == 0):
       return
+    if (len(internode.mInternodeChildren) == 1):
+      child = internode.mInternodeChildren[0]
+      child.mVResourceAmount = internode.mVResourceAmount
+      return
 
     pV = internode.mVResourceAmount
 
@@ -545,8 +550,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     pQl = internode.mInternodeChildren[1].mQLightAmount
 
     # Compute amount of resource distributed to axis branch and lateral branch
-    pVm = pV * (BH_LAMBDA * pQm) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl)
-    pVl = pV * ((1-BH_LAMBDA)*pQl) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl)
+    pVm = pV * (BH_LAMBDA * pQm) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
+    pVl = pV * ((1-BH_LAMBDA)*pQl) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
 
     # Distribute
     internode.mInternodeChildren[0].mVResourceAmount = pVm
