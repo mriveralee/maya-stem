@@ -45,15 +45,62 @@ void LSystem::reset()
     productions.clear();
 }
 
-void LSystem::setOptimalBudDirs(std::vector<std::vector<float>> buds, std::vector<float> dirs) {
-    mBudPositions = buds;
-    mBudAngles = dirs;
+void LSystem::setOptimalBudDirs(
+	std::vector<std::vector<float>> buds, std::vector<float> dirs) {
+		// Clear old arrays
+		mBudPositions.clear();
+		mBudAngles.clear();
+
+		// Set the new data
+		for (unsigned int i = 0; i < buds.size(); i++) {
+			// Get the bud
+			std::vector<float> b = buds.at(i);
+
+			// Create new vector for c++ to hold
+			std::vector<float> newB = std::vector<float>();
+
+			// Create a new bud vector
+			newB.push_back(b.at(0));
+			newB.push_back(b.at(1));
+			newB.push_back(b.at(2));
+
+			// Push back the bud position
+			mBudPositions.push_back(newB);
+		}
+
+		// Set the new data
+		for (unsigned int i = 0; i < dirs.size(); i++) {
+			// Get the bud
+			float d = dirs.at(i);
+			mBudAngles.push_back(d);
+		}
 }
 
-void LSystem::getOptimalBudDirs(std::vector<std::vector<float>>& buds,
-  std::vector<float>& dirs) {
-  dirs = mBudAngles;
-  buds = mBudPositions;
+void LSystem::getOptimalBudDirs(
+	std::vector<std::vector<float>>& buds, std::vector<float>& dirs) {
+  // Set the new data
+		for (unsigned int i = 0; i < mBudPositions.size(); i++) {
+			// Get the stored bud
+			std::vector<float> b = mBudPositions.at(i);
+
+			// Create new vector for c++ to hold
+			std::vector<float> newB = std::vector<float>();
+
+			// Create a new bud vector
+			newB.push_back(b.at(0));
+			newB.push_back(b.at(1));
+			newB.push_back(b.at(2));
+
+			// Push back the bud position
+			buds.push_back(newB);
+		}
+
+		// Set the new data
+		for (unsigned int i = 0; i < mBudAngles.size(); i++) {
+			// stored angles
+			float d = mBudAngles.at(i);
+			dirs.push_back(d);
+		}
 }
 
 const std::string& LSystem::getIteration(unsigned int n)

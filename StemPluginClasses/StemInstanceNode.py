@@ -213,7 +213,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # TODO: Figure out how to get this stemInstanceNode's maya name from
       # within this class
       # budPosition = SG.getLocatorWorldPosition(None)
-      print 'Using rootbud!'
       rootBudPos = OpenMaya.MPoint(0, 0, 0)
       buds = [SC.StemCylinder(rootBudPos, rootBudPos)]
 
@@ -361,18 +360,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     return self.mInternodes[0]
 
   '''
-  '' Creates a Cylinder Mesh based on the LSystem
+  '' Converts optimal growth pairs into vectors for the LSystem
   '''
-  def createMesh(self, iters, angle, step, grammarFile, data, newOutputData):
-    # --------------------
-    # Get optimal growth pairs and send to LSystem
-    print 'Optimal Growth direction Calculating',
-    optimalGrowthPairs = self.getBudOptimalGrowthDirs()
-    # Convert to ProcessPy
-
-    # The branches and flowers objects
+  def convertOptGrowthPairsForLSystem(self, optimalGrowthPairs):
+    # The buds and dirs
     buds = LSystem.VectorPyBranch()
     dirs = LSystem.VecFloat()
+
 
     # Convert all the maya points to std::vector<float> and push into vector
     for pair in optimalGrowthPairs:
@@ -386,21 +380,24 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Convert list of angles to std::vector<float>
       d = pair[1]
       dirs.push_back(d)
+    return [buds, dirs]
 
+
+  '''
+  '' Creates a Cylinder Mesh based on the LSystem
+  '''
+  def createMesh(self, iters, angle, step, grammarFile, data, newOutputData):
+    # Get optimal growth pairs and send to LSystem
+    optimalGrowthPairs = self.getBudOptimalGrowthDirs()
+    # Convert optimal growth pairs into vectors
+    [buds, dirs] = self.convertOptGrowthPairsForLSystem(optimalGrowthPairs)
+
+    # Sets the optimal growth directions for the LSystem
     self.mLSystem.setOptimalBudDirs(buds, dirs)
-    # --------------------
 
-    # Test if the same values came back ;)
-    b1 = LSystem.VectorPyBranch()
-    d1 = LSystem.VecFloat()
+    # Test the output of the buds and angles in the LSystem
+    # self.verifyLSystemBudAngles(buds, dirs)
 
-    self.mLSystem.getOptimalBudDirs(b1, d1)
-    print 'b1',b1
-    print 'd1',d1
-    if b1 == buds and d1 == dirs:
-      print 'SAME BUDS AND DIRS WOOO!'
-
-    # Now init LSystem if necessary
     # Get Grammar File Contents & load to lsys
     if grammarFile != self.mPrevGrammarFile:
       self.mPrevGrammarContent = self.readGrammarFile(grammarFile)
@@ -412,11 +409,12 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       print "Invalid Grammar File!"
       return None
 
-    # Create LSystem from the parameters
-
+    # Init the LSystem from the parameters
     self.mLSystem.setDefaultAngle(float(angle))
     self.mLSystem.setDefaultStep(float(step))
     self.mLSystem.loadProgramFromString(grammarContent)
+
+    # Print contents
     print "Grammar File: " + grammarFile
     print "Grammar File Contents: " + self.mLSystem.getGrammarString()
 
@@ -426,7 +424,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     # Run Grammar String
     self.mLSystem.processPy(iters, branches, flowers)
-
 
     # Set up cylinder mesh
     cPoints = OpenMaya.MPointArray()
@@ -467,12 +464,12 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # print("faceCount Length: ", cFaceCounts.length())
     # print("faceConnect Length: ", cFaceConnects.length())
 
+    # Verify a mesh was made
     if (cPoints.length() == 0
       or cFaceCounts.length() == 0
       or cFaceConnects.length() == 0):
       print 'No LSystem generated!'
       return None
-
 
     status = OpenMaya.MStatus()
     meshFs = OpenMaya.MFnMesh()
@@ -575,8 +572,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     #   print b.mQLightAmount
 
   '''
-  ''  Distributes resource acropetally between continuing main axes 
-  ''  and lateral branches throughout entire tree. 
+  ''  Distributes resource acropetally between continuing main axes
+  ''  and lateral branches throughout entire tree.
   '''
   def performAcropetalPass(self):
     # v_base = alpha * Q_base
@@ -600,6 +597,24 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def performBHModelResourceDistribution(self):
     self.performBasipetalPass()
     self.performAcropetalPass()
+
+
+  '''
+  '' Verifies the output passed to the LSystem
+  '' Where <buds> and <angles> are sent to the LSystem and
+  '' and <b1> and <d1> are read back from the LSystem
+  '''
+  def verifyLSystemBudAngles(self, buds, angles):
+    b1 = LSystem.VectorPyBranch()
+    d1 = LSystem.VecFloat()
+    self.mLSystem.getOptimalBudDirs(b1, d1)
+    for i in range(0, b1.size()):
+      b = b1[i]
+      # Get points
+      print ('BudDir', d1[i], b[0], b[1], b[2])
+      print ('Dirs', d1[i] == dirs[i], 'Positions', buds[i][0] == b[0], buds[i][1] == b[1], buds[i][2] == b[2])
+    print 'Finished verifying buds and dirs'
+    return
 
 # StemNode creator
 def StemInstanceNodeCreator():
