@@ -419,8 +419,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           jBranch.mInternodeParent = iBranch
 
     # TODO - remove this later, using for testing
-    # if (len(self.mInternodes) > 0):
-    #   self.getReverseBfsTraversal(self.mInternodes[0])
+    self.performBasipetalPass()
 
     # TODO - Handle flowers (uncomment when needed)
     # for i in range(0, flowers.size()):
@@ -477,15 +476,38 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   ''  onto a stack along the way, returning a reverse BFS order.
   '''
   def getReverseBfsTraversal(self, root):
+    if root is None:
+      return []
+
     queue = deque([root])
     stack = []
 
     while (len(queue) > 0):
       b = queue.popleft()
+      # TODO: remove later. this bit is for testing on simple case
+      # if len(b.mInternodeChildren) == 0:
+      #   b.mQLightAmount = 1
       queue.extend(b.mInternodeChildren)
       stack.append(b)
 
     return stack
+
+  '''
+  ''  Propogates light amounts (Q) from outermost internodes to towards the base.
+  ''  (TODO: May have to edit to grab the light information from buds themselves)
+  '''
+  def performBasipetalPass(self):
+    branchStack = self.getReverseBfsTraversal(self.getRootInternode())
+    newList = list(branchStack)
+    # for each internode, propogate light information from leaf nodes towards base
+    while (len(branchStack) > 0):
+      b = branchStack.pop()
+      if b.mInternodeParent != None:
+        b.mInternodeParent.mQLightAmount += b.mQLightAmount
+
+    # TODO: remove later. prints light values after propogation in BFS order
+    # for b in newList:
+    #   print b.mQLightAmount
 
 # StemNode creator
 def StemInstanceNodeCreator():
