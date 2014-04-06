@@ -151,7 +151,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def compute(self,plug,data):
     if plug == StemInstanceNode.outputMesh:
-      print 'Optimal Growth direction Calculating', self.getBudOptimalGrowthDirs()
       # Time
       timeData = data.inputValue(StemInstanceNode.time)
       t = timeData.asInt()
@@ -361,11 +360,44 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '' Creates a Cylinder Mesh based on the LSystem
   '''
   def createMesh(self, iters, angle, step, grammarFile, data, newOutputData):
-    #------------------------------------#
-    ############# LSYSTEM INIT ###########
-    #------------------------------------#
-    # Get Grammar File Contents & load to lsys
+    # --------------------
+    # Get optimal growth pairs and send to LSystem
+    print 'Optimal Growth direction Calculating',
+    optimalGrowthPairs = self.getBudOptimalGrowthDirs()
+    # Convert to ProcessPy
 
+    # The branches and flowers objects
+    buds = LSystem.VectorPyBranch()
+    dirs = LSystem.VecFloat()
+
+    # Convert all the maya points to std::vector<float> and push into vector
+    for pair in optimalGrowthPairs:
+      b = pair[0]
+      pos = LSystem.VecFloat()
+      pos.push_back(b[0])
+      pos.push_back(b[1])
+      pos.push_back(b[2])
+      buds.push_back(pos)
+
+      # Convert list of angles to std::vector<float>
+      d = pair[1]
+      dirs.push_back(d)
+
+    self.mLSystem.setOptimalBudDirs(buds, dirs)
+    # --------------------
+
+    # Test if the same values came back ;)
+    b1 = LSystem.VectorPyBranch()
+    d1 = LSystem.VecFloat()
+
+    self.mLSystem.getOptimalBudDirs(b1, d1)
+    print 'b1',b1
+    print 'd1',d1
+    if b1 == buds and d1 == dirs:
+      print 'SAME BUDS AND DIRS WOOO!'
+
+    # Now init LSystem if necessary
+    # Get Grammar File Contents & load to lsys
     if grammarFile != self.mPrevGrammarFile:
       self.mPrevGrammarContent = self.readGrammarFile(grammarFile)
       self.mPrevGrammarFile = grammarFile

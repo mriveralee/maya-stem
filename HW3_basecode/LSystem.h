@@ -24,28 +24,35 @@ public:
 
     float getDefaultAngle() const;
     float getDefaultStep() const;
+
+    void setOptimalBudDirs(std::vector<std::vector<float> > buds, std::vector<float> dirs);
+    void getOptimalBudDirs(std::vector<std::vector<float> >& buds, std::vector<float>& dirs);
+
+
+    // void setOptimalBudDirections(std::vector<std::vector<float>> buds,
+    //   std::vector<std::vector<float>> dir);
     const std::string& getGrammarString() const;
 
     // Iterate grammar
     const std::string& getIteration(unsigned int n);
 
     // Get geometry from running the turtle
-    void process(unsigned int n, 
+    void process(unsigned int n,
         std::vector<Branch>& branches);
-    void process(unsigned int n, 
-        std::vector<Branch>& branches, 
+    void process(unsigned int n,
+        std::vector<Branch>& branches,
         std::vector<Geometry>& models);
 
 	// Process the L-System and return the branches and the flowers.
 	void processPy(unsigned int n,
-		std::vector<std::vector<float> >& branches, 
+		std::vector<std::vector<float> >& branches,
         std::vector<std::vector<float> >& flowers);
 
 protected:
     void reset();
     void addProduction(std::string line);
     std::string iterate(const std::string& input);
-    
+
     std::map<std::string, std::string> productions;
     std::vector<std::string> iterations;
     std::vector<Branch> bboxes;
@@ -53,6 +60,9 @@ protected:
     float mDfltAngle;
     float mDfltStep;
     std::string mGrammar;
+
+	std::vector<std::vector<float> > mBudPositions;
+	std::vector<float> mBudAngles;
 
     class Turtle
     {
