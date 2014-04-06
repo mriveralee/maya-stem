@@ -48,6 +48,10 @@ KEY_OUTPOINTS = 'outPoints', 'op'
 KEY_BUD = 'bud'
 KEY_RESOURCE_NODE_LIST = 'resNodes'
 
+# BH Model Coefficients
+BH_LAMBDA = 0.5 # controls bias of resource allocation. values in [0,1]
+BH_ALPHA = 2 # coefficient of proportionality for v_base, value from paper ex.
+
 # Default Grammar File
 DEFAULT_GRAMMAR_FILE = './StemPluginClasses/trees/simple1.txt'
 
@@ -377,8 +381,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           iBranch.mInternodeChildren.append(jBranch)
           jBranch.mInternodeParent = iBranch
 
-    # TODO - remove this later, using for testing
-    self.performBasipetalPass()
+    # TODO: possibly remove this later, using for testing
+    self.performBHModelResourceDistribution()
 
     # TODO - Handle flowers (uncomment when needed)
     # for i in range(0, flowers.size()):
@@ -431,10 +435,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         return ""
 
   '''
-  ''  Performs a BFS traversal from the root and pushes each node
-  ''  onto a stack along the way, returning a reverse BFS order.
+  ''  Performs a BFS traversal from the root and pushes each node onto a stack along 
+  ''  the way, returning a list in BFS order. Can be used to get reverse order traversal.
   '''
-  def getReverseBfsTraversal(self, root):
+  def getBfsTraversal(self, root):
     if root is None:
       return []
 
@@ -444,29 +448,80 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     while (len(queue) > 0):
       b = queue.popleft()
       # TODO: remove later. this bit is for testing on simple case
-      # if len(b.mInternodeChildren) == 0:
-      #   b.mQLightAmount = 1
+      if len(b.mInternodeChildren) == 0:
+        b.mQLightAmount = 1
       queue.extend(b.mInternodeChildren)
       stack.append(b)
 
     return stack
 
   '''
+  ''  Distributes amount of resource (v) from a single internode to its children
+  ''  using given equations. Currently assumes first child is m and second is l
+  '''
+  def distributeSingleResource(self, internode):
+    if (internode is None):
+      return
+    if (len(internode.mInternodeChildren) == 0):
+      return
+
+    pV = internode.mVResourceAmount
+
+    # TODO: still need to determine which is along main axis and which isn't
+    pQm = internode.mInternodeChildren[0].mQLightAmount
+    pQl = internode.mInternodeChildren[1].mQLightAmount
+
+    # Compute amount of resource distributed to axis branch and lateral branch
+    pVm = pV * (BH_LAMBDA * pQm) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl)
+    pVl = pV * ((1-BH_LAMBDA)*pQl) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl)
+
+    # Distribute
+    internode.mInternodeChildren[0].mVResourceAmount = pVm
+    internode.mInternodeChildren[1].mVResourceAmount = pVl
+
+  '''
   ''  Propogates light amounts (Q) from outermost internodes to towards the base.
   ''  (TODO: May have to edit to grab the light information from buds themselves)
   '''
   def performBasipetalPass(self):
-    branchStack = self.getReverseBfsTraversal(self.getRootInternode())
-    newList = list(branchStack)
+    branchStack = self.getBfsTraversal(self.getRootInternode())
+    # newList = list(branchStack)
     # for each internode, propogate light information from leaf nodes towards base
     while (len(branchStack) > 0):
       b = branchStack.pop()
-      if b.mInternodeParent != None:
+      if (b.mInternodeParent != None):
         b.mInternodeParent.mQLightAmount += b.mQLightAmount
 
     # TODO: remove later. prints light values after propogation in BFS order
     # for b in newList:
     #   print b.mQLightAmount
+
+  '''
+  ''  Distributes resource acropetally between continuing main axes 
+  ''  and lateral branches throughout entire tree. 
+  '''
+  def performAcropetalPass(self):
+    # v_base = alpha * Q_base
+    root = self.getRootInternode()
+    vBase = BH_ALPHA * root.mQLightAmount
+    root.mVResourceAmount = vBase
+    bfsTraversal = self.getBfsTraversal(root)
+    # newList = list(bfsTraversal)
+
+    # Distribute resource acropetally (from base upwards)
+    for b in bfsTraversal:
+      self.distributeSingleResource(b)
+
+    # TODO: remove later. prints resource values in BFS order
+    # for b in newList:
+    #   print b.mVResourceAmount
+
+  '''
+  ''  Performs BH Model passes to distribute resources throught the tree.
+  '''
+  def performBHModelResourceDistribution(self):
+    self.performBasipetalPass()
+    self.performAcropetalPass()
 
 # StemNode creator
 def StemInstanceNodeCreator():
