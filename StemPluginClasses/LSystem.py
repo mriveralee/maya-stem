@@ -126,7 +126,7 @@ class VecFloat(_object):
     def rend(self): return _LSystem.VecFloat_rend(self)
     def pop_back(self): return _LSystem.VecFloat_pop_back(self)
     def erase(self, *args): return _LSystem.VecFloat_erase(self, *args)
-    def __init__(self, *args):
+    def __init__(self, *args): 
         this = _LSystem.new_VecFloat(*args)
         try: self.this.append(this)
         except: self.this = this
@@ -173,7 +173,7 @@ class VectorPyBranch(_object):
     def rend(self): return _LSystem.VectorPyBranch_rend(self)
     def pop_back(self): return _LSystem.VectorPyBranch_pop_back(self)
     def erase(self, *args): return _LSystem.VectorPyBranch_erase(self, *args)
-    def __init__(self, *args):
+    def __init__(self, *args): 
         this = _LSystem.new_VectorPyBranch(*args)
         try: self.this.append(this)
         except: self.this = this
@@ -196,7 +196,7 @@ class LSystem(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, LSystem, name)
     __repr__ = _swig_repr
-    def __init__(self):
+    def __init__(self): 
         this = _LSystem.new_LSystem()
         try: self.this.append(this)
         except: self.this = this
@@ -208,6 +208,8 @@ class LSystem(_object):
     def setDefaultStep(self, *args): return _LSystem.LSystem_setDefaultStep(self, *args)
     def getDefaultAngle(self): return _LSystem.LSystem_getDefaultAngle(self)
     def getDefaultStep(self): return _LSystem.LSystem_getDefaultStep(self)
+    def setOptimalBudDirs(self, *args): return _LSystem.LSystem_setOptimalBudDirs(self, *args)
+    def getOptimalBudDirs(self, *args): return _LSystem.LSystem_getOptimalBudDirs(self, *args)
     def getGrammarString(self): return _LSystem.LSystem_getGrammarString(self)
     def getIteration(self, *args): return _LSystem.LSystem_getIteration(self, *args)
     def process(self, *args): return _LSystem.LSystem_process(self, *args)
@@ -237,7 +239,7 @@ class vec2(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, vec2, name)
     __repr__ = _swig_repr
-    def __init__(self, *args):
+    def __init__(self, *args): 
         this = _LSystem.new_vec2(*args)
         try: self.this.append(this)
         except: self.this = this
@@ -268,7 +270,7 @@ class vec3(_object):
     __swig_setmethods__["n"] = _LSystem.vec3_n_set
     __swig_getmethods__["n"] = _LSystem.vec3_n_get
     if _newclass:n = _swig_property(_LSystem.vec3_n_get, _LSystem.vec3_n_set)
-    def __init__(self, *args):
+    def __init__(self, *args): 
         this = _LSystem.new_vec3(*args)
         try: self.this.append(this)
         except: self.this = this
@@ -312,7 +314,7 @@ class vec4(_object):
     __swig_setmethods__["n"] = _LSystem.vec4_n_set
     __swig_getmethods__["n"] = _LSystem.vec4_n_get
     if _newclass:n = _swig_property(_LSystem.vec4_n_get, _LSystem.vec4_n_set)
-    def __init__(self, *args):
+    def __init__(self, *args): 
         this = _LSystem.new_vec4(*args)
         try: self.this.append(this)
         except: self.this = this
@@ -333,7 +335,7 @@ class matrix_error(_object):
     __swig_getmethods__ = {}
     __getattr__ = lambda self, name: _swig_getattr(self, matrix_error, name)
     __repr__ = _swig_repr
-    def __init__(self, *args):
+    def __init__(self, *args): 
         this = _LSystem.new_matrix_error(*args)
         try: self.this.append(this)
         except: self.this = this
@@ -343,3 +345,5 @@ matrix_error_swigregister = _LSystem.matrix_error_swigregister
 matrix_error_swigregister(matrix_error)
 
 # This file is compatible with both classic and new-style classes.
+
+

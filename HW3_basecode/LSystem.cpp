@@ -45,6 +45,17 @@ void LSystem::reset()
     productions.clear();
 }
 
+void LSystem::setOptimalBudDirs(std::vector<std::vector<float>> buds, std::vector<float> dirs) {
+    mBudPositions = buds;
+    mBudAngles = dirs;
+}
+
+void LSystem::getOptimalBudDirs(std::vector<std::vector<float>>& buds,
+  std::vector<float>& dirs) {
+  dirs = mBudAngles;
+  buds = mBudPositions;
+}
+
 const std::string& LSystem::getIteration(unsigned int n)
 {
     if (n >= iterations.size())

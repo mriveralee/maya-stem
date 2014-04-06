@@ -38,6 +38,12 @@ class StemLightNode(OpenMayaMPx.MPxLocatorNode):
   # Size of drawn circle This doesn't change
   mCircleDisplayRadius = 0.3
 
+  # This node's colors
+  mR = 0.9
+  mG = 0.9
+  mB = 0.0
+  mA = 0.6
+
   # constructor
   def __init__(self):
     OpenMayaMPx.MPxLocatorNode.__init__(self)
@@ -45,10 +51,15 @@ class StemLightNode(OpenMayaMPx.MPxLocatorNode):
 
   # Draw/Onscreen render method
   def draw(self, view, path, style, status):
-    # circle
     glFT = SG.GLFT
-    view.beginGL()
 
+    #store the current user setup colors
+    glFT.glPushAttrib(OpenMayaRender.MGL_CURRENT_BIT)
+
+    #enable the transparency
+    glFT.glEnable(OpenMayaRender.MGL_BLEND)
+
+    view.beginGL()
     SG.GLFT.glBegin(OpenMayaRender.MGL_LINES)
     SG.GLFT.glVertex3f(0.0, -self.mDisplayRadius, 0.0)
     SG.GLFT.glVertex3f(0.0, self.mDisplayRadius, 0.0)
@@ -75,16 +86,19 @@ class StemLightNode(OpenMayaMPx.MPxLocatorNode):
     SG.GLFT.glEnd()
 
     SG.GLFT.glBegin(OpenMayaRender.MGL_LINES)
+    glFT.glColor4f(self.mR, self.mG, self.mB, self.mA)
     SG.GLFT.glVertex3f(0.0, -self.mDisplayRadius, -self.mDisplayRadius)
     SG.GLFT.glVertex3f(0.0, self.mDisplayRadius, self.mDisplayRadius)
     SG.GLFT.glEnd()
 
     SG.GLFT.glBegin(OpenMayaRender.MGL_LINES)
+    glFT.glColor4f(self.mR, self.mG, self.mB, self.mA)
     SG.GLFT.glVertex3f(0.0, -self.mDisplayRadius, self.mDisplayRadius)
     SG.GLFT.glVertex3f(0.0, self.mDisplayRadius, -self.mDisplayRadius)
     SG.GLFT.glEnd()
 
     glFT.glBegin(OpenMayaRender.MGL_POLYGON)
+    glFT.glColor4f(self.mR, self.mG, self.mB, self.mA)
     for i in range(0,360):
         rad = (i * 2 * math.pi)/360;
         glFT.glNormal3f(0.0, 0.0, 1.0)
@@ -107,14 +121,15 @@ class StemLightNode(OpenMayaMPx.MPxLocatorNode):
             self.mCircleDisplayRadius * math.sin(rad),
             0.0)
     glFT.glEnd()
-
+    glFT.glDisable(OpenMayaRender.MGL_BLEND)
+    glFT.glPopAttrib()
     view.endGL()
 
 
   # compute
   def compute(self,plug,data):
-    print 'Light Node Compute!'
-
+    # do nothing
+    return
 
 # StemNode creator
 def StemLightNodeCreator():
