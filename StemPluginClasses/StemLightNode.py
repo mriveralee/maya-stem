@@ -131,8 +131,3 @@ def StemLightNodeInitializer():
 
   # Add attributes
   StemLightNode.addAttribute(StemLightNode.mDefLightRadius)
-
-  # Attributes effects
-  # StemLightNode.attributeAffects(
-  #   StemLightNode.mDefLightRadius,
-  #   StemLightNode.XXX)

@@ -30,17 +30,18 @@ class StemUIMenu(object):
 
   def makeStemInstanceNode(self):
     print 'StemInstanceName: '
-    # Make transform and connect mesh to it
+    # Make transform
     txNode = cmds.createNode('transform')
-    print txNode
+
+    # Make a Mesh node and connect it to the transform node
     meshNode = cmds.createNode('mesh', p=txNode)
-    print meshNode
+
     # Set a shading group
     shadingGroup = cmds.sets(meshNode, addElement='initialShadingGroup')
-    print shadingGroup
+
     # Create Lsystem
     stemNode = cmds.createNode(SI.STEM_INSTANCE_NODE_TYPE_NAME)
-    print stemNode
+
     # Connect the nodes with the time
     print cmds.connectAttr('time1.outTime', stemNode + '.time')
     print cmds.connectAttr(stemNode+'.outputMesh', meshNode+'.inMesh')

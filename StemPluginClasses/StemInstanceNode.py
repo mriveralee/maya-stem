@@ -48,7 +48,6 @@ KEY_OUTPOINTS = 'outPoints', 'op'
 KEY_BUD = 'bud'
 KEY_RESOURCE_NODE_LIST = 'resNodes'
 
-
 # Default Grammar File
 DEFAULT_GRAMMAR_FILE = './StemPluginClasses/trees/simple1.txt'
 
@@ -102,28 +101,30 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     glFT = SG.GLFT
     view.beginGL()
     glFT.glBegin(OpenMayaRender.MGL_POLYGON)
-    glFT.glColor4f(0.8, 0.0, 0.0, 0.5)
+    #glFT.glColor4f(0.8, 0.5, 0.0, 0.8)
     for i in range(0,360):
-        rad = (i * 2 * math.pi)/360;
-        glFT.glNormal3f(0.0, 0.0, 1.0)
-        if (i == 360):
-          glFT.glTexCoord3f(
-            self.mDisplayRadius * math.cos(0),
-            self.mDisplayRadius * math.sin(0),
-            0.0)
-          glFT.glVertex3f(
-            self.mDisplayRadius * math.cos(0),
-            self.mDisplayRadius * math.sin(0),
-            0.0)
-        else:
-          glFT.glTexCoord3f(
-            self.mDisplayRadius * math.cos(rad),
-            self.mDisplayRadius * math.sin(rad),
-            0.0)
-          glFT.glVertex3f(
-            self.mDisplayRadius * math.cos(rad),
-            self.mDisplayRadius * math.sin(rad),
-            0.0)
+      if (i % 2 != 0):
+        continue
+      rad = (i * 2 * math.pi)/360;
+      glFT.glNormal3f(0.0, 0.0, 1.0)
+      if (i == 360):
+        glFT.glTexCoord3f(
+          self.mDisplayRadius * math.cos(0),
+          self.mDisplayRadius * math.sin(0),
+          0.0)
+        glFT.glVertex3f(
+          self.mDisplayRadius * math.cos(0),
+          self.mDisplayRadius * math.sin(0),
+          0.0)
+      else:
+        glFT.glTexCoord3f(
+          self.mDisplayRadius * math.cos(rad),
+          self.mDisplayRadius * math.sin(rad),
+          0.0)
+        glFT.glVertex3f(
+          self.mDisplayRadius * math.cos(rad),
+          self.mDisplayRadius * math.sin(rad),
+          0.0)
     glFT.glEnd()
     view.endGL()
 		# view.beginGL()
@@ -139,7 +140,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def compute(self,plug,data):
     if plug == StemInstanceNode.outputMesh:
-      print 'Optimal Growth direction', self.calculateOptimalGrowthDirection()
+      print 'Optimal Growth direction Caculating', self.getBudOptimalGrowthDirs()
       # Time
       timeData = data.inputValue(StemInstanceNode.time)
       t = timeData.asInt()
@@ -182,96 +183,68 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         print 'StemInstance Generated!'
 
   '''
-  '' Calculates the optimal growth direction vector for branch growth
-  '''
-  def calculateOptimalGrowthDirection(self):
-    # Get the list of stem nodes
-    # resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
-    #   + cmds.ls(type=SS.STEM_SPACE_NODE_TYPE_NAME)
-    resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
-    # The sum of the resource node locations and the number of resource nodes
-    sumLocations = [0.0, 0.0, 0.0]
-    numNodes = len(resNodes)
-
-    if (numNodes == 0):
-      # TODO: handle case where there is no place to go (pick random dir?)
-      return [0.0, 0.0, 0.0]
-
-    # Now go through each node and sum node locations
-    for n in resNodes:
-      # TODO add weighting funciton that include the radius of light/space etc
-      pos = SG.getLocatorWorldPosition(n)
-      sumLocations = SG.sumArrayVectors(sumLocations, pos)
-
-    # Get position of the instance node
-    # TODO: get position of the instance node
-    startPos = [0.0, 0.0, 0.0]  #SG.getLocatorWorldPosition(self)
-
-    # Now average the position to get the optimal grown direction
-    optGrowthDir = [ (sumLocations[0] / numNodes) - startPos[0],
-      (sumLocations[1] / numNodes) - startPos[1],
-      (sumLocations[2] / numNodes) - startPos[2]]
-
-    print optGrowthDir
-    # return the value
-    return optGrowthDir
-
-  '''
   '' Finds the optimal growth direction angles and their bud growth pairs for
   '' each bud in the tree
   '''
-  def getOptimateGrowthDirs(self):
-    # Take the list of light resource nodes
-    # Take the list of buds - get
-    # for each light resource node
+  def getBudOptimalGrowthDirs(self):
+    # Get list of resource noces
     resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
+
+    # Get list of buds in the scence
     buds = self.createBudList(self.getRootInternode())
-    # Create a map of bud to list of resNodes
-    print buds
-    print resNodes
-    # Make optimal bud->nodeList  array
 
+    # If Buds is empty, we want to use the StemInstanceLocation as the only bud
+    # position (it acts as a root)
+    if len(buds) == 0:
+      # TODO: Figure out how to get this stemInstanceNode's maya name from
+      # within this class
+      budPosition = SG.getLocatorWorldPosition(None)
+      buds = [SC.StemCylinder(budPosition, budPosition)]
 
-    # Determine the nodes that are closest to particular buds
-    # Create an adjacency list (dictionary) that stores the adj list
-    allBudsAdjacencyList = {}
-    for n in resnodes:
-      # Get position of resNode
-      nPos = SG.getLocatorWorldPosition(n)
+    # Make optimal bud-node adjacency list
+    allBudsAdjList = self.createBudResNodeAdjacencyList(buds, resNodes)
 
-      # Init optimal bud and set the minDist to be max
-      optimalBud = None
-      minDist = 100000000
+    # Now compute optimal growth dirs and bud pair directions
+    optimalGrowthPairs = []
 
-      # Search through the list of buds and find the closest bud
-      for b in buds:
-        # Get distance between bud and resNode
-        currentDist = SG.getDistance(b.mEnd, nPos)
+    # Now compute the optimal growth dir
+    for budNodePair in allBudsAdjList:
+      # Separate the pair (bud, nodes)
+      print 'Bud Node Pair!', budNodePair
+      bud = budNodePair.get(KEY_BUD)
+      budNodes = budNodePair.get(KEY_RESOURCE_NODE_LIST)
 
-        # Update optimal bud if necessary
-        if currentDist < minDist:
-          optimalBud = b
-          minDist = currentDist
+      # Calculate the weighted average growth direction
+      budPosition = bud.mEnd
+      sumNodePositions = [0, 0, 0]
+      numNodes = len(budNodes)
 
-      # Now append the resNode to the bud's adjacency list
-      budKey = str(b)
+      # Sum the node positions and weight them
+      for n in budNodes:
+        # TODO add weighting funciton that include the radius of light/space etc
+        nodePos = SG.getLocatorWorldPosition(n)
+        sumNodePositions = SG.sumArrayVectors(sumNodePositions, nodePos)
 
-      # Check if list already exists, if it does just append
-      if budNodeAdjList.has_key(budKey):
-        # Get the budResNode pair of the bud
-        budPair = allBudsAdjacencyList.get(budKey)
+      # Now average the node positions and substract the bud position to compute
+      # the optimal growth direction
+      budOptGrowthDir = [ (sumNodePositions[0] / numNodes) - budPosition[0],
+        (sumNodePositions[1] / numNodes) - budPosition[1],
+        (sumNodePositions[2] / numNodes) - budPosition[2]]
 
-        # Get list of resNodes for the budPair
-        budResNodes = budPair.get(KEY_RESOURCE_NODE_LIST)
+      # Create the optimal growth pair
+      print 'made pair'
+      bPos = [budPosition.x, budPosition.y, budPosition.z]
+      #growthPair = (budPosition, budOptGrowthDir)
+      growthPair = (bPos, budOptGrowthDir)
 
-        # Append to the list
-        budResNodes.append(n)
-      else:
-        # Create the bud node pair and add it to the adjacency list
-        budPair = {KEY_BUD: budKey, KEY_RESOURCE_NODE_LIST: [n]}
-        allBudsAdjacencyList[budKey] = budPair
+      # Now append to the list of pairs
+      optimalGrowthPairs.append(growthPair)
+    print 'Optimal Growth Pairs'
+    print optimalGrowthPairs
+    print '****************************'
 
-    return [('bud', 'angle')]
+    # Return the Optimal Growth Pairs
+    return optimalGrowthPairs
 
   '''
   '' Creates a list of buds based on this instanceNode's internode list
@@ -282,13 +255,63 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # A bud is defined as the end point of an internode that has no children
     if node is None:
       return []
-    elif self.mInternodeChildren is None or len(self.mInternodeChildren) == 0:
+    elif node.mInternodeChildren is None or len(node.mInternodeChildren) == 0:
       return [node]
     else:
       childBuds = []
-      for child in self.mInternodeChildren:
+      for child in node.mInternodeChildren:
         childBuds = childBuds + self.createBudList(child)
       return childBuds
+
+  '''
+  '' Creates a bud to resource node adjacency list where each bud is associated
+  '' with a list of resource nodes that it is the closest bud to
+  '''
+  def createBudResNodeAdjacencyList(self, buds, resNodes):
+    # Determine the nodes that are closest to particular buds
+    # Create an adjacency list (dictionary) that stores the adj list
+    allBudsAdjacencyList = {}
+    for n in resNodes:
+      # Get position of resNode
+      nPos = SG.getLocatorWorldPosition(n)
+
+      # Init optimal bud and set the minDist to be max
+      optimalBud = None
+      minDist = 100000000
+
+      # Search through the list of buds and find the closest bud
+      print 'Searching for buds'
+      for b in buds:
+        # Get distance between bud and resNode
+        currentDist = SG.getDistance(b.mEnd, nPos)
+
+        # Update optimal bud if necessary
+        if currentDist < minDist:
+          optimalBud = b
+          minDist = currentDist
+
+      # Now append the resNode to the bud's adjacency list
+      budKey = str(optimalBud)
+
+      # Check if list already exists, if it does just append
+      if allBudsAdjacencyList.has_key(budKey):
+        # Get the budResNode pair of the bud
+        budPair = allBudsAdjacencyList.get(budKey)
+
+        # Get list of resNodes for the budPair
+        budResNodes = budPair.get(KEY_RESOURCE_NODE_LIST)
+
+        # Append to the list
+        budResNodes.append(n)
+      else:
+        # If it doesn't exist, create the bud node pair
+        budPair = {KEY_BUD: optimalBud, KEY_RESOURCE_NODE_LIST: [n]}
+
+        # And add it to the adjacency list
+        allBudsAdjacencyList[budKey] = budPair
+
+    # Return a list of the adjacency lists
+    return allBudsAdjacencyList.values()
 
   '''
   '' Returns the root internode of the Stem tree
