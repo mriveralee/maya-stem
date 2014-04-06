@@ -77,10 +77,26 @@ def sumMayaVectors(v1, v2):
     return None
 
 '''
-'' Gets the Euclidean distance of two vectors in Maya space
+'' Gets the Euclidean distance of two vectors, points, or 3-floats in 3D space
 '''
 def getDistance(v1, v2):
-  dist = math.sqrt((v1.x + v2.x) + (v1.y + v2.y) + (v1.z + v2.z))
+  p1 = v1
+  p2 = v2
+
+  # Get point values as float array if type is a point or vector
+  if type(v1) is type(OpenMaya.MPoint()) or type(v1) is type(OpenMaya.MVector()):
+    p1 = [v1.x, v1.y, v1.z]
+
+  if type(v2) is type(OpenMaya.MPoint()) or type(v2) is type(OpenMaya.MVector()):
+    p2 = [v2.x, v2.y, v2.z]
+
+  # Compute squared distance components
+  x = math.pow(p2[0] - p1[0], 2)
+  y = math.pow(p2[1] - p1[1], 2)
+  z = math.pow(p2[2] - p1[2], 2)
+  # compute distance
+  dist = math.sqrt(x + y + z)
+
   return dist
 
 
@@ -128,11 +144,11 @@ def getLocatorWorldPosition(locatorNode):
   worldPos = [0.0, 0.0, 0.0]
 
   # Compute world position
-  worldPos[0] = mat[0] * localPos[0] + mat[4] * localPos[1] + mat[8] * localPos[2] + mat[12];
+  worldPos[0] = mat[0] * localPos[0] + mat[4] * localPos[1] + mat[8] * localPos[2] + mat[12]
 
-  worldPos[1] = mat[1] * localPos[0] + mat[5] * localPos[1] + mat[9] * localPos[2] + mat[13];
+  worldPos[1] = mat[1] * localPos[0] + mat[5] * localPos[1] + mat[9] * localPos[2] + mat[13]
 
-  worldPos[2] = mat[2] * localPos[0] + mat[6] * localPos[1] + mat[10] * localPos[2] + mat[14];
+  worldPos[2] = mat[2] * localPos[0] + mat[6] * localPos[1] + mat[10] * localPos[2] + mat[14]
 
   # Return the computed world position
   return worldPos
