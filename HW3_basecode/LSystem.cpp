@@ -325,6 +325,21 @@ void LSystem::processPy(unsigned int n,
 
 }
 
+bool LSystem::getBudAngle(vec3 pos, float &angle) {
+
+	for (unsigned int i = 0; i < mBudPositions.size(); i++) {
+		std::vector<float> budPos = mBudPositions.at(i);
+		if (budPos[0] == pos[0] 
+			&& budPos[1] == pos[1] 
+			&& budPos[2] == pos[2]) {
+				angle = mBudAngles.at(i);
+				return true;
+		}
+	}
+	return false;	
+}
+
+
 // LOOK: This is where the L-System creates the branches and the flowers.
 //        Branches are returns in the "branches" vector and flowers (or other symbols) are
 //        returned in the "models" vector.
@@ -346,6 +361,14 @@ void LSystem::process(unsigned int n,
     for (unsigned int i = 0; i < insn.size(); i++)
     {
         std::string sym = insn.substr(i,1);
+
+
+		// Update the bud angle for each bud, if necessary
+		float budAngle = 0.0;
+		if(getBudAngle(turtle.pos, budAngle)) {
+			turtle.applyUpRot(budAngle);
+		}
+
         if (sym == "F")
         {
             vec3 start = turtle.pos;

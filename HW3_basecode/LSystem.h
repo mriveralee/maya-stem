@@ -36,6 +36,8 @@ public:
     // Iterate grammar
     const std::string& getIteration(unsigned int n);
 
+	bool getBudAngle(vec3 pos, float &angle);
+
     // Get geometry from running the turtle
     void process(unsigned int n,
         std::vector<Branch>& branches);

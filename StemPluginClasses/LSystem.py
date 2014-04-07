@@ -212,6 +212,7 @@ class LSystem(_object):
     def getOptimalBudDirs(self, *args): return _LSystem.LSystem_getOptimalBudDirs(self, *args)
     def getGrammarString(self): return _LSystem.LSystem_getGrammarString(self)
     def getIteration(self, *args): return _LSystem.LSystem_getIteration(self, *args)
+    def getBudAngle(self, *args): return _LSystem.LSystem_getBudAngle(self, *args)
     def process(self, *args): return _LSystem.LSystem_process(self, *args)
     def processPy(self, *args): return _LSystem.LSystem_processPy(self, *args)
 LSystem_swigregister = _LSystem.LSystem_swigregister
