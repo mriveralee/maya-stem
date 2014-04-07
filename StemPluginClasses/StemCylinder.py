@@ -117,7 +117,7 @@ class StemCylinder():
 
 
   '''
-  '' Transforms apoints to match
+  '' Transforms points to match the mesh
   '''
   def transform(self, points, normals):
     forward = self.mEnd - self.mStart

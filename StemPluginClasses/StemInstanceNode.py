@@ -121,25 +121,25 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       if (i % 2 != 0):
         continue
       rad = (i * 2 * math.pi)/360;
-      glFT.glNormal3f(0.0, 0.0, 1.0)
+      glFT.glNormal3f(0.0, 1.0, 0.0)
       if (i == 360):
         glFT.glTexCoord3f(
           self.mDisplayRadius * math.cos(0),
-          self.mDisplayRadius * math.sin(0),
-          0.0)
+          0.0,
+          self.mDisplayRadius * math.sin(0))
         glFT.glVertex3f(
           self.mDisplayRadius * math.cos(0),
-          self.mDisplayRadius * math.sin(0),
-          0.0)
+          0.0,
+          self.mDisplayRadius * math.sin(0))
       else:
         glFT.glTexCoord3f(
           self.mDisplayRadius * math.cos(rad),
-          self.mDisplayRadius * math.sin(rad),
-          0.0)
+          0.0,
+          self.mDisplayRadius * math.sin(rad))
         glFT.glVertex3f(
           self.mDisplayRadius * math.cos(rad),
-          self.mDisplayRadius * math.sin(rad),
-          0.0)
+          0.0,
+          self.mDisplayRadius * math.sin(rad))
     glFT.glEnd()
     view.endGL()
 		# view.beginGL()

@@ -329,14 +329,14 @@ bool LSystem::getBudAngle(vec3 pos, float &angle) {
 
 	for (unsigned int i = 0; i < mBudPositions.size(); i++) {
 		std::vector<float> budPos = mBudPositions.at(i);
-		if (budPos[0] == pos[0] 
-			&& budPos[1] == pos[1] 
+		if (budPos[0] == pos[0]
+			&& budPos[1] == pos[1]
 			&& budPos[2] == pos[2]) {
 				angle = mBudAngles.at(i);
 				return true;
 		}
 	}
-	return false;	
+	return false;
 }
 
 
@@ -365,8 +365,12 @@ void LSystem::process(unsigned int n,
 
 		// Update the bud angle for each bud, if necessary
 		float budAngle = 0.0;
-		if(getBudAngle(turtle.pos, budAngle)) {
+		float prevDefAngle = mDfltAngle;
+		bool isBud = getBudAngle(turtle.pos, budAngle);
+		if(isBud) {
 			turtle.applyUpRot(budAngle);
+			//prevDefAngle = mDfltAngle;
+			//mDfltAngle = budAngle;
 		}
 
         if (sym == "F")
@@ -422,5 +426,10 @@ void LSystem::process(unsigned int n,
 			//        along with the corresponding symbol is added to the models vector.
             models.push_back(Geometry(turtle.pos, sym));
         }
+		// Reset Default angle
+		if(isBud) {
+			//mDfltAngle = prevDefAngle;
+		}
+
     }
 }
