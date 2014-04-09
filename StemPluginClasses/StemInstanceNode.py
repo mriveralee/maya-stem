@@ -10,6 +10,7 @@ import maya.OpenMaya as OpenMaya
 import maya.OpenMayaAnim as OpenMayaAnim
 import maya.OpenMayaMPx as OpenMayaMPx
 import maya.OpenMayaRender as OpenMayaRender
+import maya.OpenMayaUI as OpenMayaUI
 
 import StemGlobal as SG
 import StemLightNode as SL
@@ -50,7 +51,7 @@ KEY_RESOURCE_NODE_LIST = 'resNodes'
 
 # BH Model Coefficients
 BH_LAMBDA = 0.5 # controls bias of resource allocation. values in [0,1]
-BH_ALPHA = 2 # coefficient of proportionality for v_base, value from paper ex.
+BH_ALPHA = 1 #2# coefficient of proportionality for v_base, value from paper ex.
 
 # Default Grammar File
 DEFAULT_GRAMMAR_FILE = './StemPluginClasses/trees/simple4.txt'
@@ -142,12 +143,22 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           self.mDisplayRadius * math.sin(rad))
     glFT.glEnd()
 
-    #store the current user setup colors
+    # Draw resource distribution values at "bud" (ahem) locations
     glFT.glPushAttrib(OpenMayaRender.MGL_CURRENT_BIT)
-    glFT.glColor4f(1.0, 0.0, 0.0, 0.0)
-    view.drawText("bob <3", OpenMaya.MPoint(0.0,0.0,0.0))
+    glFT.glColor4f(0.0, 1.0, 0.0, 0.0)
+    #view.drawText("bob <3", OpenMaya.MPoint(0.0,0.0,0.0))
     for b in self.mInternodes:
-      view.drawText("bob", b.mEnd)
+      val = int(b.mVResourceAmount * 100) / 100.0
+      view.drawText(str(val), b.mEnd, OpenMayaUI.M3dView.kCenter)
+    glFT.glPopAttrib()
+
+    # Draw light distribution values at base locations
+    glFT.glPushAttrib(OpenMayaRender.MGL_CURRENT_BIT)
+    glFT.glColor4f(1.0, 0.84, 0.0, 0.0)
+    for b in self.mInternodes:
+      val = int(b.mQLightAmount * 100) / 100.0
+      point = b.mStart + ((b.mEnd - b.mStart) / 2.0)
+      view.drawText(str(val), point, OpenMayaUI.M3dView.kCenter)
     glFT.glPopAttrib()
     view.endGL()
 		# view.beginGL()
@@ -480,7 +491,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           jBranch.mInternodeParent = iBranch
 
     # TODO: possibly remove this later, using for testing
-    # self.performBHModelResourceDistribution()
+    self.performBHModelResourceDistribution()
 
     # TODO - Handle flowers (uncomment when needed)
     # for i in range(0, flowers.size()):
