@@ -141,6 +141,16 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           0.0,
           self.mDisplayRadius * math.sin(rad))
     glFT.glEnd()
+
+    view.drawText("bob!!", OpenMaya.MPoint(0.0,0.0,0.0))
+
+    #store the current user setup colors
+    glFT.glPushAttrib(OpenMayaRender.MGL_CURRENT_BIT)
+    glFT.glColor4f(1.0, 0.0, 0.0, 0.0)
+    view.drawText("bob <3", OpenMaya.MPoint(0.0,0.0,0.0))
+    for b in self.mInternodes:
+      view.drawText("bob", b.mEnd)
+    glFT.glPopAttrib()
     view.endGL()
 		# view.beginGL()
 		# SG.GLFT.glBegin(OpenMayaRender.MGL_LINES)
