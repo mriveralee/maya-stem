@@ -100,6 +100,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mInternodes = []
   mBudAnglePairs = []
 
+  mOptimalGrowthPairs = []
 
   # LSystem Variables
   mLSystem = LSystem.LSystem()
@@ -220,11 +221,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '' each bud in the tree
   '''
   def getBudOptimalGrowthDirs(self):
-    # TODO - erase all curves in scene
-    allCurves = cmds.ls(type="nurbsCurve")
-    for c in allCurves:
-      print("deleted:", c)
-      cmds.delete(str(c))
+
+    # TODO - remove when finished debugging curves
+    self.eraseCurves()
 
     # Get list of resource noces
     resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
@@ -313,6 +312,17 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     curve = cmds.curve( p=[(p1[0], p1[1], p1[2]), (p2[0], p2[1], p2[2])])
     curveColor = random.randint(2,10)
     cmds.setAttr(str(curve) + ".overrideColor", )
+  '''
+  '' Erases all curves in the Maya Scene
+  '''
+  def eraseCurves(self):
+    # TODO - erase all curves in scene
+    allCurves = cmds.ls(type="nurbsCurve")
+    for c in allCurves:
+      print("deleted:", c)
+      cmds.delete(str(c))
+
+
 
   '''
   '' Creates a list of buds based on this instanceNode's internode list
@@ -425,13 +435,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '' Creates a Cylinder Mesh based on the LSystem
   '''
   def createMesh(self, iters, angle, step, grammarFile, data, newOutputData):
-    # Get optimal growth pairs and send to LSystem
-    optimalGrowthPairs = self.getBudOptimalGrowthDirs()
-    # Convert optimal growth pairs into vectors
-    [buds, dirs] = self.convertOptGrowthPairsForLSystem(optimalGrowthPairs)
-
-    # Sets the optimal growth directions for the LSystem
-    self.mLSystem.setOptimalBudDirs(buds, dirs)
+    # # Get optimal growth pairs and send to LSystem
+    # mOptimalGrowthPairs = self.getBudOptimalGrowthDirs()
+    # # Convert optimal growth pairs into vectors
+    # [buds, dirs] = self.convertOptGrowthPairsForLSystem(optimalGrowthPairs)
+    #
+    # # Sets the optimal growth directions for the LSystem
+    # self.mLSystem.setOptimalBudDirs(buds, dirs)
 
     # Test the output of the buds and angles in the LSystem
     # self.verifyLSystemBudAngles(buds, dirs)
@@ -502,6 +512,16 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # print("point Length: ", cPoints.length())
     # print("faceCount Length: ", cFaceCounts.length())
     # print("faceConnect Length: ", cFaceConnects.length())
+
+    ''' Compute Optimal Growth pairs '''
+    # Get optimal growth pairs and send to LSystem
+    mOptimalGrowthPairs = self.getBudOptimalGrowthDirs()
+    # Convert optimal growth pairs into vectors
+    [buds, dirs] = self.convertOptGrowthPairsForLSystem(mOptimalGrowthPairs)
+
+    # Sets the optimal growth directions for the LSystem
+    self.mLSystem.setOptimalBudDirs(buds, dirs)
+
 
     # Verify a mesh was made
     if (cPoints.length() == 0
