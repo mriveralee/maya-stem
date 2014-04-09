@@ -142,8 +142,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           self.mDisplayRadius * math.sin(rad))
     glFT.glEnd()
 
-    view.drawText("bob!!", OpenMaya.MPoint(0.0,0.0,0.0))
-
     #store the current user setup colors
     glFT.glPushAttrib(OpenMayaRender.MGL_CURRENT_BIT)
     glFT.glColor4f(1.0, 0.0, 0.0, 0.0)
@@ -459,6 +457,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     cFaceCounts = OpenMaya.MIntArray()
     cFaceConnects = OpenMaya.MIntArray()
 
+    self.mInternodes = []
     for i in range(0, branches.size()):
       b = branches[i]
       # Get points
