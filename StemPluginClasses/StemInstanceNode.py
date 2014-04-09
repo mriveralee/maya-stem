@@ -211,6 +211,12 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '' each bud in the tree
   '''
   def getBudOptimalGrowthDirs(self):
+    # TODO - erase all curves in scene
+    allCurves = cmds.ls(type="nurbsCurve")
+    for c in allCurves:
+      print("deleted:", c)
+      cmds.delete(str(c))
+
     # Get list of resource noces
     resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
 
@@ -275,9 +281,12 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       growthPair = (budPosition, budOptGrowthDir)
       growthAnglePair = (budPosition, optGrowthAngle)
 
+      self.drawCurve(budPosition, optPt)
       # Now append to the list of pairs
       # optimalGrowthPairs.append(growthPair)
       optimalGrowthPairs.append(growthAnglePair)
+
+
 
     # print 'Optimal Growth Pairs'
     # print optimalGrowthPairs
@@ -285,6 +294,16 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     # Return the Optimal Growth Pairs
     return optimalGrowthPairs
+
+  '''
+  '' Draws a curve between two points
+  '''
+  def drawCurve(self, p1, p2):
+    # TODO - Remove when ever we figure out how that turtle shit works with
+    # with rotations, nah mean?
+    curve = cmds.curve( p=[(p1[0], p1[1], p1[2]), (p2[0], p2[1], p2[2])])
+    curveColor = random.randint(2,10)
+    cmds.setAttr(str(curve) + ".overrideColor", )
 
   '''
   '' Creates a list of buds based on this instanceNode's internode list

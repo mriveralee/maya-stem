@@ -9,6 +9,11 @@
 #define Rad2Deg 57.295779513082320876798154814105
 #define Deg2Rad 0.017453292519943295769236907684886
 
+const vec3 UP_AXIS = vec3(0,1,0);
+const vec3 LEFT_AXIS = vec3(1,0,0);
+const vec3 FORWARD_AXIS = vec3(0,0,1);
+
+
 LSystem::LSystem() : mDfltAngle(22.5), mDfltStep(1.0)
 {
 }
@@ -192,9 +197,9 @@ std::string LSystem::iterate(const std::string& input)
 
 LSystem::Turtle::Turtle() :
     pos(0,0,0),
-    up(0,0,1),
-    forward(1,0,0),
-    left(0,1,0)
+    up(UP_AXIS),
+    forward(FORWARD_AXIS),
+    left(LEFT_AXIS)
 {
 }
 
@@ -222,31 +227,32 @@ void LSystem::Turtle::moveForward(float length)
     pos = pos + length * forward;
 }
 
+
 void LSystem::Turtle::applyUpRot(float degrees)
 {
     math::RotationMatrix<float> mat(2,Deg2Rad*degrees); // Z axis
     math::RotationMatrix<float> world2local(forward, left, up);
-    up =  world2local * mat * vec3(0,0,1);
-    left = world2local * mat * vec3(0,1,0);
-    forward = world2local * mat * vec3(1,0,0);
+    up =  world2local * mat * UP_AXIS;
+    left = world2local * mat * LEFT_AXIS;
+    forward = world2local * mat * FORWARD_AXIS;
 }
 
 void LSystem::Turtle::applyLeftRot(float degrees)
 {
     math::RotationMatrix<float> mat(1,Deg2Rad*degrees); // Y axis
     math::RotationMatrix<float> world2local(forward, left, up);
-    up =  world2local * mat * vec3(0,0,1);
-    left = world2local * mat * vec3(0,1,0);
-    forward = world2local * mat * vec3(1,0,0);
+    up =  world2local * mat * UP_AXIS;
+    left = world2local * mat * LEFT_AXIS;
+    forward = world2local * mat * FORWARD_AXIS;
 }
 
 void LSystem::Turtle::applyForwardRot(float degrees)
 {
     math::RotationMatrix<float> mat(0,Deg2Rad*degrees); // X axis
     math::RotationMatrix<float> world2local(forward, left, up);
-    up =  world2local * mat * vec3(0,0,1);
-    left = world2local * mat * vec3(0,1,0);
-    forward = world2local * mat * vec3(1,0,0);
+    up =  world2local * mat * UP_AXIS;
+    left = world2local * mat * LEFT_AXIS;
+    forward = world2local * mat * FORWARD_AXIS;
 }
 
 void LSystem::process(unsigned int n,
@@ -351,7 +357,7 @@ void LSystem::process(unsigned int n,
     std::stack<Turtle> stack;
 
     // Init so we're pointing up
-    turtle.applyLeftRot(-90);
+    turtle.applyUpRot(90);
 
     std::string insn = getIteration(n);
 
@@ -368,8 +374,8 @@ void LSystem::process(unsigned int n,
 		float prevDefAngle = mDfltAngle;
 		bool isBud = getBudAngle(turtle.pos, budAngle);
 		if(isBud) {
-			turtle.applyUpRot(budAngle);
-			//prevDefAngle = mDfltAngle;
+			//turtle.applyUpRot(budAngle);
+			prevDefAngle = mDfltAngle;
 			//mDfltAngle = budAngle;
 		}
 
@@ -428,7 +434,7 @@ void LSystem::process(unsigned int n,
         }
 		// Reset Default angle
 		if(isBud) {
-			//mDfltAngle = prevDefAngle;
+			mDfltAngle = prevDefAngle;
 		}
 
     }
