@@ -80,7 +80,7 @@ class StemCylinder():
     self.mInternodeParent = None
     self.mInternodeChildren = []
     self.mBudTerminal = None
-    self.mBudLateral = SB.StemBud(SB.BudType.LATERAL)
+    self.mBudLateral = None
 
     self.mQLightAmount = 0
     self.mVResourceAmount = 0

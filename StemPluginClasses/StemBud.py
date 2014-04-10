@@ -52,4 +52,7 @@ class StemBud():
       budTypeName = 'terminal bud'
     elif (self.mBudType == BudType.LATERAL):
       budTypeName = 'lateral bud'
-    print 'Successfully created ' + budTypeName
+
+    st = parentInternode.mStart
+    coordString = '<' + str(st[0]) + ',' + str(st[1]) + ',' + str(st[2]) + '>'
+    print 'Successfully created ' + budTypeName + ' for ' + coordString

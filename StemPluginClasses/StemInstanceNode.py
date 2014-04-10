@@ -578,10 +578,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     while (len(queue) > 0):
       b = queue.popleft()
-      # TODO: remove later. this bit is for testing on simple case
-      if len(b.mInternodeChildren) == 0:
-        b.mQLightAmount = 1
-        b.mBudTerminal = SB.StemBud(SB.BudType.TERMINAL)
       queue.extend(b.mInternodeChildren)
       stack.append(b)
 
@@ -621,6 +617,22 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def performBasipetalPass(self):
     branchStack = self.getBfsTraversal(self.getRootInternode())
+
+    # TODO: remove later. this bit is for testing on simple case
+    # currently configuring appropriate bud types and locations using the
+    # given geometry from the LSystem
+    for b in branchStack:
+      
+      if (len(b.mInternodeChildren) == 0):
+        b.mQLightAmount = 1
+        parent = b
+        b.mBudTerminal = SB.StemBud(SB.BudType.TERMINAL, parent)
+        b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent)
+      elif (len(b.mInternodeChildren) == 1):
+        parent = b
+        child = b.mInternodeChildren[0]
+        b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent, child)
+
     # newList = list(branchStack)
     # for each internode, propogate light information from leaf nodes towards base
     while (len(branchStack) > 0):
