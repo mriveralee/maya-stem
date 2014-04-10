@@ -8,6 +8,7 @@ import maya.OpenMayaAnim as OpenMayaAnim
 import maya.OpenMayaMPx as OpenMayaMPx
 
 import StemGlobal as SG
+import StemBud as SB
 
  # Global Mesh Variables
 G_POINTS = OpenMaya.MPointArray()
@@ -75,10 +76,15 @@ class StemCylinder():
     self.mStart = start
     self.mEnd = end
     self.mRadius = radius
+
     self.mInternodeParent = None
     self.mInternodeChildren = []
+    self.mBudTerminal = None
+    self.mBudLateral = SB.StemBud(SB.BudType.LATERAL)
+
     self.mQLightAmount = 0
     self.mVResourceAmount = 0
+
     if (G_POINTS.length() == 0):
       initCylinderMesh(radius)
 

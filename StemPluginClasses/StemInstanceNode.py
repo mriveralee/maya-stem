@@ -15,6 +15,7 @@ import maya.OpenMayaUI as OpenMayaUI
 import StemGlobal as SG
 import StemLightNode as SL
 import StemCylinder as SC
+import StemBud as SB
 
 #------------------------------------------------------------------------------#
 # StemInstanceNode Class - Subclassed Maya Mpx.Node that implements the
@@ -580,6 +581,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # TODO: remove later. this bit is for testing on simple case
       if len(b.mInternodeChildren) == 0:
         b.mQLightAmount = 1
+        b.mBudTerminal = SB.StemBud(SB.BudType.TERMINAL)
       queue.extend(b.mInternodeChildren)
       stack.append(b)
 
