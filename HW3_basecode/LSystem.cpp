@@ -79,7 +79,7 @@ void LSystem::setOptimalBudDirs(
 
 		for (unsigned int i = 0; i < dirs.size(); i++) {
 			// Get the bud
-			std::vector<float> d = buds.at(i);
+			std::vector<float> d = dirs.at(i);
 			
 			// Create new vector for c++ to hold
 			std::vector<float> newD = std::vector<float>();
@@ -436,8 +436,13 @@ void LSystem::process(unsigned int n,
 
 		bool isBud = getBudAngle(turtle.pos, budAxis, budAngle);
 		if(isBud) {
+			// Rotate towards the Light
 			turtle.rotateByAxisAngle(budAxis, budAngle);
-			prevDefAngle = mDfltAngle;
+			// prevDefAngle = mDfltAngle;
+			// Grow towards the Light
+			vec3 start = turtle.pos;
+            turtle.moveForward(mDfltStep);
+            branches.push_back(Branch(start,turtle.pos));
 			//mDfltAngle = budAngle;
 		}
 
@@ -495,9 +500,9 @@ void LSystem::process(unsigned int n,
             models.push_back(Geometry(turtle.pos, sym));
         }
 		// Reset Default angle
-		if(isBud) {
-			mDfltAngle = prevDefAngle;
-		}
+		//if(isBud) {
+		//	mDfltAngle = prevDefAngle;
+		//}
 
     }
 }
