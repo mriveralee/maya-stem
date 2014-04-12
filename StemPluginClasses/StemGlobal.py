@@ -92,6 +92,13 @@ def sumMayaVectors(v1, v2):
     return None
 
 '''
+'' Gets the cross product between two 3x3 vectors:
+'''
+def crossVectors(a, b):
+    return [a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0] ] 
+
+
+'''
 '' Gets the Euclidean distance of two vectors, points, or 3-floats in 3D space
 '''
 def getDistance(v1, v2):

@@ -130,11 +130,13 @@
   <ItemGroup>
     <ClCompile Include="LSystem.cpp" />
     <ClCompile Include="LSystem_wrap.cxx" />
+    <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="vec.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LSystem.h" />
     <ClInclude Include="matrix.h" />
+    <ClInclude Include="Quaternion.h" />
     <ClInclude Include="vec.h" />
   </ItemGroup>
   <ItemGroup>

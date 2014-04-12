@@ -9896,14 +9896,16 @@ SWIGINTERN PyObject *_wrap_LSystem_setOptimalBudDirs(PyObject *SWIGUNUSEDPARM(se
   PyObject *resultobj = 0;
   LSystem *arg1 = (LSystem *) 0 ;
   std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > arg2 ;
-  std::vector< float,std::allocator< float > > arg3 ;
+  std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > arg3 ;
+  std::vector< float,std::allocator< float > > arg4 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:LSystem_setOptimalBudDirs",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:LSystem_setOptimalBudDirs",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_setOptimalBudDirs" "', argument " "1"" of type '" "LSystem *""'"); 
@@ -9919,15 +9921,24 @@ SWIGINTERN PyObject *_wrap_LSystem_setOptimalBudDirs(PyObject *SWIGUNUSEDPARM(se
     if (SWIG_IsNewObj(res)) delete ptr;
   }
   {
-    std::vector<float,std::allocator< float > > *ptr = (std::vector<float,std::allocator< float > > *)0;
+    std::vector<std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *ptr = (std::vector<std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *)0;
     int res = swig::asptr(obj2, &ptr);
     if (!SWIG_IsOK(res) || !ptr) {
-      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "LSystem_setOptimalBudDirs" "', argument " "3"" of type '" "std::vector< float,std::allocator< float > >""'"); 
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "LSystem_setOptimalBudDirs" "', argument " "3"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > >""'"); 
     }
     arg3 = *ptr;
     if (SWIG_IsNewObj(res)) delete ptr;
   }
-  (arg1)->setOptimalBudDirs(arg2,arg3);
+  {
+    std::vector<float,std::allocator< float > > *ptr = (std::vector<float,std::allocator< float > > *)0;
+    int res = swig::asptr(obj3, &ptr);
+    if (!SWIG_IsOK(res) || !ptr) {
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "LSystem_setOptimalBudDirs" "', argument " "4"" of type '" "std::vector< float,std::allocator< float > >""'"); 
+    }
+    arg4 = *ptr;
+    if (SWIG_IsNewObj(res)) delete ptr;
+  }
+  (arg1)->setOptimalBudDirs(arg2,arg3,arg4);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -9939,18 +9950,22 @@ SWIGINTERN PyObject *_wrap_LSystem_getOptimalBudDirs(PyObject *SWIGUNUSEDPARM(se
   PyObject *resultobj = 0;
   LSystem *arg1 = (LSystem *) 0 ;
   std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *arg2 = 0 ;
-  std::vector< float,std::allocator< float > > *arg3 = 0 ;
+  std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *arg3 = 0 ;
+  std::vector< float,std::allocator< float > > *arg4 = 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   void *argp2 = 0 ;
   int res2 = 0 ;
   void *argp3 = 0 ;
   int res3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOO:LSystem_getOptimalBudDirs",&obj0,&obj1,&obj2)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:LSystem_getOptimalBudDirs",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_getOptimalBudDirs" "', argument " "1"" of type '" "LSystem *""'"); 
@@ -9964,16 +9979,87 @@ SWIGINTERN PyObject *_wrap_LSystem_getOptimalBudDirs(PyObject *SWIGUNUSEDPARM(se
     SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getOptimalBudDirs" "', argument " "2"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > &""'"); 
   }
   arg2 = reinterpret_cast< std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > * >(argp2);
-  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_float_std__allocatorT_float_t_t,  0 );
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_std__vectorT_float_std__allocatorT_float_t_t_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t_t,  0 );
   if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "LSystem_getOptimalBudDirs" "', argument " "3"" of type '" "std::vector< float,std::allocator< float > > &""'"); 
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "LSystem_getOptimalBudDirs" "', argument " "3"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > &""'"); 
   }
   if (!argp3) {
-    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getOptimalBudDirs" "', argument " "3"" of type '" "std::vector< float,std::allocator< float > > &""'"); 
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getOptimalBudDirs" "', argument " "3"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > &""'"); 
   }
-  arg3 = reinterpret_cast< std::vector< float,std::allocator< float > > * >(argp3);
-  (arg1)->getOptimalBudDirs(*arg2,*arg3);
+  arg3 = reinterpret_cast< std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > * >(argp3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4, SWIGTYPE_p_std__vectorT_float_std__allocatorT_float_t_t,  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "LSystem_getOptimalBudDirs" "', argument " "4"" of type '" "std::vector< float,std::allocator< float > > &""'"); 
+  }
+  if (!argp4) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getOptimalBudDirs" "', argument " "4"" of type '" "std::vector< float,std::allocator< float > > &""'"); 
+  }
+  arg4 = reinterpret_cast< std::vector< float,std::allocator< float > > * >(argp4);
+  (arg1)->getOptimalBudDirs(*arg2,*arg3,*arg4);
   resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_getBudAngle(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  vec3 arg2 ;
+  vec3 *arg3 = 0 ;
+  float *arg4 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  bool result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:LSystem_getBudAngle",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_getBudAngle" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  {
+    res2 = SWIG_ConvertPtr(obj1, &argp2, SWIGTYPE_p_vec3,  0  | 0);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "LSystem_getBudAngle" "', argument " "2"" of type '" "vec3""'"); 
+    }  
+    if (!argp2) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getBudAngle" "', argument " "2"" of type '" "vec3""'");
+    } else {
+      vec3 * temp = reinterpret_cast< vec3 * >(argp2);
+      arg2 = *temp;
+      if (SWIG_IsNewObj(res2)) delete temp;
+    }
+  }
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_vec3,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "LSystem_getBudAngle" "', argument " "3"" of type '" "vec3 &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getBudAngle" "', argument " "3"" of type '" "vec3 &""'"); 
+  }
+  arg3 = reinterpret_cast< vec3 * >(argp3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4, SWIGTYPE_p_float,  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "LSystem_getBudAngle" "', argument " "4"" of type '" "float &""'"); 
+  }
+  if (!argp4) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getBudAngle" "', argument " "4"" of type '" "float &""'"); 
+  }
+  arg4 = reinterpret_cast< float * >(argp4);
+  result = (bool)(arg1)->getBudAngle(arg2,*arg3,*arg4);
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
   return resultobj;
 fail:
   return NULL;
@@ -10027,57 +10113,6 @@ SWIGINTERN PyObject *_wrap_LSystem_getIteration(PyObject *SWIGUNUSEDPARM(self), 
   arg2 = static_cast< unsigned int >(val2);
   result = (std::string *) &(arg1)->getIteration(arg2);
   resultobj = SWIG_From_std_string(static_cast< std::string >(*result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_LSystem_getBudAngle(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  LSystem *arg1 = (LSystem *) 0 ;
-  vec3 arg2 ;
-  float *arg3 = 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 ;
-  int res2 = 0 ;
-  void *argp3 = 0 ;
-  int res3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  bool result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OOO:LSystem_getBudAngle",&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_getBudAngle" "', argument " "1"" of type '" "LSystem *""'"); 
-  }
-  arg1 = reinterpret_cast< LSystem * >(argp1);
-  {
-    res2 = SWIG_ConvertPtr(obj1, &argp2, SWIGTYPE_p_vec3,  0  | 0);
-    if (!SWIG_IsOK(res2)) {
-      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "LSystem_getBudAngle" "', argument " "2"" of type '" "vec3""'"); 
-    }  
-    if (!argp2) {
-      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getBudAngle" "', argument " "2"" of type '" "vec3""'");
-    } else {
-      vec3 * temp = reinterpret_cast< vec3 * >(argp2);
-      arg2 = *temp;
-      if (SWIG_IsNewObj(res2)) delete temp;
-    }
-  }
-  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_float,  0 );
-  if (!SWIG_IsOK(res3)) {
-    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "LSystem_getBudAngle" "', argument " "3"" of type '" "float &""'"); 
-  }
-  if (!argp3) {
-    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getBudAngle" "', argument " "3"" of type '" "float &""'"); 
-  }
-  arg3 = reinterpret_cast< float * >(argp3);
-  result = (bool)(arg1)->getBudAngle(arg2,*arg3);
-  resultobj = SWIG_From_bool(static_cast< bool >(result));
   return resultobj;
 fail:
   return NULL;
@@ -12092,9 +12127,9 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"LSystem_getDefaultStep", _wrap_LSystem_getDefaultStep, METH_VARARGS, NULL},
 	 { (char *)"LSystem_setOptimalBudDirs", _wrap_LSystem_setOptimalBudDirs, METH_VARARGS, NULL},
 	 { (char *)"LSystem_getOptimalBudDirs", _wrap_LSystem_getOptimalBudDirs, METH_VARARGS, NULL},
+	 { (char *)"LSystem_getBudAngle", _wrap_LSystem_getBudAngle, METH_VARARGS, NULL},
 	 { (char *)"LSystem_getGrammarString", _wrap_LSystem_getGrammarString, METH_VARARGS, NULL},
 	 { (char *)"LSystem_getIteration", _wrap_LSystem_getIteration, METH_VARARGS, NULL},
-	 { (char *)"LSystem_getBudAngle", _wrap_LSystem_getBudAngle, METH_VARARGS, NULL},
 	 { (char *)"LSystem_process", _wrap_LSystem_process, METH_VARARGS, NULL},
 	 { (char *)"LSystem_processPy", _wrap_LSystem_processPy, METH_VARARGS, NULL},
 	 { (char *)"LSystem_swigregister", LSystem_swigregister, METH_VARARGS, NULL},

@@ -277,7 +277,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       optPtLength = SG.getVectorLength(optPt)
       bPosLength = SG.getVectorLength(budPosition)
       dotProd = SG.getVectorDotProduct(optPt, budPosition)
-
+      crossProd = SG.crossVectors(budPosition, optPt)
       # For getting Optimal growth angles
       optGrowthAngle = 0
       if optPtLength != 0 and bPosLength != 0:
@@ -286,13 +286,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         optGrowthAngle = optGrowthAngle * 180 / math.pi
 
       # TODO - decide if we want to use growth Angle OR growth vector...
-      growthPair = (budPosition, budOptGrowthDir)
-      growthAnglePair = (budPosition, optGrowthAngle)
+      growthPair = (budPosition, crossProd, optGrowthAngle)
+      #growthAnglePair = (budPosition, optGrowthAngle)
 
       self.drawCurve(budPosition, optPt)
       # Now append to the list of pairs
-      # optimalGrowthPairs.append(growthPair)
-      optimalGrowthPairs.append(growthAnglePair)
+      optimalGrowthPairs.append(growthPair)
+      #optimalGrowthPairs.append(growthAnglePair)
 
 
 
@@ -413,7 +413,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def convertOptGrowthPairsForLSystem(self, optimalGrowthPairs):
     # The buds and dirs
     buds = LSystem.VectorPyBranch()
-    dirs = LSystem.VecFloat()
+    dirs = LSystem.VectorPyBranch()
+    angles = LSystem.VecFloat()
 
 
     # Convert all the maya points to std::vector<float> and push into vector
@@ -425,10 +426,19 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       pos.push_back(b[2])
       buds.push_back(pos)
 
-      # Convert list of angles to std::vector<float>
+      # Convert list of directions to std::vector<float> and push into the vector
       d = pair[1]
-      dirs.push_back(d)
-    return [buds, dirs]
+      dirVec = LSystem.VecFloat()
+      dirVec.push_back(d[0])
+      dirVec.push_back(d[1])
+      dirVec.push_back(d[2])
+      dirs.push_back(dirVec)
+
+      # Convert list of angles
+      a = pair[2]
+      angles.push_back(a)
+
+    return [buds, dirs, angles]
 
 
   '''
@@ -517,10 +527,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Get optimal growth pairs and send to LSystem
     mOptimalGrowthPairs = self.getBudOptimalGrowthDirs()
     # Convert optimal growth pairs into vectors
-    [buds, dirs] = self.convertOptGrowthPairsForLSystem(mOptimalGrowthPairs)
+    [buds, dirs, angles] = self.convertOptGrowthPairsForLSystem(mOptimalGrowthPairs)
 
     # Sets the optimal growth directions for the LSystem
-    self.mLSystem.setOptimalBudDirs(buds, dirs)
+    self.mLSystem.setOptimalBudDirs(buds, dirs, angles)
 
 
     # Verify a mesh was made

@@ -1118,6 +1118,7 @@ TranslationMatrix<T>::TranslationMatrix (T x, T y, T z) : matrixT(4, 4)
   _m->Val[3][0] = T(0); _m->Val[3][1] = T(0); _m->Val[3][2] = T(0); _m->Val[3][3] = T(1);
 }
 
+
 MAT_TEMPLATE inline
 RotationMatrix<T>::RotationMatrix (int axis, double angle) : matrixT(4, 4)
 {

@@ -5,6 +5,8 @@
 #include <vector>
 #include <map>
 #include "vec.h"
+#include "Quaternion.h"
+
 
 class LSystem
 {
@@ -25,8 +27,11 @@ public:
     float getDefaultAngle() const;
     float getDefaultStep() const;
 
-    void setOptimalBudDirs(std::vector<std::vector<float> > buds, std::vector<float> dirs);
-    void getOptimalBudDirs(std::vector<std::vector<float> >& buds, std::vector<float>& dirs);
+    void setOptimalBudDirs(std::vector<std::vector<float> > buds, std::vector<std::vector<float> > dirs, std::vector<float> angles);
+    void getOptimalBudDirs(std::vector<std::vector<float> >& buds, std::vector<std::vector<float> >& dirs, std::vector<float>& angles);
+	
+	bool getBudAngle(vec3 pos, vec3& budAxis, float &budAngle);
+	
 
 
     // void setOptimalBudDirections(std::vector<std::vector<float>> buds,
@@ -35,8 +40,6 @@ public:
 
     // Iterate grammar
     const std::string& getIteration(unsigned int n);
-
-	bool getBudAngle(vec3 pos, float &angle);
 
     // Get geometry from running the turtle
     void process(unsigned int n,
@@ -65,6 +68,8 @@ protected:
 
 	std::vector<std::vector<float> > mBudPositions;
 	std::vector<float> mBudAngles;
+	std::vector<std::vector<float> > mBudDirs;
+
 
     class Turtle
     {
@@ -78,6 +83,7 @@ protected:
         void applyLeftRot(float degrees);
         void applyForwardRot(float degrees);
 
+		void rotateByAxisAngle(const vec3 axis, float angle);
         vec3 pos;
         vec3 up;
         vec3 forward;

@@ -1,6 +1,7 @@
 #include "LSystem.h"
 #include <fstream>
 #include <stack>
+#include "Quaternion.h"
 
 #pragma warning(disable : 4244)
 #pragma warning(disable : 4290)
@@ -51,10 +52,13 @@ void LSystem::reset()
 }
 
 void LSystem::setOptimalBudDirs(
-	std::vector<std::vector<float>> buds, std::vector<float> dirs) {
+	std::vector<std::vector<float> > buds, 
+	std::vector<std::vector<float> > dirs, 
+	std::vector<float> angles) {
 		// Clear old arrays
 		mBudPositions.clear();
 		mBudAngles.clear();
+		mBudDirs.clear();
 
 		// Set the new data
 		for (unsigned int i = 0; i < buds.size(); i++) {
@@ -73,17 +77,35 @@ void LSystem::setOptimalBudDirs(
 			mBudPositions.push_back(newB);
 		}
 
-		// Set the new data
 		for (unsigned int i = 0; i < dirs.size(); i++) {
 			// Get the bud
-			float d = dirs.at(i);
-			mBudAngles.push_back(d);
+			std::vector<float> d = buds.at(i);
+			
+			// Create new vector for c++ to hold
+			std::vector<float> newD = std::vector<float>();
+
+			// Create a new bud vector
+			newD.push_back(d.at(0));
+			newD.push_back(d.at(1));
+			newD.push_back(d.at(2));
+
+			// Push back the bud position
+			mBudDirs.push_back(newD);
+		}
+
+
+		// Set the new data
+		for (unsigned int i = 0; i < angles.size(); i++) {
+			// Get the bud angle
+			float a = angles.at(i);
+			// Add the angle 
+			mBudAngles.push_back(a);
 		}
 }
 
 void LSystem::getOptimalBudDirs(
-	std::vector<std::vector<float>>& buds, std::vector<float>& dirs) {
-  // Set the new data
+	std::vector<std::vector<float> >& buds, std::vector<std::vector<float> >& dirs, std::vector<float>& angles) {
+		// Set the new data
 		for (unsigned int i = 0; i < mBudPositions.size(); i++) {
 			// Get the stored bud
 			std::vector<float> b = mBudPositions.at(i);
@@ -101,10 +123,27 @@ void LSystem::getOptimalBudDirs(
 		}
 
 		// Set the new data
+		for (unsigned int i = 0; i < mBudDirs.size(); i++) {
+			// Get the stored bud
+			std::vector<float> d = mBudDirs.at(i);
+
+			// Create new vector for c++ to hold
+			std::vector<float> newD = std::vector<float>();
+
+			// Create a new bud vector
+			newD.push_back(d.at(0));
+			newD.push_back(d.at(1));
+			newD.push_back(d.at(2));
+
+			// Push back the bud position
+			dirs.push_back(newD);
+		}
+
+		// Set the new data
 		for (unsigned int i = 0; i < mBudAngles.size(); i++) {
 			// stored angles
-			float d = mBudAngles.at(i);
-			dirs.push_back(d);
+			float a = mBudAngles.at(i);
+			angles.push_back(a);
 		}
 }
 
@@ -331,19 +370,39 @@ void LSystem::processPy(unsigned int n,
 
 }
 
-bool LSystem::getBudAngle(vec3 pos, float &angle) {
+bool LSystem::getBudAngle(vec3 pos, vec3& budAxis, float &budAngle) {
 
 	for (unsigned int i = 0; i < mBudPositions.size(); i++) {
 		std::vector<float> budPos = mBudPositions.at(i);
 		if (budPos[0] == pos[0]
 			&& budPos[1] == pos[1]
 			&& budPos[2] == pos[2]) {
-				angle = mBudAngles.at(i);
+				
+				// Get bud dir/axis
+				std::vector<float> axis = mBudDirs.at(i);
+				budAxis[0] = axis.at(0);
+				budAxis[1] = axis.at(1);
+				budAxis[2] = axis.at(2);
+
+				// Get angle
+				budAngle = mBudAngles.at(i);
 				return true;
 		}
 	}
 	return false;
 }
+
+void LSystem::Turtle::rotateByAxisAngle(const vec3 axis, float angle) {
+	Quaternion q = Quaternion::Quaternion();
+	q.FromAxisAngle(axis, angle * Deg2Rad);
+	math::RotationMatrix<float> mat = q.toRotationMatrix();
+    math::RotationMatrix<float> world2local(forward, left, up);
+    up =  world2local * mat * UP_AXIS;
+    left = world2local * mat * LEFT_AXIS;
+    forward = world2local * mat * FORWARD_AXIS;
+
+}
+
 
 
 // LOOK: This is where the L-System creates the branches and the flowers.
@@ -364,17 +423,20 @@ void LSystem::process(unsigned int n,
     std::vector<int> depth;
     int curDepth = 0;
 
-    for (unsigned int i = 0; i < insn.size(); i++)
-    {
+	// For updating bud rotations based on light positions in maya
+	float budAngle = 0.0;
+	vec3 budAxis = vec3();
+	float prevDefAngle;
+
+    for (unsigned int i = 0; i < insn.size(); i++) {
         std::string sym = insn.substr(i,1);
 
 
 		// Update the bud angle for each bud, if necessary
-		float budAngle = 0.0;
-		float prevDefAngle = mDfltAngle;
-		bool isBud = getBudAngle(turtle.pos, budAngle);
+
+		bool isBud = getBudAngle(turtle.pos, budAxis, budAngle);
 		if(isBud) {
-			//turtle.applyUpRot(budAngle);
+			turtle.rotateByAxisAngle(budAxis, budAngle);
 			prevDefAngle = mDfltAngle;
 			//mDfltAngle = budAngle;
 		}
