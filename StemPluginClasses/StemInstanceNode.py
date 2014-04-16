@@ -110,6 +110,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mPrevGrammarFile = None
   mPrevGrammarContent = None
 
+  # Curves Drawn
+  mOptCurves = []
+
 
   '''
   '' StemInstance Node Constructor
@@ -292,6 +295,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     #   print 'create flower!'
 
     # Compute Optimal Growth pairs for internodes
+    # TODO - remove when finished debugging curves
     self.updateOptimalGrowthPairs(self.mInternodes, False)
 
     # Verify a mesh was made
@@ -376,9 +380,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '' each bud in the tree
   '''
   def getBudOptimalGrowthDirs(self, internodes):
-    # TODO - remove when finished debugging curves
-    SG.eraseCurves()
-
+    # Erase old curves
+    SG.eraseCurves(None)
+    #del self.mOptCurves[:]
     # Get list of resource noces
     resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
 
@@ -399,6 +403,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     # Now compute optimal growth dirs and bud pair directions
     optimalGrowthPairs = []
+    drawnCurves = []
 
     # Grab the StemNodeInstance
     stemNode = SG.getSelectedNodeChildByType(STEM_INSTANCE_NODE_TYPE_NAME)
@@ -452,15 +457,19 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       growthPair = (budPosition, optPt, optGrowthAngle)
       #growthAnglePair = (budPosition, optGrowthAngle)
 
-      SG.drawCurve(budCurveWorldPosition, optPt)
+      # Draw curve to show direction vector
+      c = SG.drawCurve(budCurveWorldPosition, optPt)
+      #print 'Curve drawn', c
+      # TODO figure out how to handle this line
+      #drawnCurves.append(c)
       # Now append to the list of pairs
       optimalGrowthPairs.append(growthPair)
       #optimalGrowthPairs.append(growthAnglePair)
-
+    #self.mOptCurves = drawnCurves
     # print 'Optimal Growth Pairs'
     # print optimalGrowthPairs
     # print '****************************'
-
+    #self.mOptCurves = drawnCurves
     # Return the Optimal Growth Pairs
     return optimalGrowthPairs
 
