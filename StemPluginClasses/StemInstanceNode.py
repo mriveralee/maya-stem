@@ -310,6 +310,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Return the lovely Mesh
     return meshFs
 
+
+
   '''
   '' Update Bud Nodes for an LSystem Generation
   '''
@@ -400,6 +402,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Now compute optimal growth dirs and bud pair directions
     optimalGrowthPairs = []
 
+    # Grab the StemNodeInstance
+    stemNode = SG.getSelectedNodeChildByType(STEM_INSTANCE_NODE_TYPE_NAME)
+
     # Now compute the optimal growth dir
     for budNodePair in allBudsAdjList:
       # Separate the pair (bud, nodes)
@@ -409,6 +414,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
       # Calculate the weighted average growth direction
       budPosition = bud.mEnd
+      if stemNode != None:
+        # Get world position of mEnd (relative to StemInstanceTransform)
+        worldPos = SG.getLocatorWorldPosition(stemNode)
+        budPosition = SG.sumArrayVectors(budPosition, worldPos)
+
       sumNodePositions = [0, 0, 0]
       numNodes = len(lightNodes)
 

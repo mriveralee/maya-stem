@@ -48,6 +48,19 @@ def getNodesByType(nodeType):
   return cmds.ls(type=nodeType)
 
 '''
+'' Gets the selected maya node by type
+'''
+def getSelectedNodeChildByType(nodeType):
+  slNode = cmds.ls(sl=1)
+  children = cmds.listRelatives(slNode, c=True, type=nodeType)
+  if len(children) > 0:
+    # This node is the first child
+    thisNode = children[0]
+    return thisNode
+  return None
+
+
+'''
 '' Get length of float vector
 '''
 def getVectorLength(v1):
