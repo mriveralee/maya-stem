@@ -208,13 +208,37 @@ class LSystem(_object):
     def setDefaultStep(self, *args): return _LSystem.LSystem_setDefaultStep(self, *args)
     def getDefaultAngle(self): return _LSystem.LSystem_getDefaultAngle(self)
     def getDefaultStep(self): return _LSystem.LSystem_getDefaultStep(self)
-    def setOptimalBudDirs(self, *args): return _LSystem.LSystem_setOptimalBudDirs(self, *args)
-    def getOptimalBudDirs(self, *args): return _LSystem.LSystem_getOptimalBudDirs(self, *args)
-    def getBudAngle(self, *args): return _LSystem.LSystem_getBudAngle(self, *args)
     def getGrammarString(self): return _LSystem.LSystem_getGrammarString(self)
     def getIteration(self, *args): return _LSystem.LSystem_getIteration(self, *args)
     def process(self, *args): return _LSystem.LSystem_process(self, *args)
     def processPy(self, *args): return _LSystem.LSystem_processPy(self, *args)
+    def setHasResources(self, *args): return _LSystem.LSystem_setHasResources(self, *args)
+    def setOptimalBudDirs(self, *args): return _LSystem.LSystem_setOptimalBudDirs(self, *args)
+    def getOptimalBudDirs(self, *args): return _LSystem.LSystem_getOptimalBudDirs(self, *args)
+    def getBudAngle(self, *args): return _LSystem.LSystem_getBudAngle(self, *args)
+    def isABud(self, *args): return _LSystem.LSystem_isABud(self, *args)
+    def updateBudGeometry(self, *args): return _LSystem.LSystem_updateBudGeometry(self, *args)
+    __swig_setmethods__["mDfltAngle"] = _LSystem.LSystem_mDfltAngle_set
+    __swig_getmethods__["mDfltAngle"] = _LSystem.LSystem_mDfltAngle_get
+    if _newclass:mDfltAngle = _swig_property(_LSystem.LSystem_mDfltAngle_get, _LSystem.LSystem_mDfltAngle_set)
+    __swig_setmethods__["mDfltStep"] = _LSystem.LSystem_mDfltStep_set
+    __swig_getmethods__["mDfltStep"] = _LSystem.LSystem_mDfltStep_get
+    if _newclass:mDfltStep = _swig_property(_LSystem.LSystem_mDfltStep_get, _LSystem.LSystem_mDfltStep_set)
+    __swig_setmethods__["mGrammar"] = _LSystem.LSystem_mGrammar_set
+    __swig_getmethods__["mGrammar"] = _LSystem.LSystem_mGrammar_get
+    if _newclass:mGrammar = _swig_property(_LSystem.LSystem_mGrammar_get, _LSystem.LSystem_mGrammar_set)
+    __swig_setmethods__["mHasResources"] = _LSystem.LSystem_mHasResources_set
+    __swig_getmethods__["mHasResources"] = _LSystem.LSystem_mHasResources_get
+    if _newclass:mHasResources = _swig_property(_LSystem.LSystem_mHasResources_get, _LSystem.LSystem_mHasResources_set)
+    __swig_setmethods__["mBudPositions"] = _LSystem.LSystem_mBudPositions_set
+    __swig_getmethods__["mBudPositions"] = _LSystem.LSystem_mBudPositions_get
+    if _newclass:mBudPositions = _swig_property(_LSystem.LSystem_mBudPositions_get, _LSystem.LSystem_mBudPositions_set)
+    __swig_setmethods__["mBudAngles"] = _LSystem.LSystem_mBudAngles_set
+    __swig_getmethods__["mBudAngles"] = _LSystem.LSystem_mBudAngles_get
+    if _newclass:mBudAngles = _swig_property(_LSystem.LSystem_mBudAngles_get, _LSystem.LSystem_mBudAngles_set)
+    __swig_setmethods__["mBudDirs"] = _LSystem.LSystem_mBudDirs_set
+    __swig_getmethods__["mBudDirs"] = _LSystem.LSystem_mBudDirs_get
+    if _newclass:mBudDirs = _swig_property(_LSystem.LSystem_mBudDirs_get, _LSystem.LSystem_mBudDirs_set)
 LSystem_swigregister = _LSystem.LSystem_swigregister
 LSystem_swigregister(LSystem)
 

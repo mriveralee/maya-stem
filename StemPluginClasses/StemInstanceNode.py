@@ -34,7 +34,7 @@ KEY_ITERATIONS = 'iterations', 'iter'
 KEY_TIME = 'time', 'tm'
 KEY_GRAMMAR = 'grammarFile', 'grf'
 KEY_ANGLE = 'angle', 'ang'
-KEY_STEP_SIZE = 'stepSize' , 'ss'
+KEY_STEP_SIZE = 'stepSize', 'ss'
 
 # Toggle Keys
 KEY_BRANCH_SHEDDING = 'useBranchShedding', 'shed'
@@ -63,6 +63,9 @@ DEFAULT_STEP_SIZE = 1.0
 # Default Angle
 DEFAULT_ANGLE = 42.5
 
+# Enable test drawing
+ENABLE_RESOURCE_DRAWING  = False
+
 
 # Node definition
 class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
@@ -73,7 +76,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
   # Node Time
 
-  time = OpenMaya.MObject()
+  mTime = OpenMaya.MObject()
   mID = OpenMaya.MObject()
 
   # Output Mesh
@@ -92,7 +95,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mHasResourceDistribution = OpenMaya.MObject()
   mHasBranchShedding = OpenMaya.MObject()
 
-
   # Other values
   mBranches = OpenMaya.MObject()
   mFlowers = OpenMaya.MObject()
@@ -107,7 +109,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mLSystem = LSystem.LSystem()
   mPrevGrammarFile = None
   mPrevGrammarContent = None
-  # constructor
+
+
+  '''
+  '' StemInstance Node Constructor
+  '''
   def __init__(self):
     OpenMayaMPx.MPxLocatorNode.__init__(self)
 
@@ -145,31 +151,25 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           self.mDisplayRadius * math.sin(rad))
     glFT.glEnd()
 
-    # Draw resource distribution values at "bud" (ahem) locations
-    glFT.glPushAttrib(OpenMayaRender.MGL_CURRENT_BIT)
-    glFT.glColor4f(0.0, 1.0, 0.0, 0.0)
-    #view.drawText("bob <3", OpenMaya.MPoint(0.0,0.0,0.0))
-    for b in self.mInternodes:
-      val = int(b.mVResourceAmount * 100) / 100.0
-      view.drawText(str(val), b.mEnd, OpenMayaUI.M3dView.kCenter)
-    glFT.glPopAttrib()
+    if ENABLE_RESOURCE_DRAWING:
+      # Draw resource distribution values at "bud" (ahem) locations
+      glFT.glPushAttrib(OpenMayaRender.MGL_CURRENT_BIT)
+      glFT.glColor4f(0.0, 1.0, 0.0, 0.0)
+      #view.drawText("bob <3", OpenMaya.MPoint(0.0,0.0,0.0))
+      for b in self.mInternodes:
+        val = int(b.mVResourceAmount * 100) / 100.0
+        view.drawText(str(val), b.mEnd, OpenMayaUI.M3dView.kCenter)
+      glFT.glPopAttrib()
 
-    # Draw light distribution values at base locations
-    glFT.glPushAttrib(OpenMayaRender.MGL_CURRENT_BIT)
-    glFT.glColor4f(1.0, 0.84, 0.0, 0.0)
-    for b in self.mInternodes:
-      val = int(b.mQLightAmount * 100) / 100.0
-      point = b.mStart + ((b.mEnd - b.mStart) / 2.0)
-      view.drawText(str(val), point, OpenMayaUI.M3dView.kCenter)
-    glFT.glPopAttrib()
+      # Draw light distribution values at base locations
+      glFT.glPushAttrib(OpenMayaRender.MGL_CURRENT_BIT)
+      glFT.glColor4f(1.0, 0.84, 0.0, 0.0)
+      for b in self.mInternodes:
+        val = int(b.mQLightAmount * 100) / 100.0
+        point = b.mStart + ((b.mEnd - b.mStart) / 2.0)
+        view.drawText(str(val), point, OpenMayaUI.M3dView.kCenter)
+      glFT.glPopAttrib()
     view.endGL()
-		# view.beginGL()
-		# SG.GLFT.glBegin(OpenMayaRender.MGL_LINES)
-		# SG.GLFT.glVertex3f(0.0, -0.5, 0.0)
-		# SG.GLFT.glVertex3f(0.0, 0.5, 0.0)
-		# SG.GLFT.glEnd()
-    #
-		# view.endGL()
 
   '''
   '' Computes input/output updates for the node
@@ -177,7 +177,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def compute(self,plug,data):
     if plug == StemInstanceNode.outputMesh:
       # Time
-      timeData = data.inputValue(StemInstanceNode.time)
+      timeData = data.inputValue(StemInstanceNode.mTime)
       t = timeData.asInt()
 
       # Num Iterations
@@ -193,9 +193,12 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       angle = angleData.asFloat()
 
       # Grammar File String and convert from the maya object
-      grammarData =  data.inputValue(StemInstanceNode.mDefGrammarFile)
+      grammarData = data.inputValue(StemInstanceNode.mDefGrammarFile)
       grammarFile = str(grammarData.asString())
       #c_char_p(str(grammarFile))
+
+      hasResData = data.inputValue(StemInstanceNode.mHasResourceDistribution)
+      hasResources = hasResData.asBool()
 
       # Get output objects
       outputHandle = data.outputValue(self.outputMesh)
@@ -205,7 +208,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # The New mesh!
       meshResult = self.createMesh(
         iters, angle, step, grammarFile,
-        data, newOutputData)
+        hasResources, data, newOutputData)
 
       # Make sure we have a valid mesh
       if (meshResult != None):
@@ -218,19 +221,168 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         print 'StemInstance Generated!'
 
   '''
+  '' Creates a Cylinder Mesh based on the LSystem
+  '''
+  def createMesh(self, iters, angle, step, grammarFile, hasResources, data, newOutputData):
+    # # Get optimal growth pairs and send to LSystem
+    # mOptimalGrowthPairs = self.getBudOptimalGrowthDirs()
+    # # Convert optimal growth pairs into vectors
+    # [buds, dirs] = self.convertOptGrowthPairsForLSystem(optimalGrowthPairs)
+    #
+    # # Sets the optimal growth directions for the LSystem
+    # self.mLSystem.setOptimalBudDirs(buds, dirs)
+
+    # Get Grammar File Contents & load to lsys
+    if grammarFile != self.mPrevGrammarFile:
+      self.mPrevGrammarContent = self.readGrammarFile(grammarFile)
+      self.mPrevGrammarFile = grammarFile
+
+    grammarContent = self.mPrevGrammarContent
+
+    if len(grammarContent) == 0:
+      print "Invalid Grammar File!"
+      return None
+
+    # Init the LSystem from the parameters
+    self.mLSystem.setDefaultAngle(float(angle))
+    self.mLSystem.setDefaultStep(float(step))
+    self.mLSystem.loadProgramFromString(grammarContent)
+    #self.mLSystem.setHasResources(hasResources)
+
+    # Print contents
+    print "Grammar File: " + grammarFile
+    print "Grammar File Contents: " + self.mLSystem.getGrammarString()
+
+    # The branches and flowers objects
+    branches = LSystem.VectorPyBranch()
+    flowers = LSystem.VectorPyBranch()
+
+    # Run Grammar String to make branches and flowers
+    self.mLSystem.processPy(iters, branches, flowers)
+
+    # Update buds if we have resources
+    if hasResources:
+      # Update the branches and flowers based on resources
+      self.updateBudGrowthForResources(iters, branches, flowers)
+
+    # Clear old cylinder mesh
+    SC.clearMesh()
+
+    # Set up global mesh
+    cPoints = OpenMaya.MPointArray()
+    cFaceCounts = OpenMaya.MIntArray()
+    cFaceConnects = OpenMaya.MIntArray()
+
+    # Create Cylinder Mesh Internodes
+    self.mInternodes = self.createInternodes(branches, flowers)
+
+    # Make tree from Internode Cylinder Meshes
+    for cyl in self.mInternodes:
+      # Append the Cylinder's mesh to our main mesh
+      print cyl
+      cyl.appendToMesh(cPoints, cFaceCounts, cFaceConnects)
+
+
+    # TODO: possibly remove this later, using for testing
+    self.performBHModelResourceDistribution()
+
+    # TODO - Handle flowers (uncomment when needed)
+    # for i in range(0, flowers.size()):
+    #   f = flowers[i]
+    #   centerLoc = OpenMaya.MVector(f[0], f[1], f[2])
+    #   print 'create flower!'
+
+    # Compute Optimal Growth pairs for internodes
+    self.updateOptimalGrowthPairs(self.mInternodes, False)
+
+    # Verify a mesh was made
+    if cPoints.length() == 0 or cFaceCounts.length() == 0 or cFaceConnects.length() == 0:
+      print 'No LSystem generated!'
+      return None
+
+    # Finalize the Mesh Creation
+    meshFs = OpenMaya.MFnMesh()
+    newMesh = meshFs.create(
+      int(cPoints.length()), int(cFaceCounts.length()),
+      cPoints, cFaceCounts, cFaceConnects, newOutputData)
+
+    # Return the lovely Mesh
+    return meshFs
+
+  '''
+  '' Update Bud Nodes for an LSystem Generation
+  '''
+  def updateBudGrowthForResources(self, iters, branches, flowers):
+    # Create Pre Bud Growth Internodes
+    preBudGrowthInternodes = self.createInternodes(branches, flowers)
+
+    # Update the LSystem with the buds of the pre growth internodes
+    self.updateOptimalGrowthPairs(preBudGrowthInternodes, True)
+
+    # Test the output of the buds and angles in the LSystem
+    # self.verifyLSystemBudAngles(buds, dirs, angles)
+
+    # Get Optimal Growth Pairs from Branches then send to LSystem for Updating
+    self.mLSystem.updateBudGeometry(iters, branches, flowers)
+
+    return [branches, flowers]
+
+
+  '''
+  '' Creates an Internodes List of CylinderMeshes from branches
+  '''
+  def createInternodes(self, branches, flowers):
+    internodes = []
+    for i in range(0, branches.size()):
+      b = branches[i]
+      # Get points
+      start = OpenMaya.MPoint(b[0], b[1], b[2])
+      end = OpenMaya.MPoint(b[3], b[4], b[5])
+      # TODO: Make Radius get Smaller are we approach roots (maxRadius at root)
+      radius = 0.25
+
+      # Create a cylinder from the end points
+      cyMesh = SC.StemCylinder(start, end, radius)
+      internodes.append(cyMesh)
+
+    # Create parent/child heirarchy
+    for iBranch in internodes:
+      for jBranch in internodes:
+        if iBranch.mEnd == jBranch.mStart:
+          iBranch.mInternodeChildren.append(jBranch)
+          jBranch.mInternodeParent = iBranch
+
+    # Return the internodes
+    return internodes
+
+  '''
+  '' Compute Optimal Growth Pairs
+  '''
+  def updateOptimalGrowthPairs(self, internodes, shouldUpdateLSystem=True):
+    # Get optimal growth pairs and send to LSystem
+    self.mOptimalGrowthPairs = self.getBudOptimalGrowthDirs(internodes)
+
+    if shouldUpdateLSystem:
+      # Convert optimal growth pairs into vectors
+      [buds, dirs, angles] = self.convertOptGrowthPairsForLSystem(self.mOptimalGrowthPairs)
+
+      # Sets the optimal growth directions for the LSystem
+      self.mLSystem.setOptimalBudDirs(buds, dirs, angles)
+    return
+
+  '''
   '' Finds the optimal growth direction angles and their bud growth pairs for
   '' each bud in the tree
   '''
-  def getBudOptimalGrowthDirs(self):
-
+  def getBudOptimalGrowthDirs(self, internodes):
     # TODO - remove when finished debugging curves
-    self.eraseCurves()
+    SG.eraseCurves()
 
     # Get list of resource noces
     resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
 
     # Get list of buds in the scence
-    buds = self.createBudList(self.getRootInternode())
+    buds = self.createBudList(internodes)
 
     # If Buds is empty, we want to use the StemInstanceLocation as the only bud
     # position (it acts as a root)
@@ -252,15 +404,15 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Separate the pair (bud, nodes)
       # print 'Bud Node Pair!', budNodePair
       bud = budNodePair.get(KEY_BUD)
-      budNodes = budNodePair.get(KEY_RESOURCE_NODE_LIST)
+      lightNodes = budNodePair.get(KEY_RESOURCE_NODE_LIST)
 
       # Calculate the weighted average growth direction
       budPosition = bud.mEnd
       sumNodePositions = [0, 0, 0]
-      numNodes = len(budNodes)
+      numNodes = len(lightNodes)
 
       # Sum the node positions and weight them
-      for n in budNodes:
+      for n in lightNodes:
         # TODO add weighting funciton that include the radius of light/space etc
         nodePos = SG.getLocatorWorldPosition(n)
         sumNodePositions = SG.sumArrayVectors(sumNodePositions, nodePos)
@@ -287,15 +439,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         optGrowthAngle = optGrowthAngle * 180 / math.pi
 
       # TODO - decide if we want to use growth Angle OR growth vector...
-      growthPair = (budPosition, crossProd, optGrowthAngle)
+      growthPair = (budPosition, optPt, optGrowthAngle)
       #growthAnglePair = (budPosition, optGrowthAngle)
 
-      self.drawCurve(budPosition, optPt)
+      SG.drawCurve(budPosition, optPt)
       # Now append to the list of pairs
       optimalGrowthPairs.append(growthPair)
       #optimalGrowthPairs.append(growthAnglePair)
-
-
 
     # print 'Optimal Growth Pairs'
     # print optimalGrowthPairs
@@ -305,47 +455,17 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     return optimalGrowthPairs
 
   '''
-  '' Draws a curve between two points
-  '''
-  def drawCurve(self, p1, p2):
-    # TODO - Remove when ever we figure out how that turtle shit works with
-    # with rotations, nah mean?
-    curve = cmds.curve( p=[(p1[0], p1[1], p1[2]), (p2[0], p2[1], p2[2])])
-    curveColor = random.randint(2,10)
-    cmds.setAttr(str(curve) + ".overrideColor", )
-  '''
-  '' Erases all curves in the Maya Scene
-  '''
-  def eraseCurves(self):
-    # TODO - erase all curves in scene
-    allCurves = cmds.ls(type="nurbsCurve")
-    for c in allCurves:
-      print("deleted:", c)
-      cmds.delete(str(c))
-
-
-
-  '''
   '' Creates a list of buds based on this instanceNode's internode list
   '' Returns an empty array if no buds are present
   '''
-  def createBudList(self, node):
+  def createBudList(self, internodes):
     # Creates a list of buds based on the internodes list-
     # A bud is defined as the end point of an internode that has no children
     childBuds = []
-    for n in self.mInternodes:
+    for n in internodes:
       if n.mInternodeChildren is None or len(n.mInternodeChildren) == 0:
         childBuds.append(n)
     return childBuds
-    # if node is None:
-    #   return []
-    # elif node.mInternodeChildren is None or len(node.mInternodeChildren) == 0:
-    #   return [node]
-    # else:
-    #   childBuds = []
-    #   for child in node.mInternodeChildren:
-    #     childBuds = childBuds + self.createBudList(child)
-    #   return childBuds
 
   '''
   '' Creates a bud to resource node adjacency list where each bud is associated
@@ -401,14 +521,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     return allBudsAdjacencyList.values()
 
   '''
-  '' Returns the root internode of the Stem tree
-  '''
-  def getRootInternode(self):
-    if len(self.mInternodes) == 0:
-      return None
-    return self.mInternodes[0]
-
-  '''
   '' Converts optimal growth pairs into vectors for the LSystem
   '''
   def convertOptGrowthPairsForLSystem(self, optimalGrowthPairs):
@@ -416,7 +528,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     buds = LSystem.VectorPyBranch()
     dirs = LSystem.VectorPyBranch()
     angles = LSystem.VecFloat()
-
 
     # Convert all the maya points to std::vector<float> and push into vector
     for pair in optimalGrowthPairs:
@@ -441,138 +552,48 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     return [buds, dirs, angles]
 
-
   '''
-  '' Creates a Cylinder Mesh based on the LSystem
+  '' Verifies the output passed to the LSystem
+  '' Where <buds> and <angles> are sent to the LSystem and
+  '' and <b1> and <d1> are read back from the LSystem
   '''
-  def createMesh(self, iters, angle, step, grammarFile, data, newOutputData):
-    # # Get optimal growth pairs and send to LSystem
-    # mOptimalGrowthPairs = self.getBudOptimalGrowthDirs()
-    # # Convert optimal growth pairs into vectors
-    # [buds, dirs] = self.convertOptGrowthPairsForLSystem(optimalGrowthPairs)
-    #
-    # # Sets the optimal growth directions for the LSystem
-    # self.mLSystem.setOptimalBudDirs(buds, dirs)
+  def verifyLSystemBudAngles(self, buds, dirs, angles):
+    lBuds = LSystem.VectorPyBranch()
+    lDirs = LSystem.VectorPyBranch()
+    lAngles = LSystem.VecFloat()
+    # Get buds, dirs and angles from the LSystem
+    self.mLSystem.getOptimalBudDirs(lBuds, lDirs, lAngles)
 
-    # Test the output of the buds and angles in the LSystem
-    # self.verifyLSystemBudAngles(buds, dirs)
+    # Verify that the ones sent are equal to the ones retrieved
+    for i in range(0, lBuds.size()):
+      # Retrieved from the LSystem
+      lb = lBuds[i]
+      la = lAngles[i]
+      ld = lDirs[i]
 
-    # Get Grammar File Contents & load to lsys
-    if grammarFile != self.mPrevGrammarFile:
-      self.mPrevGrammarContent = self.readGrammarFile(grammarFile)
-      self.mPrevGrammarFile = grammarFile
+      # Sent to LSystem
+      b = buds[i]
+      a = angles[i]
+      d = dirs[i]
 
-    grammarContent = self.mPrevGrammarContent
-
-    if len(grammarContent) == 0:
-      print "Invalid Grammar File!"
-      return None
-
-    # Init the LSystem from the parameters
-    self.mLSystem.setDefaultAngle(float(angle))
-    self.mLSystem.setDefaultStep(float(step))
-    self.mLSystem.loadProgramFromString(grammarContent)
-
-    # Print contents
-    print "Grammar File: " + grammarFile
-    print "Grammar File Contents: " + self.mLSystem.getGrammarString()
-
-    # The branches and flowers objects
-    branches = LSystem.VectorPyBranch()
-    flowers = LSystem.VectorPyBranch()
-
-    # Run Grammar String
-    self.mLSystem.processPy(iters, branches, flowers)
-
-    # Set up cylinder mesh
-    cPoints = OpenMaya.MPointArray()
-    cFaceCounts = OpenMaya.MIntArray()
-    cFaceConnects = OpenMaya.MIntArray()
-
-    self.mInternodes = []
-    for i in range(0, branches.size()):
-      b = branches[i]
       # Get points
-      start = OpenMaya.MPoint(b[0], b[1], b[2])
-      end = OpenMaya.MPoint(b[3], b[4], b[5])
-      radius = 0.25
+      correctDir =  ld[0] == d[0] and ld[1] == d[1] and ld[2] == d[2]
+      correctAngle = la == a
+      correctBud = lb[0] == b[0] and lb[1] == b[1] and lb[2] == b[2]
 
-      # Create a cylinder from the end points
-      cyMesh = SC.StemCylinder(start, end, radius)
-      self.mInternodes.append(cyMesh)
+      correctTransfer = correctDir and correctAngle and correctBud
+      if not correctTransfer:
+        print 'Incorrect Transfer (LSystem,Sent)', 'Bud', lb, b, "Dir", ld, d, "Angle", la, a
+    print 'Finished verifying buds and dirs'
+    return
 
-      # Append the Cylinder's mesh to our main mesh
-      cyMesh.appendToMesh(cPoints, cFaceCounts, cFaceConnects)
-
-   # Create parent/child heirarchy
-    for iBranch in self.mInternodes:
-      for jBranch in self.mInternodes:
-        if (iBranch.mEnd == jBranch.mStart):
-          iBranch.mInternodeChildren.append(jBranch)
-          jBranch.mInternodeParent = iBranch
-
-    # TODO: possibly remove this later, using for testing
-    self.performBHModelResourceDistribution()
-
-    # TODO - Handle flowers (uncomment when needed)
-    # for i in range(0, flowers.size()):
-    #   f = flowers[i]
-    #   centerLoc = OpenMaya.MVector(f[0], f[1], f[2])
-    #   print 'create flower!'
-
-    # print("point Length: ", cPoints.length())
-    # print("faceCount Length: ", cFaceCounts.length())
-    # print("faceConnect Length: ", cFaceConnects.length())
-
-    ''' Compute Optimal Growth pairs '''
-    # Get optimal growth pairs and send to LSystem
-    mOptimalGrowthPairs = self.getBudOptimalGrowthDirs()
-    # Convert optimal growth pairs into vectors
-    [buds, dirs, angles] = self.convertOptGrowthPairsForLSystem(mOptimalGrowthPairs)
-
-    # Sets the optimal growth directions for the LSystem
-    self.mLSystem.setOptimalBudDirs(buds, dirs, angles)
-
-
-    # Verify a mesh was made
-    if (cPoints.length() == 0
-      or cFaceCounts.length() == 0
-      or cFaceConnects.length() == 0):
-      print 'No LSystem generated!'
+  '''
+  '' Returns the root internode of the Stem tree
+  '''
+  def getRootInternode(self):
+    if len(self.mInternodes) == 0:
       return None
-
-    status = OpenMaya.MStatus()
-    meshFs = OpenMaya.MFnMesh()
-    # Now create the new mesh!
-    newMesh = meshFs.create(
-      int(cPoints.length()), int(cFaceCounts.length()),
-      cPoints, cFaceCounts, cFaceConnects, newOutputData)
-
-    return meshFs
-
-  '''
-  ''  Reads a text file that is selected using a file dialog then returns its
-  ''  contents. If no file exists, it returns the empty string
-  '''
-  def readGrammarFileUsingDialog(self):
-    txtFileFilter = 'Text Files (*.txt)'
-    fileNames = cmds.fileDialog2(fileFilter=txtFileFilter, dialogStyle=2, fileMode=1)
-    return self.readGrammarFile(fileNames[0])
-
-  '''
-  ''  Reads a text file that is passed by string
-  ''  contents. If no file exists, it returns the empty string
-  '''
-  def readGrammarFile(self, fileName):
-      if (len(fileName) <= 0):
-        return ""
-      try:
-        f = open(fileName, 'r')
-        fileContents = f.read()
-        f.close()
-        return fileContents
-      except:
-        return ""
+    return self.mInternodes[0]
 
   '''
   ''  Performs a BFS traversal from the root and pushes each node
@@ -586,7 +607,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     queue = deque([root])
     stack = []
 
-    while (len(queue) > 0):
+    while len(queue) > 0:
       b = queue.popleft()
       queue.extend(b.mInternodeChildren)
       stack.append(b)
@@ -632,7 +653,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # currently configuring appropriate bud types and locations using the
     # given geometry from the LSystem
     for b in branchStack:
-      
+
       if (len(b.mInternodeChildren) == 0):
         b.mQLightAmount = 1
         parent = b
@@ -681,28 +702,40 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     self.performBasipetalPass()
     self.performAcropetalPass()
 
+  '''
+  ''  Reads a text file that is selected using a file dialog then returns its
+  ''  contents. If no file exists, it returns the empty string
+  '''
+  def readGrammarFileUsingDialog(self):
+    txtFileFilter = 'Text Files (*.txt)'
+    fileNames = cmds.fileDialog2(fileFilter=txtFileFilter, dialogStyle=2, fileMode=1)
+    return self.readGrammarFile(fileNames[0])
 
   '''
-  '' Verifies the output passed to the LSystem
-  '' Where <buds> and <angles> are sent to the LSystem and
-  '' and <b1> and <d1> are read back from the LSystem
+  ''  Reads a text file that is passed by string
+  ''  contents. If no file exists, it returns the empty string
   '''
-  def verifyLSystemBudAngles(self, buds, angles):
-    b1 = LSystem.VectorPyBranch()
-    d1 = LSystem.VecFloat()
-    self.mLSystem.getOptimalBudDirs(b1, d1)
-    for i in range(0, b1.size()):
-      b = b1[i]
-      # Get points
-      print ('BudDir', d1[i], b[0], b[1], b[2])
-      print ('Dirs', d1[i] == dirs[i], 'Positions', buds[i][0] == b[0], buds[i][1] == b[1], buds[i][2] == b[2])
-    print 'Finished verifying buds and dirs'
-    return
+  def readGrammarFile(self, fileName):
+    if len(fileName) <= 0:
+      return ""
+    try:
+      f = open(fileName, 'r')
+      fileContents = f.read()
+      f.close()
+      return fileContents
+    except:
+      return ""
 
-# StemNode creator
+######################## End StemInstanceNode Class ############################
+'''
+'' StemInstanceNode Creator for Maya Plug-in
+'''
 def StemInstanceNodeCreator():
   return OpenMayaMPx.asMPxPtr(StemInstanceNode())
 
+'''
+'' StemInstanceNode Initializer for Maya Plug-in
+'''
 def StemInstanceNodeInitializer():
   # Numeric Attributes
   nAttr = OpenMaya.MFnNumericAttribute()
@@ -746,7 +779,7 @@ def StemInstanceNodeInitializer():
 
   # Time
   uAttr = OpenMaya.MFnUnitAttribute()
-  StemInstanceNode.time = uAttr.create(
+  StemInstanceNode.mTime = uAttr.create(
     KEY_TIME[0],
     KEY_TIME[1],
     OpenMaya.MFnUnitAttribute.kTime, 0)
@@ -786,7 +819,6 @@ def StemInstanceNodeInitializer():
     OpenMaya.MFnData.kMesh)
   SG.MAKE_OUTPUT(tAttr)
 
-
   # Outpoints
   StemInstanceNode.outPoints = tAttr.create(
     KEY_OUTPOINTS[0],
@@ -794,10 +826,7 @@ def StemInstanceNodeInitializer():
     OpenMaya.MFnArrayAttrsData.kDynArrayAttrs)
   SG.MAKE_OUTPUT(tAttr)
 
-
-
   # add Attributues
-
   StemInstanceNode.addAttribute(StemInstanceNode.mDefAngle)
   StemInstanceNode.addAttribute(StemInstanceNode.mDefStepSize)
   StemInstanceNode.addAttribute(StemInstanceNode.mDefGrammarFile)
@@ -805,9 +834,7 @@ def StemInstanceNodeInitializer():
   StemInstanceNode.addAttribute(StemInstanceNode.mIterations)
   StemInstanceNode.addAttribute(StemInstanceNode.mHasBranchShedding)
 
-
-
-  StemInstanceNode.addAttribute(StemInstanceNode.time)
+  StemInstanceNode.addAttribute(StemInstanceNode.mTime)
   StemInstanceNode.addAttribute(StemInstanceNode.outputMesh)
   StemInstanceNode.addAttribute(StemInstanceNode.mFlowers)
   StemInstanceNode.addAttribute(StemInstanceNode.mBranches)
@@ -815,7 +842,7 @@ def StemInstanceNodeInitializer():
 
   # Attribute Effects to Flowers
   StemInstanceNode.attributeAffects(
-    StemInstanceNode.time,
+    StemInstanceNode.mTime,
     StemInstanceNode.mFlowers)
 
   StemInstanceNode.attributeAffects(
@@ -844,7 +871,7 @@ def StemInstanceNodeInitializer():
 
   #Attributes Effects to Branches
   StemInstanceNode.attributeAffects(
-    StemInstanceNode.time,
+    StemInstanceNode.mTime,
     StemInstanceNode.mBranches)
 
   StemInstanceNode.attributeAffects(
@@ -874,7 +901,7 @@ def StemInstanceNodeInitializer():
 
   #Attributes Effects to Branches
   StemInstanceNode.attributeAffects(
-    StemInstanceNode.time,
+    StemInstanceNode.mTime,
     StemInstanceNode.outputMesh)
 
   StemInstanceNode.attributeAffects(

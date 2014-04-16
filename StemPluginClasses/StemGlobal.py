@@ -95,7 +95,7 @@ def sumMayaVectors(v1, v2):
 '' Gets the cross product between two 3x3 vectors:
 '''
 def crossVectors(a, b):
-    return [a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0] ] 
+    return [a[1]*b[2] - a[2]*b[1], a[2]*b[0] - a[0]*b[2], a[0]*b[1] - a[1]*b[0] ]
 
 
 '''
@@ -174,3 +174,21 @@ def getLocatorWorldPosition(locatorNode):
 
   # Return the computed world position
   return worldPos
+
+
+'''
+'' Draws a curve between two points
+'''
+def drawCurve(p1, p2):
+  curve = cmds.curve(p=[(p1[0], p1[1], p1[2]), (p2[0], p2[1], p2[2])], degree=1)
+  curveColor = random.randint(2,10)
+  cmds.setAttr(str(curve) + ".overrideColor", )
+
+'''
+'' Erases all curves in the Maya Scene
+'''
+def eraseCurves():
+  allCurves = cmds.ls(type="nurbsCurve")
+  for c in allCurves:
+    # print("deleted:", c)
+    cmds.delete(str(c))

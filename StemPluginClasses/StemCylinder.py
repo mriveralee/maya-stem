@@ -16,6 +16,16 @@ G_NORMALS =  OpenMaya.MVectorArray()
 G_FACE_COUNTS =  OpenMaya.MIntArray()
 G_FACE_CONNECTS =  OpenMaya.MIntArray()
 
+'''
+'' Clears the Mesh
+'''
+def clearMesh():
+  G_POINTS.clear()
+  G_NORMALS.clear()
+  G_FACE_COUNTS.clear()
+  G_FACE_CONNECTS.clear()
+
+
 def initCylinderMesh(r):
   numslices = 10
   angle = math.pi * 2 / numslices

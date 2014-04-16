@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <stack>
 #include "vec.h"
 #include "Quaternion.h"
-
 
 class LSystem
 {
@@ -26,16 +26,6 @@ public:
 
     float getDefaultAngle() const;
     float getDefaultStep() const;
-
-    void setOptimalBudDirs(std::vector<std::vector<float> > buds, std::vector<std::vector<float> > dirs, std::vector<float> angles);
-    void getOptimalBudDirs(std::vector<std::vector<float> >& buds, std::vector<std::vector<float> >& dirs, std::vector<float>& angles);
-	
-	bool getBudAngle(vec3 pos, vec3& budAxis, float &budAngle);
-	
-
-
-    // void setOptimalBudDirections(std::vector<std::vector<float>> buds,
-    //   std::vector<std::vector<float>> dir);
     const std::string& getGrammarString() const;
 
     // Iterate grammar
@@ -53,6 +43,7 @@ public:
 		std::vector<std::vector<float> >& branches,
         std::vector<std::vector<float> >& flowers);
 
+
 protected:
     void reset();
     void addProduction(std::string line);
@@ -62,14 +53,6 @@ protected:
     std::vector<std::string> iterations;
     std::vector<Branch> bboxes;
     std::string current;
-    float mDfltAngle;
-    float mDfltStep;
-    std::string mGrammar;
-
-	std::vector<std::vector<float> > mBudPositions;
-	std::vector<float> mBudAngles;
-	std::vector<std::vector<float> > mBudDirs;
-
 
     class Turtle
     {
@@ -89,6 +72,35 @@ protected:
         vec3 forward;
         vec3 left;
     };
+
+	// LSystem Fxns
+
+	void setHasResources(bool hasResources);
+
+	void setOptimalBudDirs(std::vector<std::vector<float> > buds, std::vector<std::vector<float> > dirs, std::vector<float> angles);
+    void getOptimalBudDirs(std::vector<std::vector<float> >& buds, std::vector<std::vector<float> >& dirs, std::vector<float>& angles);
+	
+	bool getBudAngle(vec3 pos, vec3& budAxis, float &budAngle);
+	bool isABud(vec3 pos);
+
+	void updateBudGeometry(unsigned int n, std::vector<std::vector<float> >& branches, std::vector<std::vector<float> >& flowers);
+	
+
+
+	// LSYSTEM Variables
+	float mDfltAngle;
+    float mDfltStep;
+    std::string mGrammar;
+	bool mHasResources;
+
+	std::vector<std::vector<float> > mBudPositions;
+	std::vector<float> mBudAngles;
+	std::vector<std::vector<float> > mBudDirs;
+
+	//std::map<std::string, int> mBud;
+	std::map<vec3, vec3> mBudToLightPos;
+	std::stack<Turtle> mBudPosStack;
+
 };
 
 #endif

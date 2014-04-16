@@ -43,20 +43,12 @@ def initializePlugin(mobject):
       SI.StemInstanceNodeInitializer,
       OpenMayaMPx.MPxNode.kLocatorNode)
 
-    # Register StemSpaceNode
-    # mplugin.registerNode(SS.STEM_SPACE_NODE_TYPE_NAME,
-    #   SS.STEM_SPACE_NODE_ID,
-    #   SS.StemSpaceNodeCreator,
-    #   SS.StemSpaceNodeInitializer,
-    #   OpenMayaMPx.MPxNode.kLocatorNode)
-
     # Register StemLightNode
     mplugin.registerNode(SL.STEM_LIGHT_NODE_TYPE_NAME,
       SL.STEM_LIGHT_NODE_ID,
       SL.StemLightNodeCreator,
       SL.StemLightNodeInitializer,
       OpenMayaMPx.MPxNode.kLocatorNode)
-
 
   except:
     sys.stderr.write(
@@ -69,9 +61,6 @@ def uninitializePlugin(mobject):
 
     # Unregister StemNode
     mplugin.deregisterNode(SI.STEM_INSTANCE_NODE_ID)
-
-    # Unregister StemSpaceNode
-    # mplugin.deregisterNode(SS.STEM_SPACE_NODE_ID)
 
     # Unregister StemLightNode
     mplugin.deregisterNode(SL.STEM_LIGHT_NODE_ID)
