@@ -52,8 +52,10 @@ def getNodesByType(nodeType):
 '''
 def getSelectedNodeChildByType(nodeType):
   slNode = cmds.ls(sl=1)
+  if slNode is None:
+    return None
   children = cmds.listRelatives(slNode, c=True, type=nodeType)
-  if len(children) > 0:
+  if children != None and len(children) > 0:
     # This node is the first child
     thisNode = children[0]
     return thisNode

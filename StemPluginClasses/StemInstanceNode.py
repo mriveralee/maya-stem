@@ -279,8 +279,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Make tree from Internode Cylinder Meshes
     for cyl in self.mInternodes:
       # Append the Cylinder's mesh to our main mesh
-      print 'EACH UPDATES INTERNODE:'
-      print cyl.mStart, cyl.mEnd, "isBud:", len(cyl.mInternodeChildren) == 0
       cyl.appendToMesh(cPoints, cFaceCounts, cFaceConnects)
 
 
@@ -414,10 +412,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
       # Calculate the weighted average growth direction
       budPosition = bud.mEnd
+      budCurveWorldPosition = bud.mEnd
       if stemNode != None:
         # Get world position of mEnd (relative to StemInstanceTransform)
         worldPos = SG.getLocatorWorldPosition(stemNode)
-        budPosition = SG.sumArrayVectors(budPosition, worldPos)
+        budCurveWorldPosition = SG.sumArrayVectors(budPosition, worldPos)
 
       sumNodePositions = [0, 0, 0]
       numNodes = len(lightNodes)
@@ -453,7 +452,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       growthPair = (budPosition, optPt, optGrowthAngle)
       #growthAnglePair = (budPosition, optGrowthAngle)
 
-      SG.drawCurve(budPosition, optPt)
+      SG.drawCurve(budCurveWorldPosition, optPt)
       # Now append to the list of pairs
       optimalGrowthPairs.append(growthPair)
       #optimalGrowthPairs.append(growthAnglePair)

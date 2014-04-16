@@ -36,26 +36,15 @@ class StemUIMenu(object):
     # Make a Mesh node and connect it to the transform node
     meshNode = cmds.createNode('mesh', p=txNode)
 
-    # Set a shading group
-    shadingGroup = cmds.sets(meshNode, addElement='initialShadingGroup')
-
     # Create StemNode and parent to txNode
     stemNode = cmds.createNode(SI.STEM_INSTANCE_NODE_TYPE_NAME, p=txNode)
+
+    # Set a shading group
+    shadingGroup = cmds.sets(meshNode, addElement='initialShadingGroup')
 
     # Connect the nodes with the time
     cmds.connectAttr('time1.outTime', stemNode + '.time')
     cmds.connectAttr(stemNode+'.outputMesh', meshNode+'.inMesh')
-
-    #maya.mel.eval('rotate 0 0 90deg ' + txNode)
-    #lsysNode = cmds.createNode(SLS.STEMM_LSYSTEM_NODE_TYPE_NODE)
-
-    # cmd = ('createNode transform -n LSystem1; '
-    #   'createNode mesh -n LSystemShape1 -p LSystem1; '
-    #   'sets -add initialShadingGroup LSystemShape1;
-    #   'createNode LSystemNode -n LSystemNode1; '
-    #   'connectAttr time1.outTime LSystemNode1.time; '
-    #   'connectAttr LSystemNode1.outputMesh LSystemShape1.inMesh; ')
-    # #maya.mel.eval(cmd)
 
   def makeStemLSystemNode(self):
     print 'make Lsys node'
