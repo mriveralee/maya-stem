@@ -2970,25 +2970,26 @@ SWIG_Python_NonDynamicSetAttr(PyObject *obj, PyObject *name, PyObject *value) {
 #define SWIGTYPE_p_char swig_types[4]
 #define SWIGTYPE_p_difference_type swig_types[5]
 #define SWIGTYPE_p_double swig_types[6]
-#define SWIGTYPE_p_math__matrix_error swig_types[7]
-#define SWIGTYPE_p_p_PyObject swig_types[8]
-#define SWIGTYPE_p_size_type swig_types[9]
-#define SWIGTYPE_p_std__allocatorT_float_t swig_types[10]
-#define SWIGTYPE_p_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t swig_types[11]
-#define SWIGTYPE_p_std__invalid_argument swig_types[12]
-#define SWIGTYPE_p_std__logic_error swig_types[13]
-#define SWIGTYPE_p_std__vectorT__Tp__Alloc_t swig_types[14]
-#define SWIGTYPE_p_std__vectorT_float_std__allocatorT_float_t_t swig_types[15]
-#define SWIGTYPE_p_std__vectorT_std__pairT_vec3_std__string_t_std__allocatorT_std__pairT_vec3_std__string_t_t_t swig_types[16]
-#define SWIGTYPE_p_std__vectorT_std__pairT_vec3_vec3_t_std__allocatorT_std__pairT_vec3_vec3_t_t_t swig_types[17]
-#define SWIGTYPE_p_std__vectorT_std__vectorT_float_std__allocatorT_float_t_t_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t_t swig_types[18]
-#define SWIGTYPE_p_swig__SwigPyIterator swig_types[19]
-#define SWIGTYPE_p_value_type swig_types[20]
-#define SWIGTYPE_p_vec2 swig_types[21]
-#define SWIGTYPE_p_vec3 swig_types[22]
-#define SWIGTYPE_p_vec4 swig_types[23]
-static swig_type_info *swig_types[25];
-static swig_module_info swig_module = {swig_types, 24, 0, 0, 0, 0};
+#define SWIGTYPE_p_float swig_types[7]
+#define SWIGTYPE_p_math__matrix_error swig_types[8]
+#define SWIGTYPE_p_p_PyObject swig_types[9]
+#define SWIGTYPE_p_size_type swig_types[10]
+#define SWIGTYPE_p_std__allocatorT_float_t swig_types[11]
+#define SWIGTYPE_p_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t swig_types[12]
+#define SWIGTYPE_p_std__invalid_argument swig_types[13]
+#define SWIGTYPE_p_std__logic_error swig_types[14]
+#define SWIGTYPE_p_std__vectorT__Tp__Alloc_t swig_types[15]
+#define SWIGTYPE_p_std__vectorT_float_std__allocatorT_float_t_t swig_types[16]
+#define SWIGTYPE_p_std__vectorT_std__pairT_vec3_std__string_t_std__allocatorT_std__pairT_vec3_std__string_t_t_t swig_types[17]
+#define SWIGTYPE_p_std__vectorT_std__pairT_vec3_vec3_t_std__allocatorT_std__pairT_vec3_vec3_t_t_t swig_types[18]
+#define SWIGTYPE_p_std__vectorT_std__vectorT_float_std__allocatorT_float_t_t_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t_t swig_types[19]
+#define SWIGTYPE_p_swig__SwigPyIterator swig_types[20]
+#define SWIGTYPE_p_value_type swig_types[21]
+#define SWIGTYPE_p_vec2 swig_types[22]
+#define SWIGTYPE_p_vec3 swig_types[23]
+#define SWIGTYPE_p_vec4 swig_types[24]
+static swig_type_info *swig_types[26];
+static swig_module_info swig_module = {swig_types, 25, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -4992,6 +4993,17 @@ SWIG_AsVal_unsigned_SS_int (PyObject * obj, unsigned int *val)
     }
   }  
   return res;
+}
+
+
+SWIGINTERN int
+SWIG_AsVal_bool (PyObject *obj, bool *val)
+{
+  int r = PyObject_IsTrue(obj);
+  if (r == -1)
+    return SWIG_ERROR;
+  if (val) *val = r ? true : false;
+  return SWIG_OK;
 }
 
 
@@ -10159,6 +10171,674 @@ fail:
 }
 
 
+SWIGINTERN PyObject *_wrap_LSystem_setHasResources(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  bool arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:LSystem_setHasResources",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_setHasResources" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  ecode2 = SWIG_AsVal_bool(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LSystem_setHasResources" "', argument " "2"" of type '" "bool""'");
+  } 
+  arg2 = static_cast< bool >(val2);
+  (arg1)->setHasResources(arg2);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_setOptimalBudDirs(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > arg2 ;
+  std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > arg3 ;
+  std::vector< float,std::allocator< float > > arg4 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:LSystem_setOptimalBudDirs",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_setOptimalBudDirs" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  {
+    std::vector<std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *ptr = (std::vector<std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *)0;
+    int res = swig::asptr(obj1, &ptr);
+    if (!SWIG_IsOK(res) || !ptr) {
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "LSystem_setOptimalBudDirs" "', argument " "2"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > >""'"); 
+    }
+    arg2 = *ptr;
+    if (SWIG_IsNewObj(res)) delete ptr;
+  }
+  {
+    std::vector<std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *ptr = (std::vector<std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *)0;
+    int res = swig::asptr(obj2, &ptr);
+    if (!SWIG_IsOK(res) || !ptr) {
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "LSystem_setOptimalBudDirs" "', argument " "3"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > >""'"); 
+    }
+    arg3 = *ptr;
+    if (SWIG_IsNewObj(res)) delete ptr;
+  }
+  {
+    std::vector<float,std::allocator< float > > *ptr = (std::vector<float,std::allocator< float > > *)0;
+    int res = swig::asptr(obj3, &ptr);
+    if (!SWIG_IsOK(res) || !ptr) {
+      SWIG_exception_fail(SWIG_ArgError((ptr ? res : SWIG_TypeError)), "in method '" "LSystem_setOptimalBudDirs" "', argument " "4"" of type '" "std::vector< float,std::allocator< float > >""'"); 
+    }
+    arg4 = *ptr;
+    if (SWIG_IsNewObj(res)) delete ptr;
+  }
+  (arg1)->setOptimalBudDirs(arg2,arg3,arg4);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_getOptimalBudDirs(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *arg2 = 0 ;
+  std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *arg3 = 0 ;
+  std::vector< float,std::allocator< float > > *arg4 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:LSystem_getOptimalBudDirs",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_getOptimalBudDirs" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2, SWIGTYPE_p_std__vectorT_std__vectorT_float_std__allocatorT_float_t_t_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t_t,  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "LSystem_getOptimalBudDirs" "', argument " "2"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > &""'"); 
+  }
+  if (!argp2) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getOptimalBudDirs" "', argument " "2"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > &""'"); 
+  }
+  arg2 = reinterpret_cast< std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > * >(argp2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_std__vectorT_float_std__allocatorT_float_t_t_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "LSystem_getOptimalBudDirs" "', argument " "3"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getOptimalBudDirs" "', argument " "3"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > * >(argp3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4, SWIGTYPE_p_std__vectorT_float_std__allocatorT_float_t_t,  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "LSystem_getOptimalBudDirs" "', argument " "4"" of type '" "std::vector< float,std::allocator< float > > &""'"); 
+  }
+  if (!argp4) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getOptimalBudDirs" "', argument " "4"" of type '" "std::vector< float,std::allocator< float > > &""'"); 
+  }
+  arg4 = reinterpret_cast< std::vector< float,std::allocator< float > > * >(argp4);
+  (arg1)->getOptimalBudDirs(*arg2,*arg3,*arg4);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_getBudAngle(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  vec3 arg2 ;
+  vec3 *arg3 = 0 ;
+  float *arg4 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  bool result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:LSystem_getBudAngle",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_getBudAngle" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  {
+    res2 = SWIG_ConvertPtr(obj1, &argp2, SWIGTYPE_p_vec3,  0  | 0);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "LSystem_getBudAngle" "', argument " "2"" of type '" "vec3""'"); 
+    }  
+    if (!argp2) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getBudAngle" "', argument " "2"" of type '" "vec3""'");
+    } else {
+      vec3 * temp = reinterpret_cast< vec3 * >(argp2);
+      arg2 = *temp;
+      if (SWIG_IsNewObj(res2)) delete temp;
+    }
+  }
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_vec3,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "LSystem_getBudAngle" "', argument " "3"" of type '" "vec3 &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getBudAngle" "', argument " "3"" of type '" "vec3 &""'"); 
+  }
+  arg3 = reinterpret_cast< vec3 * >(argp3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4, SWIGTYPE_p_float,  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "LSystem_getBudAngle" "', argument " "4"" of type '" "float &""'"); 
+  }
+  if (!argp4) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_getBudAngle" "', argument " "4"" of type '" "float &""'"); 
+  }
+  arg4 = reinterpret_cast< float * >(argp4);
+  result = (bool)(arg1)->getBudAngle(arg2,*arg3,*arg4);
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_isABud(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  vec3 arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  bool result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:LSystem_isABud",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_isABud" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  {
+    res2 = SWIG_ConvertPtr(obj1, &argp2, SWIGTYPE_p_vec3,  0  | 0);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "LSystem_isABud" "', argument " "2"" of type '" "vec3""'"); 
+    }  
+    if (!argp2) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_isABud" "', argument " "2"" of type '" "vec3""'");
+    } else {
+      vec3 * temp = reinterpret_cast< vec3 * >(argp2);
+      arg2 = *temp;
+      if (SWIG_IsNewObj(res2)) delete temp;
+    }
+  }
+  result = (bool)(arg1)->isABud(arg2);
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_updateBudGeometry(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  unsigned int arg2 ;
+  std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *arg3 = 0 ;
+  std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *arg4 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  unsigned int val2 ;
+  int ecode2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
+  void *argp4 = 0 ;
+  int res4 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:LSystem_updateBudGeometry",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_updateBudGeometry" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  ecode2 = SWIG_AsVal_unsigned_SS_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LSystem_updateBudGeometry" "', argument " "2"" of type '" "unsigned int""'");
+  } 
+  arg2 = static_cast< unsigned int >(val2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3, SWIGTYPE_p_std__vectorT_std__vectorT_float_std__allocatorT_float_t_t_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t_t,  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "LSystem_updateBudGeometry" "', argument " "3"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > &""'"); 
+  }
+  if (!argp3) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_updateBudGeometry" "', argument " "3"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > &""'"); 
+  }
+  arg3 = reinterpret_cast< std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > * >(argp3);
+  res4 = SWIG_ConvertPtr(obj3, &argp4, SWIGTYPE_p_std__vectorT_std__vectorT_float_std__allocatorT_float_t_t_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t_t,  0 );
+  if (!SWIG_IsOK(res4)) {
+    SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "LSystem_updateBudGeometry" "', argument " "4"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > &""'"); 
+  }
+  if (!argp4) {
+    SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_updateBudGeometry" "', argument " "4"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > &""'"); 
+  }
+  arg4 = reinterpret_cast< std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > * >(argp4);
+  (arg1)->updateBudGeometry(arg2,*arg3,*arg4);
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mDfltAngle_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  float arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  float val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:LSystem_mDfltAngle_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mDfltAngle_set" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  ecode2 = SWIG_AsVal_float(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LSystem_mDfltAngle_set" "', argument " "2"" of type '" "float""'");
+  } 
+  arg2 = static_cast< float >(val2);
+  if (arg1) (arg1)->mDfltAngle = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mDfltAngle_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  float result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:LSystem_mDfltAngle_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mDfltAngle_get" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  result = (float) ((arg1)->mDfltAngle);
+  resultobj = SWIG_From_float(static_cast< float >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mDfltStep_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  float arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  float val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:LSystem_mDfltStep_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mDfltStep_set" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  ecode2 = SWIG_AsVal_float(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LSystem_mDfltStep_set" "', argument " "2"" of type '" "float""'");
+  } 
+  arg2 = static_cast< float >(val2);
+  if (arg1) (arg1)->mDfltStep = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mDfltStep_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  float result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:LSystem_mDfltStep_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mDfltStep_get" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  result = (float) ((arg1)->mDfltStep);
+  resultobj = SWIG_From_float(static_cast< float >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mGrammar_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  std::string *arg2 = 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  int res2 = SWIG_OLDOBJ ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:LSystem_mGrammar_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mGrammar_set" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  {
+    std::string *ptr = (std::string *)0;
+    res2 = SWIG_AsPtr_std_string(obj1, &ptr);
+    if (!SWIG_IsOK(res2)) {
+      SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "LSystem_mGrammar_set" "', argument " "2"" of type '" "std::string const &""'"); 
+    }
+    if (!ptr) {
+      SWIG_exception_fail(SWIG_ValueError, "invalid null reference " "in method '" "LSystem_mGrammar_set" "', argument " "2"" of type '" "std::string const &""'"); 
+    }
+    arg2 = ptr;
+  }
+  if (arg1) (arg1)->mGrammar = *arg2;
+  resultobj = SWIG_Py_Void();
+  if (SWIG_IsNewObj(res2)) delete arg2;
+  return resultobj;
+fail:
+  if (SWIG_IsNewObj(res2)) delete arg2;
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mGrammar_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  std::string *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:LSystem_mGrammar_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mGrammar_get" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  result = (std::string *) & ((arg1)->mGrammar);
+  resultobj = SWIG_From_std_string(static_cast< std::string >(*result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mHasResources_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  bool arg2 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  bool val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:LSystem_mHasResources_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mHasResources_set" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  ecode2 = SWIG_AsVal_bool(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "LSystem_mHasResources_set" "', argument " "2"" of type '" "bool""'");
+  } 
+  arg2 = static_cast< bool >(val2);
+  if (arg1) (arg1)->mHasResources = arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mHasResources_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  bool result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:LSystem_mHasResources_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mHasResources_get" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  result = (bool) ((arg1)->mHasResources);
+  resultobj = SWIG_From_bool(static_cast< bool >(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mBudPositions_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *arg2 = (std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:LSystem_mBudPositions_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mBudPositions_set" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_std__vectorT_std__vectorT_float_std__allocatorT_float_t_t_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t_t, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "LSystem_mBudPositions_set" "', argument " "2"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *""'"); 
+  }
+  arg2 = reinterpret_cast< std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > * >(argp2);
+  if (arg1) (arg1)->mBudPositions = *arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mBudPositions_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:LSystem_mBudPositions_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mBudPositions_get" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  result = (std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *)& ((arg1)->mBudPositions);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_std__vectorT_std__vectorT_float_std__allocatorT_float_t_t_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t_t, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mBudAngles_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  std::vector< float,std::allocator< float > > *arg2 = (std::vector< float,std::allocator< float > > *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:LSystem_mBudAngles_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mBudAngles_set" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_std__vectorT_float_std__allocatorT_float_t_t, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "LSystem_mBudAngles_set" "', argument " "2"" of type '" "std::vector< float,std::allocator< float > > *""'"); 
+  }
+  arg2 = reinterpret_cast< std::vector< float,std::allocator< float > > * >(argp2);
+  if (arg1) (arg1)->mBudAngles = *arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mBudAngles_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  std::vector< float,std::allocator< float > > *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:LSystem_mBudAngles_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mBudAngles_get" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  result = (std::vector< float,std::allocator< float > > *)& ((arg1)->mBudAngles);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_std__vectorT_float_std__allocatorT_float_t_t, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mBudDirs_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *arg2 = (std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:LSystem_mBudDirs_set",&obj0,&obj1)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mBudDirs_set" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_std__vectorT_std__vectorT_float_std__allocatorT_float_t_t_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t_t, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "LSystem_mBudDirs_set" "', argument " "2"" of type '" "std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *""'"); 
+  }
+  arg2 = reinterpret_cast< std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > * >(argp2);
+  if (arg1) (arg1)->mBudDirs = *arg2;
+  resultobj = SWIG_Py_Void();
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_LSystem_mBudDirs_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  LSystem *arg1 = (LSystem *) 0 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  PyObject * obj0 = 0 ;
+  std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"O:LSystem_mBudDirs_get",&obj0)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_LSystem, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "LSystem_mBudDirs_get" "', argument " "1"" of type '" "LSystem *""'"); 
+  }
+  arg1 = reinterpret_cast< LSystem * >(argp1);
+  result = (std::vector< std::vector< float,std::allocator< float > >,std::allocator< std::vector< float,std::allocator< float > > > > *)& ((arg1)->mBudDirs);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_std__vectorT_std__vectorT_float_std__allocatorT_float_t_t_std__allocatorT_std__vectorT_float_std__allocatorT_float_t_t_t_t, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
 SWIGINTERN PyObject *LSystem_swigregister(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *obj;
   if (!PyArg_ParseTuple(args,(char*)"O:swigregister", &obj)) return NULL;
@@ -11954,6 +12634,26 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"LSystem_getIteration", _wrap_LSystem_getIteration, METH_VARARGS, NULL},
 	 { (char *)"LSystem_process", _wrap_LSystem_process, METH_VARARGS, NULL},
 	 { (char *)"LSystem_processPy", _wrap_LSystem_processPy, METH_VARARGS, NULL},
+	 { (char *)"LSystem_setHasResources", _wrap_LSystem_setHasResources, METH_VARARGS, NULL},
+	 { (char *)"LSystem_setOptimalBudDirs", _wrap_LSystem_setOptimalBudDirs, METH_VARARGS, NULL},
+	 { (char *)"LSystem_getOptimalBudDirs", _wrap_LSystem_getOptimalBudDirs, METH_VARARGS, NULL},
+	 { (char *)"LSystem_getBudAngle", _wrap_LSystem_getBudAngle, METH_VARARGS, NULL},
+	 { (char *)"LSystem_isABud", _wrap_LSystem_isABud, METH_VARARGS, NULL},
+	 { (char *)"LSystem_updateBudGeometry", _wrap_LSystem_updateBudGeometry, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mDfltAngle_set", _wrap_LSystem_mDfltAngle_set, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mDfltAngle_get", _wrap_LSystem_mDfltAngle_get, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mDfltStep_set", _wrap_LSystem_mDfltStep_set, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mDfltStep_get", _wrap_LSystem_mDfltStep_get, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mGrammar_set", _wrap_LSystem_mGrammar_set, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mGrammar_get", _wrap_LSystem_mGrammar_get, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mHasResources_set", _wrap_LSystem_mHasResources_set, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mHasResources_get", _wrap_LSystem_mHasResources_get, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mBudPositions_set", _wrap_LSystem_mBudPositions_set, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mBudPositions_get", _wrap_LSystem_mBudPositions_get, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mBudAngles_set", _wrap_LSystem_mBudAngles_set, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mBudAngles_get", _wrap_LSystem_mBudAngles_get, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mBudDirs_set", _wrap_LSystem_mBudDirs_set, METH_VARARGS, NULL},
+	 { (char *)"LSystem_mBudDirs_get", _wrap_LSystem_mBudDirs_get, METH_VARARGS, NULL},
 	 { (char *)"LSystem_swigregister", LSystem_swigregister, METH_VARARGS, NULL},
 	 { (char *)"new_vec2", _wrap_new_vec2, METH_VARARGS, NULL},
 	 { (char *)"vec2___iadd__", _wrap_vec2___iadd__, METH_VARARGS, NULL},
@@ -12010,6 +12710,7 @@ static swig_type_info _swigt__p_allocator_type = {"_p_allocator_type", "allocato
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_difference_type = {"_p_difference_type", "difference_type *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_double = {"_p_double", "double *", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_float = {"_p_float", "float *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_math__matrix_error = {"_p_math__matrix_error", "math::matrix_error *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_PyObject = {"_p_p_PyObject", "PyObject **", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_size_type = {"_p_size_type", "size_type *", 0, 0, (void*)0, 0};
@@ -12036,6 +12737,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_char,
   &_swigt__p_difference_type,
   &_swigt__p_double,
+  &_swigt__p_float,
   &_swigt__p_math__matrix_error,
   &_swigt__p_p_PyObject,
   &_swigt__p_size_type,
@@ -12062,6 +12764,7 @@ static swig_cast_info _swigc__p_allocator_type[] = {  {&_swigt__p_allocator_type
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_difference_type[] = {  {&_swigt__p_difference_type, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_double[] = {  {&_swigt__p_double, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_float[] = {  {&_swigt__p_float, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_math__matrix_error[] = {  {&_swigt__p_math__matrix_error, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_PyObject[] = {  {&_swigt__p_p_PyObject, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_size_type[] = {  {&_swigt__p_size_type, 0, 0, 0},{0, 0, 0, 0}};
@@ -12088,6 +12791,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_char,
   _swigc__p_difference_type,
   _swigc__p_double,
+  _swigc__p_float,
   _swigc__p_math__matrix_error,
   _swigc__p_p_PyObject,
   _swigc__p_size_type,

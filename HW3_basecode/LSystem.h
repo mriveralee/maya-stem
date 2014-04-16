@@ -43,6 +43,30 @@ public:
 		std::vector<std::vector<float> >& branches,
         std::vector<std::vector<float> >& flowers);
 
+		// LSystem Fxns
+
+	void setHasResources(bool hasResources);
+
+	void setOptimalBudDirs(std::vector<std::vector<float> > buds, std::vector<std::vector<float> > dirs, std::vector<float> angles);
+    void getOptimalBudDirs(std::vector<std::vector<float> >& buds, std::vector<std::vector<float> >& dirs, std::vector<float>& angles);
+	
+	bool getBudAngle(vec3 pos, vec3& budAxis, float &budAngle);
+	bool isABud(vec3 pos);
+
+	void updateBudGeometry(unsigned int n, std::vector<std::vector<float> >& branches, std::vector<std::vector<float> >& flowers);
+	
+
+
+	// LSYSTEM Variables
+	float mDfltAngle;
+    float mDfltStep;
+    std::string mGrammar;
+	bool mHasResources;
+
+	std::vector<std::vector<float> > mBudPositions;
+	std::vector<float> mBudAngles;
+	std::vector<std::vector<float> > mBudDirs;
+
 
 protected:
     void reset();
@@ -72,30 +96,6 @@ protected:
         vec3 forward;
         vec3 left;
     };
-
-	// LSystem Fxns
-
-	void setHasResources(bool hasResources);
-
-	void setOptimalBudDirs(std::vector<std::vector<float> > buds, std::vector<std::vector<float> > dirs, std::vector<float> angles);
-    void getOptimalBudDirs(std::vector<std::vector<float> >& buds, std::vector<std::vector<float> >& dirs, std::vector<float>& angles);
-	
-	bool getBudAngle(vec3 pos, vec3& budAxis, float &budAngle);
-	bool isABud(vec3 pos);
-
-	void updateBudGeometry(unsigned int n, std::vector<std::vector<float> >& branches, std::vector<std::vector<float> >& flowers);
-	
-
-
-	// LSYSTEM Variables
-	float mDfltAngle;
-    float mDfltStep;
-    std::string mGrammar;
-	bool mHasResources;
-
-	std::vector<std::vector<float> > mBudPositions;
-	std::vector<float> mBudAngles;
-	std::vector<std::vector<float> > mBudDirs;
 
 	//std::map<std::string, int> mBud;
 	std::map<vec3, vec3> mBudToLightPos;

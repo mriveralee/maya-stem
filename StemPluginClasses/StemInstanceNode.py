@@ -279,7 +279,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Make tree from Internode Cylinder Meshes
     for cyl in self.mInternodes:
       # Append the Cylinder's mesh to our main mesh
-      print cyl
+      print 'EACH UPDATES INTERNODE:'
+      print cyl.mStart, cyl.mEnd, "isBud:", len(cyl.mInternodeChildren) == 0
       cyl.appendToMesh(cPoints, cFaceCounts, cFaceConnects)
 
 

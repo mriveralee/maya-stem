@@ -272,23 +272,17 @@ void LSystem::process(unsigned int n,
 
     std::string insn = getIteration(n);
 
-    std::vector<int> depth;
-    int curDepth = 0;
-
 	// For updating bud rotations based on light positions in maya
 	float budAngle = 0.0;
-	vec3 budAxis = vec3();
-	float prevDefAngle;
 	vec3 initialStart;
-	std::string prevSym = "";
 
-    for (unsigned int i = 0; i < insn.size() && i <= 1; i++) {
-        std::string sym = insn.substr(i,1);
+	int jitter = 1;
+    for (unsigned int i = 0; i < insn.size(); i++) {
+        jitter = (rand() % 2 == 0) ? 1 : -1;
+		budAngle = jitter * (rand() % 35) + mDfltAngle;
+		std::string sym = insn.substr(i,1);
 		initialStart = turtle.pos;
-
-
-
-		if (sym == "F" && (prevSym.compare(sym) != 0)) {
+		if (sym == "F") {
             vec3 start = turtle.pos;
             turtle.moveForward(mDfltStep);
             branches.push_back(Branch(start,turtle.pos));
@@ -297,47 +291,28 @@ void LSystem::process(unsigned int n,
             turtle.moveForward(mDfltStep);
         }
         else if (sym == "+") {
-            turtle.applyUpRot(mDfltAngle);
+            turtle.applyUpRot(budAngle);
         }
         else if (sym == "-") {
-            turtle.applyUpRot(-mDfltAngle);
+            turtle.applyUpRot(-budAngle);
         }
         else if (sym == "&") {
-            turtle.applyLeftRot(mDfltAngle);
+            turtle.applyLeftRot(budAngle);
         }
         else if (sym == "^") {
-            turtle.applyLeftRot(-mDfltAngle);
+            turtle.applyLeftRot(-budAngle);
         }
         else if (sym == "\\") {
-            turtle.applyForwardRot(mDfltAngle);
+            turtle.applyForwardRot(budAngle);
         }
         else if (sym == "/") {
-            turtle.applyForwardRot(-mDfltAngle);
+            turtle.applyForwardRot(-budAngle);
         }
         else if (sym == "|") {
             turtle.applyUpRot(180);
         }
         else if (sym == "[") {
             stack.push(turtle);
-			//If is a bud, push turtle onto BudStack,
-			// find next "]" close bracket, then move i to that position
-			// Main branch can keep growing but we want to be able to add 
-			// a branch from the bud
-			//if (isABud(turtle.pos)) {
-			//	Turtle budTurtle = Turtle(turtle);
-			//	mBudPosStack.push(budTurtle);
-			//	// Do some growth with the bud
-
-			//	int nextPos = insn.find("]", i);
-			//	if (nextPos != string::npos) {
-			//		i = nextPos;
-			//		continue;
-			//	}
-
-			//} else {
-			//	// Push if not a bud
-			//	stack.push(turtle);
-			//}
         }
         else if (sym == "]") {
             turtle = stack.top();
@@ -346,25 +321,7 @@ void LSystem::process(unsigned int n,
         else {
 			models.push_back(Geometry(turtle.pos, sym));
         }		
-		prevSym = sym;
 	 }
-	// Update the growth for each bud, if necessary
-	//for (unsigned int i = 0; i < mBudPositions.size(); i++) {
-	//	// Bud Position
-	//	std::vector<float> budPos = mBudPositions.at(i);
-	//	vec3 bPos = vec3(budPos.at(0), budPos.at(1), budPos.at(2));
-	//	
-	//	// Optimal Position
-	//	std::vector<float> optPos = mBudDirs.at(i);
-	//	vec3 oPos = vec3(optPos.at(0), optPos.at(1), optPos.at(2));
-
-	//	// Make branch to the opt positon
-	//	branches.push_back(Branch(bPos, oPos));
-	//	// turtle.rotateByAxisAngle(budAxis, budAngle);
-	//	// prevDefAngle = mDfltAngle;
-	//	// Grow towards the Light
-	//	//mDfltAngle = budAngle;
-	//}
 }
 
 /**
@@ -516,8 +473,8 @@ void LSystem::updateBudGeometry(unsigned int n, std::vector<std::vector<float> >
 	// for each bud pos, go through and complete growth towards the light
 	// push back onto branches
 	// static int MIN_ITERATIONS = 2;
-	static int MAX_ITERATIONS = 2;
-	Turtle t = Turtle();
+	static int MAX_ITERATIONS = 4;
+	Turtle t = Turtle(); 
 	for (unsigned int i = 0; i < mBudPositions.size(); i++) {
 		// Get the bud position
 		std::vector<float> bp = mBudPositions.at(i);
@@ -532,45 +489,55 @@ void LSystem::updateBudGeometry(unsigned int n, std::vector<std::vector<float> >
 
 		// Set the number of iterations
 		int numIters = (rand() % MAX_ITERATIONS) + n;
-
-
+		vec3 initialPos;
+		int jitter;
+		int randAngle;
+		unsigned int randMovement;
 		// Now move the Turtle
 		for (unsigned int j = 0; j < numIters; j++) {
-			int randMovement = rand() % 5;
-			int randAngle = rand() % 45 + 30;
+			randMovement = rand() % 5;
+			jitter = (rand() % 2 == 0) ? 1 : -1;
+			randAngle = jitter * (rand() % 35 + 50);
+	
+			std::vector<float> b = std::vector<float>();
 			switch (randMovement) {
 				case 0:
 					// Move Forward
-					t.moveForward(mDfltStep + 0.1f);
+					initialPos = t.pos;
+					t.moveForward(mDfltStep + jitter * 0.2f);
+					// Add a new branch 	
+					b.push_back(initialPos[0]);
+					b.push_back(initialPos[1]);
+					b.push_back(initialPos[2]);
+					b.push_back(t.pos[0]);
+					b.push_back(t.pos[1]);
+					b.push_back(t.pos[2]);
+					// Add it to the branches!
+					branches.push_back(b);
 					break;
 				case 1:
 					// Apply Left
 					t.applyUpRot(randAngle);
 					break;
 				case 2:
-					// Up Rotation
-					t.applyUpRot(-randAngle);
-					break;
-				case 3:
 					t.applyLeftRot(randAngle);
 					break;
-				case 4:
-					t.applyLeftRot(-randAngle);
+				// TODO ADD TURTLE STACK PUSH/POPPING CASES
 				default:
 					break;
 			}
 			// Find max growth position toward light 
 			// (we don't want all the buds to growth fully to the light)
 			// We want it to be between 40-75
-			vec3 initialPos = t.pos;
-			int growthRate = rand() % 25 + 10;
+			initialPos = t.pos;
+			float growthRate = (rand() % 25 + 10) / 100.0f;
 			vec3 growthVec = growthRate * (lightPos - initialPos);
 			
 			// Update the turtle position
 			t.pos = initialPos + growthVec;
 
 			// Add a new branch 
-			std::vector<float> b = std::vector<float>();
+			b = std::vector<float>();
 			b.push_back(initialPos[0]);
 			b.push_back(initialPos[1]);
 			b.push_back(initialPos[2]);
