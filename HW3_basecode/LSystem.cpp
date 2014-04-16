@@ -279,7 +279,8 @@ void LSystem::process(unsigned int n,
 	int jitter = 1;
     for (unsigned int i = 0; i < insn.size(); i++) {
         jitter = (rand() % 2 == 0) ? 1 : -1;
-		budAngle = jitter * (rand() % 35) + mDfltAngle;
+		budAngle = mDfltAngle;
+		// budAngle = jitter * (rand() % 35) + mDfltAngle;
 		std::string sym = insn.substr(i,1);
 		initialStart = turtle.pos;
 		if (sym == "F") {
