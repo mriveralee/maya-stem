@@ -39,12 +39,13 @@ class StemUIMenu(object):
     # Set a shading group
     shadingGroup = cmds.sets(meshNode, addElement='initialShadingGroup')
 
-    # Create Lsystem
-    stemNode = cmds.createNode(SI.STEM_INSTANCE_NODE_TYPE_NAME)
+    # Create StemNode and parent to txNode
+    stemNode = cmds.createNode(SI.STEM_INSTANCE_NODE_TYPE_NAME, p=txNode)
 
     # Connect the nodes with the time
-    print cmds.connectAttr('time1.outTime', stemNode + '.time')
-    print cmds.connectAttr(stemNode+'.outputMesh', meshNode+'.inMesh')
+    cmds.connectAttr('time1.outTime', stemNode + '.time')
+    cmds.connectAttr(stemNode+'.outputMesh', meshNode+'.inMesh')
+
     #maya.mel.eval('rotate 0 0 90deg ' + txNode)
     #lsysNode = cmds.createNode(SLS.STEMM_LSYSTEM_NODE_TYPE_NODE)
 
