@@ -294,10 +294,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Append the Cylinder's mesh to our main mesh
       cyl.appendToMesh(cPoints, cFaceCounts, cFaceConnects)
 
-
-    # TODO: possibly remove this later, using for testing
-    self.performBHModelResourceDistribution()
-
     # TODO - Handle flowers (uncomment when needed)
     # for i in range(0, flowers.size()):
     #   f = flowers[i]
@@ -307,6 +303,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Compute Optimal Growth pairs for internodes
     # TODO - remove when finished debugging curves
     self.updateOptimalGrowthPairs(self.mInternodes, False)
+
+    # TODO: possibly remove this later, using for testing
+    self.performBHModelResourceDistribution()
 
 
     if ENABLE_TREE_CURVES:
@@ -338,6 +337,14 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     # Update the LSystem with the buds of the pre growth internodes
     self.updateOptimalGrowthPairs(preBudGrowthInternodes, True)
+    # ^calculates growth dir, light point, ties light to bud, this is when Q
+    # values will get assigned
+
+    # TODO: insert acro/basipetal passes here using Q values
+    # after propogation happens, v resouce value will get assigned in each bud
+    # grab v from each bud to determine growth from that bud
+
+    # TODO: send v values to LSystem
 
     # Test the output of the buds and angles in the LSystem
     # self.verifyLSystemBudAngles(buds, dirs, angles)
@@ -689,23 +696,34 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # TODO: remove later. this bit is for testing on simple case
     # currently configuring appropriate bud types and locations using the
     # given geometry from the LSystem
-    for b in branchStack:
+    for b in self.mInternodes:
 
       if (len(b.mInternodeChildren) == 0):
-        b.mQLightAmount = 1
+        # b.mQLightAmount = 1
         parent = b
         b.mBudTerminal = SB.StemBud(SB.BudType.TERMINAL, parent)
+        b.mBudTerminal.mQLightAmount = 1
         b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent)
+        b.mBudLateral.mQLightAmount = 0.5
       elif (len(b.mInternodeChildren) == 1):
         parent = b
         child = b.mInternodeChildren[0]
         b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent, child)
+        b.mBudLateral.mQLightAmount = 0.5
+      else:
+        print "has more than 1 child" + str(len(b.mInternodeChildren))
 
     # newList = list(branchStack)
     # for each internode, propogate light information from leaf nodes towards base
     while (len(branchStack) > 0):
       b = branchStack.pop()
-      if (b.mInternodeParent != None):
+      # if the internode has buds with Q values, store cum Q values in internode
+      if (b.mBudTerminal is not None):
+        b.mQLightAmount += b.mBudTerminal.mQLightAmount
+      if (b.mBudLateral is not None):
+        b.mQLightAmount += b.mBudLateral.mQLightAmount
+      # if internode parent stores Q value, also store that in internode
+      if (b.mInternodeParent is not None):
         b.mInternodeParent.mQLightAmount += b.mQLightAmount
 
     # TODO: remove later. prints light values after propogation in BFS order
