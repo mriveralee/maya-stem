@@ -33,11 +33,11 @@ class StemUIMenu(object):
     # Make transform
     txNode = cmds.createNode('transform')
 
-    # Make a Mesh node and connect it to the transform node
-    meshNode = cmds.createNode('mesh', p=txNode)
-
     # Create StemNode and parent to txNode
     stemNode = cmds.createNode(SI.STEM_INSTANCE_NODE_TYPE_NAME, p=txNode)
+
+    # Make a Mesh node and connect it to the transform node
+    meshNode = cmds.createNode('mesh', p=txNode)
 
     # Set a shading group
     shadingGroup = cmds.sets(meshNode, addElement='initialShadingGroup')

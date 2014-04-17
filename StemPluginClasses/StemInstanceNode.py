@@ -66,7 +66,6 @@ DEFAULT_ANGLE = 42.5
 # Enable test drawing
 ENABLE_RESOURCE_DRAWING  = False
 
-
 # Node definition
 class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   # Declare class variables:
@@ -75,7 +74,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mDisplayRadius = 1.0
 
   # Node Time
-
   mTime = OpenMaya.MObject()
   mID = OpenMaya.MObject()
 
@@ -105,6 +103,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
   mOptimalGrowthPairs = []
 
+
   # LSystem Variables
   mLSystem = LSystem.LSystem()
   mPrevGrammarFile = None
@@ -113,6 +112,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   # Curves Drawn
   mOptCurves = []
 
+  mId = None
 
   '''
   '' StemInstance Node Constructor
@@ -227,14 +227,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '' Creates a Cylinder Mesh based on the LSystem
   '''
   def createMesh(self, iters, angle, step, grammarFile, hasResources, data, newOutputData):
-    # # Get optimal growth pairs and send to LSystem
-    # mOptimalGrowthPairs = self.getBudOptimalGrowthDirs()
-    # # Convert optimal growth pairs into vectors
-    # [buds, dirs] = self.convertOptGrowthPairsForLSystem(optimalGrowthPairs)
-    #
-    # # Sets the optimal growth directions for the LSystem
-    # self.mLSystem.setOptimalBudDirs(buds, dirs)
-
     # Get Grammar File Contents & load to lsys
     if grammarFile != self.mPrevGrammarFile:
       self.mPrevGrammarContent = self.readGrammarFile(grammarFile)
@@ -297,6 +289,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Compute Optimal Growth pairs for internodes
     # TODO - remove when finished debugging curves
     self.updateOptimalGrowthPairs(self.mInternodes, False)
+
 
     # Verify a mesh was made
     if cPoints.length() == 0 or cFaceCounts.length() == 0 or cFaceConnects.length() == 0:
@@ -381,8 +374,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def getBudOptimalGrowthDirs(self, internodes):
     # Erase old curves
-    SG.eraseCurves(None)
-    #del self.mOptCurves[:]
+    self.eraseCurves()
+
     # Get list of resource noces
     resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
 
@@ -403,7 +396,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     # Now compute optimal growth dirs and bud pair directions
     optimalGrowthPairs = []
-    drawnCurves = []
 
     # Grab the StemNodeInstance
     stemNode = SG.getSelectedNodeChildByType(STEM_INSTANCE_NODE_TYPE_NAME)
@@ -458,18 +450,12 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       #growthAnglePair = (budPosition, optGrowthAngle)
 
       # Draw curve to show direction vector
-      c = SG.drawCurve(budCurveWorldPosition, optPt)
-      #print 'Curve drawn', c
-      # TODO figure out how to handle this line
-      #drawnCurves.append(c)
+      self.drawCurve(budCurveWorldPosition, optPt)
+
       # Now append to the list of pairs
       optimalGrowthPairs.append(growthPair)
       #optimalGrowthPairs.append(growthAnglePair)
-    #self.mOptCurves = drawnCurves
-    # print 'Optimal Growth Pairs'
-    # print optimalGrowthPairs
-    # print '****************************'
-    #self.mOptCurves = drawnCurves
+
     # Return the Optimal Growth Pairs
     return optimalGrowthPairs
 
@@ -480,6 +466,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def createBudList(self, internodes):
     # Creates a list of buds based on the internodes list-
     # A bud is defined as the end point of an internode that has no children
+    if internodes is None or len(internodes) is 0:
+      return []
     childBuds = []
     for n in internodes:
       if n.mInternodeChildren is None or len(n.mInternodeChildren) == 0:
@@ -744,6 +732,28 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       return fileContents
     except:
       return ""
+
+  '''
+  '' Draws a curve between two points
+  '''
+  def drawCurve(self, p1, p2):
+    curve = str(cmds.curve(p=[(p1[0], p1[1], p1[2]), (p2[0], p2[1], p2[2])], degree=1))
+    curveColor = random.randint(5,35)
+    cmds.setAttr(curve + ".overrideColor", curveColor)
+    self.mOptCurves.append(curve)
+
+  '''
+  '' Erases all curves in the Maya Scene
+  '''
+  def eraseCurves(self):
+    allCurves = self.mOptCurves
+    for i in range(0, len(allCurves)):
+      s = allCurves[i].strip()
+      if len(s) > 0:
+        cmds.delete(s)
+    # Clear the Curves
+    self.mOptCurves = []
+
 
 ######################## End StemInstanceNode Class ############################
 '''
