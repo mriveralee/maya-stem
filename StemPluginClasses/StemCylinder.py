@@ -131,6 +131,19 @@ class StemCylinder():
     faceConnects = G_FACE_CONNECTS
     return (cpoints, faceCounts, faceConnects)
 
+  '''
+  '' Returns the start point as a tuple
+  '''
+  def getStartPointTuple(self):
+    return (self.mStart.x, self.mStart.y, self.mStart.z)
+
+
+  '''
+  '' Returns the end point as a tuple
+  '''
+  def getEndPointTuple(self):
+    return (self.mEnd.x, self.mEnd.y, self.mEnd.z)
+
 
   '''
   '' Transforms points to match the mesh

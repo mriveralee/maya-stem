@@ -109,10 +109,12 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mPrevGrammarFile = None
   mPrevGrammarContent = None
 
-  # Curves Drawn
+  # Optimal Point Curves Drawn
   mOptCurves = []
 
-  mId = None
+  # Tree Curves
+  mTreeCurves = []
+
 
   '''
   '' StemInstance Node Constructor
@@ -132,7 +134,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     for i in range(0,360):
       if (i % 2 != 0):
         continue
-      rad = (i * 2 * math.pi)/360;
+      rad = (i * 2 * math.pi)/360
       glFT.glNormal3f(0.0, 1.0, 0.0)
       if (i == 360):
         glFT.glTexCoord3f(
@@ -218,6 +220,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         # Set new output data/mesh
         outputHandle.setMObject(newOutputData)
 
+        print 'Creating Tree curves'
+        self.extrudeTreeCurves(self.mInternodes)
+        
         # Clear up the data
         data.setClean(plug)
 
@@ -374,7 +379,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def getBudOptimalGrowthDirs(self, internodes):
     # Erase old curves
-    self.eraseCurves()
+    self.eraseCurves(self.mOptCurves)
 
     # Get list of resource noces
     resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
@@ -737,22 +742,73 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '' Draws a curve between two points
   '''
   def drawCurve(self, p1, p2):
-    curve = str(cmds.curve(p=[(p1[0], p1[1], p1[2]), (p2[0], p2[1], p2[2])], degree=1))
-    curveColor = random.randint(5,35)
-    cmds.setAttr(curve + ".overrideColor", curveColor)
-    self.mOptCurves.append(curve)
+    curve = cmds.curve(p=[(p1[0], p1[1], p1[2]), (p2[0], p2[1], p2[2])], degree=1)
+    curveColor = random.randint(5,31)
+    c = str(curve)
+    cmds.setAttr(c + ".overrideEnabled", True)
+    cmds.setAttr(c + ".overrideColor", curveColor)
+    self.mOptCurves.append(c)
 
   '''
   '' Erases all curves in the Maya Scene
   '''
-  def eraseCurves(self):
-    allCurves = self.mOptCurves
+  def eraseCurves(self, allCurves):
     for i in range(0, len(allCurves)):
       s = allCurves[i].strip()
       if len(s) > 0:
         cmds.delete(s)
     # Clear the Curves
-    self.mOptCurves = []
+    del allCurves[:]
+
+  '''
+  '' Extrudes Curves for the branch segments
+  '''
+  def extrudeTreeCurves(self, internodes):
+    # Go from buds with no children, loop up parents until parent is None
+    # Create a Curve from this
+    # Get buds
+    self.eraseCurves(self.mTreeCurves)
+    treeCurveList = self.createTreeCurveList(internodes)
+    self.drawTreeCurves(treeCurveList)
+    # TODO Extrude Curves
+
+
+
+  '''
+  '' Creates a list of tree curves
+  '''
+  def createTreeCurveList(self, internodes):
+    buds = self.createBudList(internodes)
+    curves = []
+    for b in buds:
+      curve = []
+      # Add end point of curve
+      cEnd = b.getEndPointTuple()
+      curve.append(cEnd)
+
+      # Now use Reverse DFS
+      parent = b
+      while parent is not None:
+        cStart = parent.getStartPointTuple()
+        curve.insert(0, cStart)
+        parent = parent.mInternodeParent
+
+      # Add curve to curves list
+      curves.append(curve)
+    return curves
+
+  '''
+  '' Draws a tree curve
+  '''
+  def drawTreeCurves(self, curvePtsSet):
+    for ptSet in curvePtsSet:
+      deg = len(ptSet) - 1
+      curve = cmds.curve(p=ptSet, degree=deg)
+      curveColor = 14
+      c = str(curve)
+      cmds.setAttr(c + ".overrideEnabled", True)
+      cmds.setAttr(c + ".overrideColor", curveColor)
+      self.mTreeCurves.append(curve)
 
 
 ######################## End StemInstanceNode Class ############################

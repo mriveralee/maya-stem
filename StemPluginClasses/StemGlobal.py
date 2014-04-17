@@ -196,9 +196,11 @@ def getLocatorWorldPosition(locatorNode):
 '''
 def drawCurve(p1, p2):
   curve = cmds.curve(p=[(p1[0], p1[1], p1[2]), (p2[0], p2[1], p2[2])], degree=1)
-  curveColor = random.randint(2,35)
-  cmds.setAttr(str(curve) + ".overrideColor", curveColor)
-  return str(curve)
+  curveColor = random.randint(2,31)
+  c = str(curve)
+  cmds.setAttr(c + ".overrideEnabled", True)
+  cmds.setAttr(c + ".overrideColor", curveColor)
+  return c
 
 '''
 '' Erases all curves in the Maya Scene
