@@ -115,6 +115,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   # Tree Curves
   mTreeCurves = []
 
+  mStemNode = None
+
 
   '''
   '' StemInstance Node Constructor
@@ -220,9 +222,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         # Set new output data/mesh
         outputHandle.setMObject(newOutputData)
 
-        print 'Creating Tree curves'
-        self.extrudeTreeCurves(self.mInternodes)
-        
         # Clear up the data
         data.setClean(plug)
 
@@ -295,6 +294,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # TODO - remove when finished debugging curves
     self.updateOptimalGrowthPairs(self.mInternodes, False)
 
+    print 'Creating Tree curves'
+    self.extrudeTreeCurves(self.mInternodes)
 
     # Verify a mesh was made
     if cPoints.length() == 0 or cFaceCounts.length() == 0 or cFaceConnects.length() == 0:
@@ -380,6 +381,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def getBudOptimalGrowthDirs(self, internodes):
     # Erase old curves
     self.eraseCurves(self.mOptCurves)
+    self.mOptCurves = []
 
     # Get list of resource noces
     resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
@@ -403,7 +405,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     optimalGrowthPairs = []
 
     # Grab the StemNodeInstance
-    stemNode = SG.getSelectedNodeChildByType(STEM_INSTANCE_NODE_TYPE_NAME)
+    if self.mStemNode is None:
+      self.mStemNode = SG.getSelectedNodeChildByType(STEM_INSTANCE_NODE_TYPE_NAME)
 
     # Now compute the optimal growth dir
     for budNodePair in allBudsAdjList:
@@ -415,9 +418,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Calculate the weighted average growth direction
       budPosition = bud.mEnd
       budCurveWorldPosition = bud.mEnd
-      if stemNode != None:
+      if self.mStemNode != None:
         # Get world position of mEnd (relative to StemInstanceTransform)
-        worldPos = SG.getLocatorWorldPosition(stemNode)
+        worldPos = SG.getLocatorWorldPosition(self.mStemNode)
         budCurveWorldPosition = SG.sumArrayVectors(budPosition, worldPos)
 
       sumNodePositions = [0, 0, 0]
@@ -768,9 +771,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Create a Curve from this
     # Get buds
     self.eraseCurves(self.mTreeCurves)
+    self.mTreeCurves = []
     treeCurveList = self.createTreeCurveList(internodes)
     self.drawTreeCurves(treeCurveList)
-    # TODO Extrude Curves
+
+    # TODO: Extrude Curves
 
 
 
@@ -778,18 +783,22 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '' Creates a list of tree curves
   '''
   def createTreeCurveList(self, internodes):
+    # Grab the StemNodeInstance
+    worldPos = SG.getLocatorWorldPosition(self.mStemNode)
     buds = self.createBudList(internodes)
     curves = []
     for b in buds:
       curve = []
       # Add end point of curve
       cEnd = b.getEndPointTuple()
+      cEnd = (cEnd[0] + worldPos[0], cEnd[1]  + worldPos[1], cEnd[2] + worldPos[2])
       curve.append(cEnd)
 
       # Now use Reverse DFS
       parent = b
       while parent is not None:
         cStart = parent.getStartPointTuple()
+        cStart = (cStart[0] + worldPos[0], cStart[1]  + worldPos[1], cStart[2] + worldPos[2])
         curve.insert(0, cStart)
         parent = parent.mInternodeParent
 
@@ -808,7 +817,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       c = str(curve)
       cmds.setAttr(c + ".overrideEnabled", True)
       cmds.setAttr(c + ".overrideColor", curveColor)
-      self.mTreeCurves.append(curve)
+      self.mTreeCurves.append(c)
 
 
 ######################## End StemInstanceNode Class ############################
