@@ -189,3 +189,16 @@ def getLocatorWorldPosition(locatorNode):
 
   # Return the computed world position
   return worldPos
+
+'''
+'' Gets the Parent Transform node of a node
+'''
+def getParentTransformNode(node):
+  if node is None:
+    return None
+  # Get parents of node (if any)
+  parents = cmds.listRelatives(str(node), p=True)
+  
+  if parents is None or len(parents) == 0:
+    return None
+  return parents[0]

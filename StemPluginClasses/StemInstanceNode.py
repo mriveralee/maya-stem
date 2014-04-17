@@ -121,6 +121,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   # Tree Curve Extrusions (form the mesh)
   mTreeExtrusions = []
 
+  # The Tree Mesh
+  mTreeMesh = None
+
   # Reference to the the maya dependency node
   mStemNode = None
 
@@ -218,6 +221,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       outputHandle = data.outputValue(self.outputMesh)
       dataCreator = OpenMaya.MFnMeshData()
       newOutputData = dataCreator.create()
+
+      # Get this stem node
+      print self.getStemNode()
 
       # The New mesh!
       meshResult = self.createMesh(
@@ -352,7 +358,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Get points
       start = OpenMaya.MPoint(b[0], b[1], b[2])
       end = OpenMaya.MPoint(b[3], b[4], b[5])
-      # TODO: Make Radius get Smaller are we approach roots (maxRadius at root)
       radius = 0.25
 
       # Create a cylinder from the end points
@@ -415,8 +420,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     optimalGrowthPairs = []
 
     # Grab the StemNodeInstance
-    if self.mStemNode is None:
-      self.mStemNode = SG.getSelectedNodeChildByType(STEM_INSTANCE_NODE_TYPE_NAME)
+    stemNode = self.getStemNode()
 
     # Now compute the optimal growth dir
     for budNodePair in allBudsAdjList:
@@ -428,9 +432,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Calculate the weighted average growth direction
       budPosition = bud.mEnd
       budCurveWorldPosition = bud.mEnd
-      if self.mStemNode != None:
+      if stemNode != None:
         # Get world position of mEnd (relative to StemInstanceTransform)
-        worldPos = SG.getLocatorWorldPosition(self.mStemNode)
+        worldPos = SG.getLocatorWorldPosition(stemNode)
         budCurveWorldPosition = SG.sumArrayVectors(budPosition, worldPos)
 
       sumNodePositions = [0, 0, 0]
@@ -613,6 +617,14 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     return
 
   '''
+  '' Returns the maya dependency node associated with this stem instance node
+  '''
+  def getStemNode(self):
+    if self.mStemNode is None:
+      self.mStemNode = SG.getSelectedNodeChildByType(STEM_INSTANCE_NODE_TYPE_NAME)
+    return self.mStemNode
+
+  '''
   '' Returns the root internode of the Stem tree
   '''
   def getRootInternode(self):
@@ -793,12 +805,32 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Extrude mesh
     self.mTreeExtrusions = self.extrudeTreeCurves(self.mTreeCurves)
 
+    # Unite Tree Extrusions into a Mesh
+    print 'making mesh'
+    self.mTreeMesh = self.createTreeMesh(self.mTreeExtrusions)
+    print 'made mesh'
+
+    # Link mesh to this Stem Node
+    self.linkTreeMesh(self.mTreeMesh)
+
+  '''
+  '' Erases the extruded tree mesh
+  '''
+  def deleteTreeExtrusionMesh(self):
+    # for ext in self.mTreeExtrusions:
+    #   cmds.delete(str(ext[0]))
+    # del self.mTreeExtrusions[:]
+
+    # Delete the actual mesh
+    if self.mTreeMesh:
+      cmds.delete(str(self.mTreeMesh))
+
   '''
   '' Creates a list of tree curves
   '''
   def createTreeCurveList(self, internodes):
     # Grab the StemNodeInstance
-    worldPos = SG.getLocatorWorldPosition(self.mStemNode)
+    worldPos = SG.getLocatorWorldPosition(self.getStemNode())
     buds = self.createBudList(internodes)
     curves = []
     for b in buds:
@@ -836,14 +868,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     return treeCurves
 
   '''
-  '' Erases the extruded tree mesh
-  '''
-  def deleteTreeExtrusionMesh(self):
-    for ext in self.mTreeExtrusions:
-      cmds.delete(str(ext[0]))
-    del self.mTreeExtrusions[:]
-
-  '''
   '' Extrudes Curves for the branch segments
   '''
   def extrudeTreeCurves(self, treeCurves):
@@ -877,6 +901,37 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     #cmds.delete(str(circleExt[1]))
 
     return treeExtrusions
+
+  '''
+  '' Create Tree Mesh
+  '''
+  def createTreeMesh(self, treeExtrusions):
+    if treeExtrusions is None or len(treeExtrusions) == 0:
+      return None
+    treeExts = [ext[0] for ext in treeExtrusions]
+
+    # Create a string of all the treeExtrusion names: 'curve1 curve2 curve3 ...'
+    # Each name is separated by spaces
+    treeExtStr = ''
+    for t in treeExts:
+      treeExtStr += str(t) + ' '
+    #treeExtStr = str(treeExts).strip('[]').replace(',', ' ').replace('\'','')
+    treeCombined = maya.mel.eval('polyUnite ' + treeExtStr)
+    treeMesh = treeCombined[0]
+    return treeMesh
+
+  '''
+  '' Links a tree Mesh to this node
+  '''
+  def linkTreeMesh(self, treeMesh):
+    # Get the parent transform node
+    txNode = SG.getParentTransformNode(self.getStemNode())
+    if treeMesh is None or txNode is None:
+      print 'Failed to link tree mesh'
+      return
+    # Link mesh
+    print 'linking!', treeMesh, txNode
+    cmds.parent(str(treeMesh), txNode)
 
 ######################## End StemInstanceNode Class ############################
 '''
