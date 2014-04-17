@@ -64,7 +64,10 @@ DEFAULT_STEP_SIZE = 1.0
 DEFAULT_ANGLE = 42.5
 
 # Enable test drawing
-ENABLE_RESOURCE_DRAWING  = False
+ENABLE_RESOURCE_DRAWING = False
+
+# Use Tree Curves
+ENABLE_TREE_CURVES = True
 
 # Node definition
 class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
@@ -115,6 +118,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   # Tree Curves
   mTreeCurves = []
 
+  # Tree Curve Extrusions (form the mesh)
+  mTreeExtrusions = []
+
+  # Reference to the the maya dependency node
   mStemNode = None
 
 
@@ -218,9 +225,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         hasResources, data, newOutputData)
 
       # Make sure we have a valid mesh
-      if (meshResult != None):
+      if meshResult != None:
         # Set new output data/mesh
-        outputHandle.setMObject(newOutputData)
+        if not ENABLE_TREE_CURVES:
+          outputHandle.setMObject(newOutputData)
 
         # Clear up the data
         data.setClean(plug)
@@ -294,8 +302,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # TODO - remove when finished debugging curves
     self.updateOptimalGrowthPairs(self.mInternodes, False)
 
-    print 'Creating Tree curves'
-    self.extrudeTreeCurves(self.mInternodes)
+
+    if ENABLE_TREE_CURVES:
+      # print 'Creating Tree curves'
+      self.updateTreeMesh(self.mInternodes)
 
     # Verify a mesh was made
     if cPoints.length() == 0 or cFaceCounts.length() == 0 or cFaceConnects.length() == 0:
@@ -764,20 +774,24 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     del allCurves[:]
 
   '''
-  '' Extrudes Curves for the branch segments
+  '' Update Tree Curves
   '''
-  def extrudeTreeCurves(self, internodes):
-    # Go from buds with no children, loop up parents until parent is None
-    # Create a Curve from this
-    # Get buds
+  def updateTreeMesh(self, internodes):
+    # Erase tree curves
     self.eraseCurves(self.mTreeCurves)
     self.mTreeCurves = []
+
+    # Erase the extruded tree Mesh
+    self.deleteTreeExtrusionMesh()
+
+    # Create new curve list
     treeCurveList = self.createTreeCurveList(internodes)
-    self.drawTreeCurves(treeCurveList)
 
-    # TODO: Extrude Curves
+    # Draw curves
+    self.mTreeCurves = self.drawTreeCurves(treeCurveList)
 
-
+    # Extrude mesh
+    self.mTreeExtrusions = self.extrudeTreeCurves(self.mTreeCurves)
 
   '''
   '' Creates a list of tree curves
@@ -810,6 +824,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '' Draws a tree curve
   '''
   def drawTreeCurves(self, curvePtsSet):
+    treeCurves = []
     for ptSet in curvePtsSet:
       deg = len(ptSet) - 1
       curve = cmds.curve(p=ptSet, degree=deg)
@@ -817,8 +832,51 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       c = str(curve)
       cmds.setAttr(c + ".overrideEnabled", True)
       cmds.setAttr(c + ".overrideColor", curveColor)
-      self.mTreeCurves.append(c)
+      treeCurves.append(c)
+    return treeCurves
 
+  '''
+  '' Erases the extruded tree mesh
+  '''
+  def deleteTreeExtrusionMesh(self):
+    for ext in self.mTreeExtrusions:
+      cmds.delete(str(ext[0]))
+    del self.mTreeExtrusions[:]
+
+  '''
+  '' Extrudes Curves for the branch segments
+  '''
+  def extrudeTreeCurves(self, treeCurves):
+    # Generate Parameters for circle
+    cId = str(random.randint(0, sys.maxint))
+    cName = 'StemCircle' + cId
+
+    # Generate random radius for the circle
+    cRadius = (random.randint(0, 20) / 100.0) + 0.1
+
+    # Create circle for extrusion
+    circleExt = cmds.circle( nr=(0, 1, 0), c=(0, 0, 0), r=cRadius, n=cName)
+
+    treeExtrusions = []
+    treeScale = 0.4
+    for treeCurve in treeCurves:
+      # Generate Random Scale
+      treeScale = (random.randint(0, 35) / 100) + 0.4
+
+      # Create Tree Name
+      tName = 'StemCircleExt' + cId
+
+      # Extrude the tree
+      tExt = cmds.extrude(cName, str(treeCurve), n=tName,
+        scale=0.4, ch=True, rn=False, po=1, et=2,
+        ucp=1, fpt=1, upn=1, rotation=0)
+      treeExtrusions.append(tExt)
+
+    # Erase the extrusion circle [Circle, NurbCircle]
+    cmds.delete(str(circleExt[0]))
+    #cmds.delete(str(circleExt[1]))
+
+    return treeExtrusions
 
 ######################## End StemInstanceNode Class ############################
 '''
