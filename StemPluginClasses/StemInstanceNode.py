@@ -332,6 +332,14 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     # Update the LSystem with the buds of the pre growth internodes
     self.updateOptimalGrowthPairs(preBudGrowthInternodes, True)
+    # ^calculates growth dir, light point, ties light to bud, this is when Q
+    # values will get assigned
+
+    # TODO: insert acro/basipetal passes here using Q values
+    # after propogation happens, v resouce value will get assigned in each bud
+    # grab v from each bud to determine growth from that bud
+
+    # TODO: send v values to LSystem
 
     # Test the output of the buds and angles in the LSystem
     # self.verifyLSystemBudAngles(buds, dirs, angles)
