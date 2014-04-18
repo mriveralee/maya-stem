@@ -193,6 +193,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def compute(self,plug,data):
     if plug == StemInstanceNode.outputMesh:
+      # Update the reference to this maya's nodes name
+      self.updateStemNodeName(plug)
+
       # Time
       timeData = data.inputValue(StemInstanceNode.mTime)
       t = timeData.asInt()
@@ -221,9 +224,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       outputHandle = data.outputValue(self.outputMesh)
       dataCreator = OpenMaya.MFnMeshData()
       newOutputData = dataCreator.create()
-
-      # Get this stem node
-      print self.getStemNode()
 
       # The New mesh!
       meshResult = self.createMesh(
@@ -637,11 +637,19 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     return
 
   '''
+  '' Updates the StemInstanceNode name based on the input attribute of the maya
+  '' node
+  '''
+  def updateStemNodeName(self, plug):
+      attributeName = plug.name()
+      attrStr = str(attributeName)
+      nodeName = attrStr.split('.')[0]
+      self.mStemNode = nodeName
+
+  '''
   '' Returns the maya dependency node associated with this stem instance node
   '''
   def getStemNode(self):
-    if self.mStemNode is None:
-      self.mStemNode = SG.getSelectedNodeChildByType(STEM_INSTANCE_NODE_TYPE_NAME)
     return self.mStemNode
 
   '''
@@ -842,9 +850,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     self.mTreeExtrusions = self.extrudeTreeCurves(self.mTreeCurves)
 
     # Unite Tree Extrusions into a Mesh
-    print 'making mesh'
     self.mTreeMesh = self.createTreeMesh(self.mTreeExtrusions)
-    print 'made mesh'
 
     # Link mesh to this Stem Node
     self.linkTreeMesh(self.mTreeMesh)
