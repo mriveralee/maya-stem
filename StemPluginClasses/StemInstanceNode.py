@@ -64,7 +64,7 @@ DEFAULT_STEP_SIZE = 1.0
 DEFAULT_ANGLE = 42.5
 
 # Enable test drawing
-ENABLE_RESOURCE_DRAWING = False
+ENABLE_RESOURCE_DRAWING = True
 
 # Use Tree Curves
 ENABLE_TREE_CURVES = True
@@ -272,12 +272,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     # Run Grammar String to make branches and flowers
     self.mLSystem.processPy(iters, branches, flowers)
-
     # Update buds if we have resources
     if hasResources:
       # Update the branches and flowers based on resources
       self.updateBudGrowthForResources(iters, branches, flowers)
-
     # Clear old cylinder mesh
     SC.clearMesh()
 
@@ -288,6 +286,25 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     # Create Cylinder Mesh Internodes
     self.mInternodes = self.createInternodes(branches, flowers)
+    # Create and configure buds and internode heirarchy
+    for b in self.mInternodes:
+      if (len(b.mInternodeChildren) == 0):
+        # b.mQLightAmount = 1
+        parent = b
+        b.mBudTerminal = SB.StemBud(SB.BudType.TERMINAL, parent)
+        b.mBudTerminal.mQLightAmount = 1
+        b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent)
+        b.mBudLateral.mQLightAmount = 0.5
+      elif (len(b.mInternodeChildren) == 1):
+        parent = b
+        child = b.mInternodeChildren[0]
+        b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent, child)
+        b.mBudLateral.mQLightAmount = 0.5
+      else:
+        print "has more than 1 child" + str(len(b.mInternodeChildren))
+
+    # Grab Q values and distribute, generate resource values in STEM buds
+    self.performBHModelResourceDistribution()
 
     # Make tree from Internode Cylinder Meshes
     for cyl in self.mInternodes:
@@ -303,10 +320,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Compute Optimal Growth pairs for internodes
     # TODO - remove when finished debugging curves
     self.updateOptimalGrowthPairs(self.mInternodes, False)
-
-    # TODO: possibly remove this later, using for testing
-    self.performBHModelResourceDistribution()
-
 
     if ENABLE_TREE_CURVES:
       # print 'Creating Tree curves'
@@ -665,26 +678,47 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def distributeSingleResource(self, internode):
     if (internode is None):
       return
-    if (len(internode.mInternodeChildren) == 0):
-      return
-    if (len(internode.mInternodeChildren) == 1):
-      child = internode.mInternodeChildren[0]
-      child.mVResourceAmount = internode.mVResourceAmount
-      return
 
     pV = internode.mVResourceAmount
 
-    # TODO: still need to determine which is along main axis and which isn't
-    pQm = internode.mInternodeChildren[0].mQLightAmount
-    pQl = internode.mInternodeChildren[1].mQLightAmount
+    if (len(internode.mInternodeChildren) == 0):
+      # if 0 children, there is 1 terminal and 1 lateral bud to split the resource
+      mTarget = internode.mBudTerminal
+      lTarget = internode.mBudLateral
+      pQm = mTarget.mQLightAmount
+      pQl = lTarget.mQLightAmount
+      # Compute amount of resource distributed to axis branch and lateral branch
+      pVm = pV * (BH_LAMBDA * pQm) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
+      pVl = pV * ((1-BH_LAMBDA)*pQl) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
+      # Distribute
+      mTarget.mVResourceAmount = pVm
+      lTarget.mVResourceAmount = pVl
 
-    # Compute amount of resource distributed to axis branch and lateral branch
-    pVm = pV * (BH_LAMBDA * pQm) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
-    pVl = pV * ((1-BH_LAMBDA)*pQl) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
+    elif (len(internode.mInternodeChildren) == 1):
+      # if 1 child, there is 1 internode and 1 lateral bud to split the resource
+      mTarget = internode.mInternodeChildren[0]
+      lTarget = internode.mBudLateral
+      pQm = mTarget.mQLightAmount
+      pQl = lTarget.mQLightAmount
+      # Compute amount of resource distributed to axis branch and lateral branch
+      pVm = pV * (BH_LAMBDA * pQm) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
+      pVl = pV * ((1-BH_LAMBDA)*pQl) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
+      # Distribute
+      mTarget.mVResourceAmount = pVm
+      lTarget.mVResourceAmount = pVl
 
-    # Distribute
-    internode.mInternodeChildren[0].mVResourceAmount = pVm
-    internode.mInternodeChildren[1].mVResourceAmount = pVl
+    else:
+      # TODO: still need to determine which is along main axis and which isn't
+      mTarget = internode.mInternodeChildren[0]
+      lTarget = internode.mInternodeChildren[1]
+      pQm = mTarget.mQLightAmount
+      pQl = lTarget.mQLightAmount
+      # Compute amount of resource distributed to axis branch and lateral branch
+      pVm = pV * (BH_LAMBDA * pQm) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
+      pVl = pV * ((1-BH_LAMBDA)*pQl) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
+      # Distribute
+      mTarget.mVResourceAmount = pVm
+      lTarget.mVResourceAmount = pVl
 
   '''
   ''  Propogates light amounts (Q) from outermost internodes to towards the base.
@@ -696,23 +730,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # TODO: remove later. this bit is for testing on simple case
     # currently configuring appropriate bud types and locations using the
     # given geometry from the LSystem
-    for b in self.mInternodes:
-
-      if (len(b.mInternodeChildren) == 0):
-        # b.mQLightAmount = 1
-        parent = b
-        b.mBudTerminal = SB.StemBud(SB.BudType.TERMINAL, parent)
-        b.mBudTerminal.mQLightAmount = 1
-        b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent)
-        b.mBudLateral.mQLightAmount = 0.5
-      elif (len(b.mInternodeChildren) == 1):
-        parent = b
-        child = b.mInternodeChildren[0]
-        b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent, child)
-        b.mBudLateral.mQLightAmount = 0.5
-      else:
-        print "has more than 1 child" + str(len(b.mInternodeChildren))
-
+    
     # newList = list(branchStack)
     # for each internode, propogate light information from leaf nodes towards base
     while (len(branchStack) > 0):
