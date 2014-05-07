@@ -238,7 +238,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
         # Clear up the data
         data.setClean(plug)
-
         print 'StemInstance Generated!'
 
   '''
@@ -492,7 +491,14 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       #growthAnglePair = (budPosition, optGrowthAngle)
 
       # Draw curve to show direction vector
-      self.drawCurve(budCurveWorldPosition, optPt)
+      c = self.drawCurve(budCurveWorldPosition, optPt)
+
+      # Append curve to tx node
+      self.mOptCurves.append(c)
+
+      # Link node to stem transform
+      self.linkNode(c)
+
 
       # Now append to the list of pairs
       optimalGrowthPairs.append(growthPair)
@@ -814,9 +820,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     curve = cmds.curve(p=[(p1[0], p1[1], p1[2]), (p2[0], p2[1], p2[2])], degree=1)
     curveColor = random.randint(5,31)
     c = str(curve)
+    # Change curve color
     cmds.setAttr(c + ".overrideEnabled", True)
     cmds.setAttr(c + ".overrideColor", curveColor)
-    self.mOptCurves.append(c)
+
+    return c
 
   '''
   '' Erases all curves in the Maya Scene
@@ -853,7 +861,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     self.mTreeMesh = self.createTreeMesh(self.mTreeExtrusions)
 
     # Link mesh to this Stem Node
-    self.linkTreeMesh(self.mTreeMesh)
+    self.linkNode(self.mTreeMesh)
 
   '''
   '' Erases the extruded tree mesh
@@ -935,7 +943,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Extrude the tree
       tExt = cmds.extrude(cName, str(treeCurve), n=tName,
         scale=0.4, ch=True, rn=False, po=1, et=2,
-        ucp=1, fpt=1, upn=1, rotation=0)
+        ucp=1, fpt=True, upn=1, rotation=0)
+      # Append extrusion
       treeExtrusions.append(tExt)
 
     # Erase the extrusion circle [Circle, NurbCircle]
@@ -965,15 +974,14 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   '' Links a tree Mesh to this node
   '''
-  def linkTreeMesh(self, treeMesh):
+  def linkNode(self, node):
     # Get the parent transform node
     txNode = SG.getParentTransformNode(self.getStemNode())
-    if treeMesh is None or txNode is None:
+    if node is None or txNode is None:
       print 'Failed to link tree mesh'
       return
     # Link mesh
-    print 'linking!', treeMesh, txNode
-    cmds.parent(str(treeMesh), txNode)
+    cmds.parent(str(node), txNode)
 
 ######################## End StemInstanceNode Class ############################
 '''
