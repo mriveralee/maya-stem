@@ -69,6 +69,9 @@ ENABLE_RESOURCE_DRAWING = False
 # Use Tree Curves
 ENABLE_TREE_CURVES = True
 
+# Use Cylinder Mesh
+ENABLE_CYLINDER_MESH = False
+
 
 # StemInstanceNode definition
 class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
@@ -224,66 +227,55 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Grammar File String and convert from the maya object
       grammarData = data.inputValue(StemInstanceNode.mDefGrammarFile)
       grammarFile = str(grammarData.asString())
-      #c_char_p(str(grammarFile))
 
+      # Has Resources
       hasResData = data.inputValue(StemInstanceNode.mHasResourceDistribution)
       hasResources = hasResData.asBool()
-
-      # Get output objects
-      outputHandle = data.outputValue(self.outputMesh)
-      dataCreator = OpenMaya.MFnMeshData()
-      newOutputData = dataCreator.create()
-
 
       # Init LSystem only when grammar/angle/iters change
       shouldInitLSystem = grammarFile != self.mPrevGrammarFile
       shouldInitLSystem = shouldInitLSystem or angle != self.mPrevAngle
       shouldInitLSystem = shouldInitLSystem or iters != self.mPrevIterations
 
+      # Make LSystem Base Tree for growing
       if shouldInitLSystem:
-        self.initLSystemBaseTree(iters, angle, step, grammarFile, data, newOutputData)
+        self.initLSystemBaseTree(iters, angle, step, grammarFile)
 
+      # If we have resources, we growth the tree using the current growth iter
       if hasResources:
-          # Update the geometry
-          print ' Using resources!'
+        # Update the geometry
+        print ' Using resources!'
+        # TODO Growth the branches and flowers for this growth iteration
+        # TODO change growth iters to be its own input param
+        growthIters = iters
+        self.growTree(growthIters)
 
-      # The New mesh!
-      meshResult = self.createMesh(
-        iters, angle, step, grammarFile,
-        hasResources, data, newOutputData)
+      # If we use tree curves, update the tree mesh
+      if ENABLE_TREE_CURVES:
+        # print 'Creating Tree curves'
+        self.updateTreeMesh(self.mInternodes)
 
-      # Make sure we have a valid mesh
-      if meshResult != None:
-        # Set new output data/mesh
-        if not ENABLE_TREE_CURVES:
-          outputHandle.setMObject(newOutputData)
+      # IF we enable the cylinder mesh, draw it
+      if ENABLE_CYLINDER_MESH:
+        self.createCylinderMesh(self.mInternodes, data)
 
-        # Clear up the data
-        data.setClean(plug)
-        print 'StemInstance Generated!'
+      # Clear up the data
+      data.setClean(plug)
+      print 'StemInstance Generated!'
 
   '''
   '' Creates a Cylinder Mesh based on the LSystem
   '''
-  def createMesh(self, iters, angle, step, grammarFile, hasResources, data, newOutputData):
+  def growTree(self, growthIters):
+    branches = self.mBaseBranches
+    flowers = self.mBaseFlowers
 
-    [branches, flowers] = self.initLSystemBaseTree(iters, angle, step, grammarFile, data, newOutputData)
-
-    # Update buds if we have resources
-    if hasResources:
-      # Update the branches and flowers based on resources
-      self.updateBudGrowthForResources(iters, branches, flowers)
-
-    # Clear old cylinder mesh
-    SC.clearMesh()
-
-    # Set up global mesh
-    cPoints = OpenMaya.MPointArray()
-    cFaceCounts = OpenMaya.MIntArray()
-    cFaceConnects = OpenMaya.MIntArray()
+    # Update the branches and flowers based on resources
+    self.updateBudGrowthForResources(growthIters, branches, flowers)
 
     # Create Cylinder Mesh Internodes
     self.mInternodes = self.createInternodes(branches, flowers)
+
     # Create and configure buds and internode heirarchy
     for b in self.mInternodes:
       if (len(b.mInternodeChildren) == 0):
@@ -304,41 +296,16 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Grab Q values and distribute, generate resource values in STEM buds
     self.performBHModelResourceDistribution()
 
-    # Make tree from Internode Cylinder Meshes
-    for cyl in self.mInternodes:
-      # Append the Cylinder's mesh to our main mesh
-      cyl.appendToMesh(cPoints, cFaceCounts, cFaceConnects)
-
-    # TODO - Handle flowers (uncomment when needed)
-    # for i in range(0, flowers.size()):
-    #   f = flowers[i]
-    #   centerLoc = OpenMaya.MVector(f[0], f[1], f[2])
-    #   print 'create flower!'
-
     # Compute Optimal Growth pairs for internodes
     self.updateOptimalGrowthPairs(self.mInternodes, False)
 
-    # TODO - remove when finished debugging curves
-    if ENABLE_TREE_CURVES:
-      # print 'Creating Tree curves'
-      self.updateTreeMesh(self.mInternodes)
-
-    # Verify a mesh was made
-    if cPoints.length() == 0 or cFaceCounts.length() == 0 or cFaceConnects.length() == 0:
-      print 'No LSystem generated!'
-      return None
-
-    # Finalize the Mesh Creation
-    meshFs = OpenMaya.MFnMesh()
-    newMesh = meshFs.create(
-      int(cPoints.length()), int(cFaceCounts.length()),
-      cPoints, cFaceCounts, cFaceConnects, newOutputData)
-
-    # Return the lovely Mesh
-    return meshFs
 
 
-  def initLSystemBaseTree(self, iters, angle, step, grammarFile, data, newOutputData):
+  '''
+  '' Initializes the LSystem and creates the base branches and flowers for the
+  '' Stem Instance Node
+  '''
+  def initLSystemBaseTree(self, iters, angle, step, grammarFile):
     # Get Grammar File Contents & load to lsys
     if grammarFile != self.mPrevGrammarFile:
       self.mPrevGrammarContent = self.readGrammarFile(grammarFile)
@@ -371,6 +338,53 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     self.mPrevAngle = angle
 
     return [self.mBaseBranches, self.mBaseFlowers]
+
+  '''
+  '' Create the cylinder mesh for this StemInstanceNode
+  '''
+  def createCylinderMesh(self, internodes, data):
+    # Get output objects
+    outputHandle = data.outputValue(self.outputMesh)
+    dataCreator = OpenMaya.MFnMeshData()
+    newOutputData = dataCreator.create()
+
+    # Clear old cylinder mesh
+    SC.clearMesh()
+
+    # Set up global mesh
+    cPoints = OpenMaya.MPointArray()
+    cFaceCounts = OpenMaya.MIntArray()
+    cFaceConnects = OpenMaya.MIntArray()
+
+    # Make tree from Internode Cylinder Meshes
+    for cyl in internodes:
+      # Append the Cylinder's mesh to our main mesh
+      cyl.appendToMesh(cPoints, cFaceCounts, cFaceConnects)
+
+    # TODO - Handle flowers (uncomment when needed)
+    # for i in range(0, flowers.size()):
+    #   f = flowers[i]
+    #   centerLoc = OpenMaya.MVector(f[0], f[1], f[2])
+    #   print 'create flower!'
+
+
+    # Verify a mesh was made
+    if cPoints.length() == 0 or cFaceCounts.length() == 0 or cFaceConnects.length() == 0:
+      print 'No LSystem generated!'
+      return None
+
+    # Finalize the Mesh Creation
+    meshFs = OpenMaya.MFnMesh()
+    meshResult = meshFs.create(int(cPoints.length()), int(cFaceCounts.length()),
+      cPoints, cFaceCounts, cFaceConnects, newOutputData)
+
+    # Make sure we have a valid mesh
+    if meshResult is None:
+      return None
+
+    # Update the output mesh
+    outputHandle.setMObject(newOutputData)
+
 
   '''
   '' Update Bud Nodes for an LSystem Generation
