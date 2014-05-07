@@ -275,6 +275,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     if hasResources:
       # Update the branches and flowers based on resources
       self.updateBudGrowthForResources(iters, branches, flowers)
+
     # Clear old cylinder mesh
     SC.clearMesh()
 
@@ -317,9 +318,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     #   print 'create flower!'
 
     # Compute Optimal Growth pairs for internodes
-    # TODO - remove when finished debugging curves
     self.updateOptimalGrowthPairs(self.mInternodes, False)
 
+    # TODO - remove when finished debugging curves
     if ENABLE_TREE_CURVES:
       # print 'Creating Tree curves'
       self.updateTreeMesh(self.mInternodes)
@@ -402,6 +403,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     if shouldUpdateLSystem:
       # Convert optimal growth pairs into vectors
+
       [buds, dirs, angles] = self.convertOptGrowthPairsForLSystem(self.mOptimalGrowthPairs)
 
       # Sets the optimal growth directions for the LSystem
@@ -448,6 +450,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       bud = budNodePair.get(KEY_BUD)
       lightNodes = budNodePair.get(KEY_RESOURCE_NODE_LIST)
 
+      if len(lightNodes) == 0:
+        continue
+
       # Calculate the weighted average growth direction
       budPosition = bud.mEnd
       budCurveWorldPosition = bud.mEnd
@@ -458,13 +463,16 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
       sumNodePositions = [0, 0, 0]
       numNodes = len(lightNodes)
-
+      totalLightPower = 0
       # Sum the node positions and weight them
       for n in lightNodes:
         # TODO add weighting funciton that include the radius of light/space etc
         nodePos = SG.getLocatorWorldPosition(n)
         sumNodePositions = SG.sumArrayVectors(sumNodePositions, nodePos)
+        totalLightPower += cmds.getAttr(str(n) + '.' + SL.KEY_DEF_LIGHT_RADIUS[0])
 
+      avgLightPower = totalLightPower / numNodes
+      print ('avgLightPower for bud:', avgLightPower)
       # Now average the node positions and substract the bud position to compute
       # the optimal growth direction
       budOptGrowthDir = [ (sumNodePositions[0] / numNodes) - budPosition[0],
@@ -503,7 +511,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Now append to the list of pairs
       optimalGrowthPairs.append(growthPair)
       #optimalGrowthPairs.append(growthAnglePair)
-
+    print 'RETURNING OPTIMAL GROWTH PAIRS'
     # Return the Optimal Growth Pairs
     return optimalGrowthPairs
 
@@ -744,7 +752,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # TODO: remove later. this bit is for testing on simple case
     # currently configuring appropriate bud types and locations using the
     # given geometry from the LSystem
-    
+
     # newList = list(branchStack)
     # for each internode, propogate light information from leaf nodes towards base
     while (len(branchStack) > 0):
