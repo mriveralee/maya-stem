@@ -23,6 +23,10 @@ STEM_HELP_SITE = 'http://github.com/mriveralee/maya-stem/issues'
 GL_RENDERER = OpenMayaRender.MHardwareRenderer.theRenderer()
 GLFT = GL_RENDERER.glFunctionTable()
 
+# DEG2RAD
+DEG_2_RAD = 180 / math.pi
+
+
 '''
 '' Functions for declaring attributes as inputs
 '''
@@ -66,10 +70,44 @@ def getSelectedNodeChildByType(nodeType):
 '' Get length of float vector
 '''
 def getVectorLength(v1):
-  sx = math.pow(v1[0], 2)
-  sy = math.pow(v1[1], 2)
-  sz = math.pow(v1[2], 2)
+  x = 0.0
+  y = 0.0
+  z = 0.0
+  if type(v1) is type(OpenMaya.MPoint()):
+    x = v1.x
+    y = v1.y
+    z = v1.z
+  else:
+    x = v1[0]
+    y = v1[1]
+    z = v1[2]
+
+  sx = math.pow(x, 2)
+  sy = math.pow(y, 2)
+  sz = math.pow(z, 2)
   return math.sqrt(sx + sy + sz)
+
+'''
+'' Normalize a float vector or Maya Point (since normalization is for MayaVecs)
+'''
+def normalize(v1):
+  length = getVectorLength(v1)
+  if length is 0:
+    return v1
+  if type(v1) is type(OpenMaya.MPoint()) or type(v1) is type(OpenMaya.MVector()):
+    return v1 / length
+  else:
+    return [v1[0] / length, v1[1] / length, v1[2] / length]
+
+'''
+'' Multiple a scalar times a maya point/vector
+'''
+def multiplyVectorByScalar(v1, value):
+  if type(v1) is type(OpenMaya.MPoint()):
+    return v1 * length
+  else:
+    return [v1[0] * value, v1[1] * value, v1[2] * value]
+
 
 '''
 '' Get dot product of two float vectors
@@ -198,7 +236,7 @@ def getParentTransformNode(node):
     return None
   # Get parents of node (if any)
   parents = cmds.listRelatives(str(node), p=True)
-  
+
   if parents is None or len(parents) == 0:
     return None
   return parents[0]

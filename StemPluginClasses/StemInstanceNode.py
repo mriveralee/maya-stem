@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, math, ctypes
+import sys, math, ctypes, copy
 import random
 import LSystem
 from collections import deque
@@ -16,6 +16,7 @@ import StemGlobal as SG
 import StemLightNode as SL
 import StemCylinder as SC
 import StemBud as SB
+
 
 #------------------------------------------------------------------------------#
 # StemInstanceNode Class - Subclassed Maya Mpx.Node that implements the
@@ -50,6 +51,10 @@ KEY_OUTPOINTS = 'outPoints', 'op'
 KEY_BUD = 'bud'
 KEY_RESOURCE_NODE_LIST = 'resNodes'
 
+# Key for ResNodeName and Pos
+KEY_RESOURCE_NODE_NAME = 'name'
+KEY_RESOURCE_NODE_POSITION = 'position'
+
 # BH Model Coefficients
 BH_LAMBDA = 0.5 # controls bias of resource allocation. values in [0,1]
 BH_ALPHA = 1 #2# coefficient of proportionality for v_base, value from paper ex.
@@ -71,6 +76,10 @@ ENABLE_TREE_CURVES = True
 
 # Use Cylinder Mesh
 ENABLE_CYLINDER_MESH = False
+
+# Resource Nodes List
+# Get list of resource noces
+SCENE_RESOURCE_NODES = {}
 
 
 # StemInstanceNode definition
@@ -133,7 +142,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mStemNode = None
 
   # The Dictionary story the geometry for each iterations 0 is Lsystem Base
-  mGrowthMeshes = {}
+  mTreeGrowthInternodes = {}
 
   # The base branches and flowers for the LSystem
   mBaseBranches = None
@@ -210,7 +219,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
       # Time
       timeData = data.inputValue(StemInstanceNode.mTime)
-      t = timeData.asInt()
+      timeStep = timeData.asInt()
 
       # Num Iterations
       iterData = data.inputValue(StemInstanceNode.mIterations)
@@ -241,58 +250,238 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       if shouldInitLSystem:
         self.initLSystemBaseTree(iters, angle, step, grammarFile)
 
-      # If we have resources, we growth the tree using the current growth iter
-      if hasResources:
-        # Update the geometry
-        print ' Using resources!'
-        # TODO Growth the branches and flowers for this growth iteration
-        # TODO change growth iters to be its own input param
-        growthIters = iters
-        self.growTree(growthIters)
+      # Check if scene Resource Nodes are dirty!
+      resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
 
-      # If we use tree curves, update the tree mesh
-      if ENABLE_TREE_CURVES:
-        # print 'Creating Tree curves'
-        self.updateTreeMesh(self.mInternodes)
+      if self.areSceneResourceNodesDirty(resNodes):
+        # Update the SceneResourceNodes
+        self.clearSceneResourceNodes()
+        self.setSceneResourceNodes(resNodes)
 
-      # IF we enable the cylinder mesh, draw it
-      if ENABLE_CYLINDER_MESH:
-        self.createCylinderMesh(self.mInternodes, data)
+        # Clear Tree growth that was based on the cleared resource nodes
+        self.clearTreeGrowthInternodes()
+
+        print 'Scene Resource Nodes are dirty!'
+
+      # TODO Growth the branches and flowers for this growth iteration
+      growthIters = int(cmds.getAttr(str(self.getStemNode()) +'.time'))
+      print ('Growth Iters', growthIters)
+      angleJitter = 0.0
+      # TODO make angle jitter a parameter for modifying
+      self.growTree(growthIters, angle, angleJitter, hasResources, data)
 
       # Clear up the data
       data.setClean(plug)
       print 'StemInstance Generated!'
 
   '''
+  '' Clears the mTreeGrowthInternodes Cache
+  '''
+  def clearTreeGrowthInternodes(self):
+    self.mTreeGrowthInternodes.clear()
+
+
+  '''
+  '' Clears the SCENE_RESOURCE_NODES
+  '''
+  def clearSceneResourceNodes(self):
+    SCENE_RESOURCE_NODES.clear()
+
+  '''
+  '' Set the SCENE_RESOURCE_NODES
+  '''
+  def setSceneResourceNodes(self, resNodes):
+    for n in resNodes:
+      nodeKey = str(n)
+      nodePos = SG.getLocatorWorldPosition(n)
+      # Set up dictionary for holding the RESOURCE NODE Object
+      SCENE_RESOURCE_NODES[nodeKey] = {}
+      SCENE_RESOURCE_NODES[nodeKey][KEY_RESOURCE_NODE_NAME] = nodeKey
+      SCENE_RESOURCE_NODES[nodeKey][KEY_RESOURCE_NODE_POSITION] = nodePos
+
+  '''
+  '' Gets the SceneResourcesNodes in the scene
+  '''
+  def getSceneResourceNodes(self):
+    return SCENE_RESOURCE_NODES.values()
+
+
+  '''
+  '' Determines of the SCENE_RESOURCE_NODES are dirty
+  '''
+  def areSceneResourceNodesDirty(self, resNodes):
+    # Make sure scene hasn't changed lighting
+    if len(resNodes) != len(SCENE_RESOURCE_NODES.keys()):
+      return True
+
+    # Check node positions and names
+    for n in resNodes:
+      nKey = str(n)
+      sceneNode = SCENE_RESOURCE_NODES.get(nKey)
+      if sceneNode is None:
+        return True
+
+      # Check positions
+      nPos = SG.getLocatorWorldPosition(n)
+      if sceneNode[KEY_RESOURCE_NODE_POSITION] != nPos:
+        return True
+
+    return False
+
+  '''
   '' Creates a Cylinder Mesh based on the LSystem
   '''
-  def growTree(self, growthIters):
-    branches = self.mBaseBranches
-    flowers = self.mBaseFlowers
+  def growTree(self, growthIters, baseGrowthAngle, growthAngleJitter, hasResources, data):
+    growthKey = str(growthIters)
 
-    # Create Pre Bud Growth Internodes
-    preBudGrowthInternodes = self.createInternodes(branches, flowers)
+    if not hasResources or growthIters is 1:
+      ''' Case: No resource growth is used '''
+      # grab base branches & flowers
+      branches = self.mBaseBranches
+      flowers = self.mBaseFlowers
 
-    # Update the LSystem with the buds of the pre growth internodes
-    self.updateOptimalGrowthPairs(preBudGrowthInternodes)
+      # Create Internodes for them
+      self.mInternodes = self.createInternodes(branches, flowers)
 
-    # ^calculates growth dir, light point, ties light to bud, this is when Q
-    # values will get assigned
-    # Set the current internodes
-    self.configureBudInternodeHeirarchry(preBudGrowthInternodes)
+    elif self.mTreeGrowthInternodes.get(growthKey) is not None:
+      ''' Case: Have Internodes for growthIteration -- update the internodes'''
+      self.mInternodes = self.mTreeGrowthInternodes.get(growthKey)
 
-    # Set the current internodes
-    self.mInternodes = preBudGrowthInternodes
+    else:
+      ''' Case: No Internodes for a growthIteration -- compute the growth '''
+      # Perform growth usings the current growth iters number
+      branches = self.mBaseBranches
+      flowers = self.mBaseFlowers
 
-    # TODO: insert acro/basipetal passes here using Q values
-    # after propogation happens, v resouce value will get assigned in each bud
-    # grab v from each bud to determine growth from that bud
-    # Grab Q values and distribute, generate resource values in STEM buds
-    self.performBHModelResourceDistribution()
+      # Create Pre Bud Growth Internodes
+      preBudGrowthInternodes = self.createInternodes(branches, flowers)
+
+      for i in range(0, growthIters):
+        # Update the optimals pre growth internodes
+        self.updateOptimalGrowthPairs(preBudGrowthInternodes)
+
+        # ^calculates growth dir, light point, ties light to bud, this is when Q
+        # values will get assigned
+        # Set the current internodes
+        self.configureBudInternodeHeirarchy(preBudGrowthInternodes)
+
+        # Set the current internodes
+        self.mInternodes = preBudGrowthInternodes
+
+        # Now perform resource distribution
+        # TODO: insert acro/basipetal passes here using Q values
+        # after propogation happens, v resouce value will get assigned in each bud
+        # grab v from each bud to determine growth from that bud
+        # Grab Q values and distribute, generate resource values in STEM buds
+        self.performBHModelResourceDistribution()
+
+        # TODO: Grow all branches of the tree using v-value (buds toward the light)
+        # self.grow the fucking branches
+        ''' TODO: Some growth shit '''
+        internodeLength = 0.25
+        radius = 0.25
+        minGrowthAngle = math.floor(baseGrowthAngle - growthAngleJitter)
+        maxGrowthAngle = math.floor(baseGrowthAngle + growthAngleJitter)
+
+        nextStart = None
+        nextEnd = None
+        growthDir = None
+        newShoots = []
+        for b in self.mInternodes:
+            ''' Case 1: b is a bud w/ a light '''
+            # TODO add something here woomp
+
+            '''Case 2: b is a bud w/o a light'''
+            if b.hasTerminalBud():
+              ''' Terminal Buds move along main axis '''
+              terminalBud = b.getTerminalBud()
+              numShoots = int(math.floor(terminalBud.mVResourceAmount))
+
+              # Start Creating additional shoots
+              currentStart = b.mStart
+              currentEnd = b.mEnd
+
+              print ('Appending ', numShoots, ' Terminnal shoots!')
+
+              for j in range(numShoots):
+                growthDir = SG.normalize(currentEnd - currentStart) * internodeLength
+                # Get start and end of next branch
+                nextStart = currentEnd
+                nextEnd = OpenMaya.MPoint(nextStart.x + growthDir.x,  nextStart.y + growthDir.y, nextStart.z + growthDir.z)
+
+                ''' Now append the terminal shoot '''
+                shoot = SC.StemCylinder(nextStart, nextEnd, radius)
+                newShoots.append(shoot)
+
+                # Now set the start to be the newEnd
+                currentStart = currentEnd
+                currentEnd = nextEnd
+                print 'appended terminal bud'
+
+              # Clear the Terminal Bud
+              b.setTerminalBud(None)
+
+            if b.hasLateralBud():
+              ''' Lateral Buds move in baseGrownAngle direction '''
+              lateralBud = b.getLateralBud()
+              numShoots = int(math.floor(lateralBud.mVResourceAmount))
+
+              # Start Creating additional shoots
+              currentStart = b.mStart
+              currentEnd = b.mEnd
+
+              print ('Appending ', numShoots, ' Lateral shoots!')
+
+              for j in range(numShoots):
+                # Compute a growth direction with some randomness the growth angle
+                theta = random.randint(minGrowthAngle, maxGrowthAngle) * SG.DEG_2_RAD
+                phi = random.randint(minGrowthAngle, maxGrowthAngle) * SG.DEG_2_RAD
+                psi =  random.randint(minGrowthAngle, maxGrowthAngle) * SG.DEG_2_RAD
+                growthDir = SG.normalize(OpenMaya.MPoint(theta, phi, psi)) * internodeLength
+
+                # Get start and end of next branch
+                nextStart = currentEnd
+                nextEnd = OpenMaya.MPoint(nextStart.x + growthDir.x,  nextStart.y + growthDir.y, nextStart.z + growthDir.z)
+
+                ''' Now append the lateral shoot '''
+                shoot = SC.StemCylinder(nextStart, nextEnd, radius)
+                newShoots.append(shoot)
+
+                # Now set the start to be the newEnd
+                currentStart = currentEnd
+                currentEnd = nextEnd
+
+                print 'appended lateral bud'
+
+              # Clear the Lateral Bud
+              b.setLateralBud(None)
 
 
-    # TODO: Grow all branches of the tree using v-value (buds toward the light)
-    # self.grow the fucking branches
+        # Combine new shoots
+        grownTree = self.mInternodes + newShoots
+
+        # Parent all the shoots
+        grownTree = self.createParentChildInternodeHeirarchy(self.mInternodes)
+
+        # Store the iternodes for this iteration
+        self.mTreeGrowthInternodes[growthKey] = grownTree
+
+        # Set up internodes for the next growth iteration
+        self.mInternodes = grownTree
+        preBudGrowthInternodes = self.mInternodes
+      #### End growth lopp interation
+
+    ''' Now update the growth mesh using the current internodes '''
+    # If we use tree curves, update the tree mesh
+    if ENABLE_TREE_CURVES:
+      # print 'Creating Tree curves'
+      self.updateTreeMesh(self.mInternodes)
+
+    # IF we enable the cylinder mesh, draw it
+    if ENABLE_CYLINDER_MESH:
+      self.createCylinderMesh(self.mInternodes, data)
+
+
 
   '''
   '' Initializes the LSystem and creates the base branches and flowers for the
@@ -329,6 +518,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     self.mPrevIterations = iters
     self.mPrevAngle = angle
+
+
+    # Clear the tree growth meshes
+    self.clearTreeGrowthInternodes()
 
     return [self.mBaseBranches, self.mBaseFlowers]
 
@@ -396,13 +589,33 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       internodes.append(cyMesh)
 
     # Create parent/child heirarchy
+    internodes = self.createParentChildInternodeHeirarchy(internodes)
+
+    # Return the internodes
+    return internodes
+
+
+  '''
+  '' Create Internode Parent Child Heirarchy
+  '''
+  def createParentChildInternodeHeirarchy(self, internodes):
+    internodes = self.resetParentChildInternodeHeirarchy(internodes)
     for iBranch in internodes:
       for jBranch in internodes:
         if iBranch.mEnd == jBranch.mStart:
           iBranch.mInternodeChildren.append(jBranch)
           jBranch.mInternodeParent = iBranch
+    return internodes
 
-    # Return the internodes
+  '''
+  '' Reset ParentChildInternodeHeirarchy
+  '''
+  def resetParentChildInternodeHeirarchy(self, internodes):
+    for branch in internodes:
+      # Clear parents
+      branch.mInternodeParent = None
+      # Clear Children
+      branch.mInternodeChildren[:] = []
     return internodes
 
   '''
@@ -421,9 +634,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     self.eraseCurves(self.mOptCurves)
     self.mOptCurves = []
 
-    # Get list of resource noces
-    resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
-
     # Get list of buds in the scence
     buds = self.createBudList(internodes)
 
@@ -435,6 +645,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # budPosition = SG.getLocatorWorldPosition(None)
       rootBudPos = OpenMaya.MPoint(0, 0, 0)
       buds = [SC.StemCylinder(rootBudPos, rootBudPos)]
+
+    # Get list of resource noces
+    resNodes = self.getSceneResourceNodes()
 
     # Make optimal bud-node adjacency list
     allBudsAdjList = self.createBudResNodeAdjacencyList(buds, resNodes)
@@ -467,9 +680,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       numNodes = len(lightNodes)
       totalLightPower = 0
       # Sum the node positions and weight them
-      for n in lightNodes:
+      for node in lightNodes:
         # TODO add weighting funciton that include the radius of light/space etc
-        nodePos = SG.getLocatorWorldPosition(n)
+        n = node[KEY_RESOURCE_NODE_NAME]
+        nodePos = node[KEY_RESOURCE_NODE_POSITION]
         sumNodePositions = SG.sumArrayVectors(sumNodePositions, nodePos)
         totalLightPower += cmds.getAttr(str(n) + '.' + SL.KEY_DEF_LIGHT_RADIUS[0])
 
@@ -551,8 +765,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Create an adjacency list (dictionary) that stores the adj list
     allBudsAdjacencyList = {}
     for n in resNodes:
-      # Get position of resNode
-      nPos = SG.getLocatorWorldPosition(n)
+
+      # Get name and position of resNode
+      nPos = n[KEY_RESOURCE_NODE_POSITION]
 
       # Init optimal bud and set the minDist to be max
       optimalBud = None
@@ -599,7 +814,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   '' Configures branches to hand lateral and terminal buds
   '''
-  def configureBudInternodeHeirarchry(self, internodes):
+  def configureBudInternodeHeirarchy(self, internodes):
     # Create and configure buds and internode heirarchy
     for b in internodes:
       if (len(b.mInternodeChildren) == 0):
@@ -615,6 +830,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent, child)
         b.mBudLateral.mQLightAmount = b.mQLightAmount
       else:
+        # Added this to reset the internodes buds when necessary
+        b.mBudLateral = None
+        b.mBudTerminal = None
         print "has more than 1 child" + str(len(b.mInternodeChildren))
 
   '''

@@ -98,6 +98,43 @@ class StemCylinder():
     if (G_POINTS.length() == 0):
       initCylinderMesh(radius)
 
+  '''
+  '' Returns true if this internode has a terminal bud
+  '''
+  def hasTerminalBud(self):
+    return self.mBudTerminal is not None
+
+  '''
+  '' Returns the terminal bud if there is one
+  '''
+  def getTerminalBud(self):
+    return self.mBudTerminal
+
+  '''
+  '' Sets the terminal bud
+  '''
+  def setTerminalBud(self, bud):
+    self.mBudTerminal = bud
+
+
+  '''
+  '' Returns true if this internode has a terminal bud
+  '''
+  def hasLateralBud(self):
+    return self.mBudLateral is not None
+
+  '''
+  '' Returns the lateral bud if there is one
+  '''
+  def getLateralBud(self):
+    return self.mBudLateral
+
+  '''
+  '' Sets the lateral bud
+  '''
+  def setLateralBud(self, bud):
+    self.mBudLateral = bud
+
 
   '''
   '' Appends the cylinder to the mesh
