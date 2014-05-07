@@ -30,7 +30,7 @@ STEM_INSTANCE_NODE_TYPE_NAME = "StemInstanceNode"
 STEM_INSTANCE_NODE_ID = OpenMaya.MTypeId(0xFA234)
 
 # Input Keys
-KEY_ITERATIONS = 'iterations', 'iter'
+KEY_ITERATIONS = 'baseIterations', 'baseIter'
 KEY_TIME = 'time', 'tm'
 KEY_GRAMMAR = 'grammarFile', 'grf'
 KEY_ANGLE = 'angle', 'ang'
@@ -69,9 +69,9 @@ ENABLE_RESOURCE_DRAWING = False
 # Use Tree Curves
 ENABLE_TREE_CURVES = True
 
-# Node definition
+
+# StemInstanceNode definition
 class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
-  # Declare class variables:
 
   # Size of drawn sphere
   mDisplayRadius = 1.0
@@ -111,6 +111,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mLSystem = LSystem.LSystem()
   mPrevGrammarFile = None
   mPrevGrammarContent = None
+  mPrevAngle = None
+  mPrevIterations = None
 
   # Optimal Point Curves Drawn
   mOptCurves = []
@@ -126,6 +128,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
   # Reference to the the maya dependency node
   mStemNode = None
+
+  # The Dictionary story the geometry for each iterations 0 is Lsystem Base
+  mGrowthMeshes = {}
+
+  # The base branches and flowers for the LSystem
+  mBaseBranches = None
+  mBaseFlowers = None
 
 
   '''
@@ -191,7 +200,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   '' Computes input/output updates for the node
   '''
-  def compute(self,plug,data):
+  def compute(self, plug, data):
     if plug == StemInstanceNode.outputMesh:
       # Update the reference to this maya's nodes name
       self.updateStemNodeName(plug)
@@ -225,6 +234,19 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       dataCreator = OpenMaya.MFnMeshData()
       newOutputData = dataCreator.create()
 
+
+      # Init LSystem only when grammar/angle/iters change
+      shouldInitLSystem = grammarFile != self.mPrevGrammarFile
+      shouldInitLSystem = shouldInitLSystem or angle != self.mPrevAngle
+      shouldInitLSystem = shouldInitLSystem or iters != self.mPrevIterations
+
+      if shouldInitLSystem:
+        self.initLSystemBaseTree(iters, angle, step, grammarFile, data, newOutputData)
+
+      if hasResources:
+          # Update the geometry
+          print ' Using resources!'
+
       # The New mesh!
       meshResult = self.createMesh(
         iters, angle, step, grammarFile,
@@ -244,33 +266,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '' Creates a Cylinder Mesh based on the LSystem
   '''
   def createMesh(self, iters, angle, step, grammarFile, hasResources, data, newOutputData):
-    # Get Grammar File Contents & load to lsys
-    if grammarFile != self.mPrevGrammarFile:
-      self.mPrevGrammarContent = self.readGrammarFile(grammarFile)
-      self.mPrevGrammarFile = grammarFile
 
-    grammarContent = self.mPrevGrammarContent
+    [branches, flowers] = self.initLSystemBaseTree(iters, angle, step, grammarFile, data, newOutputData)
 
-    if len(grammarContent) == 0:
-      print "Invalid Grammar File!"
-      return None
-
-    # Init the LSystem from the parameters
-    self.mLSystem.setDefaultAngle(float(angle))
-    self.mLSystem.setDefaultStep(float(step))
-    self.mLSystem.loadProgramFromString(grammarContent)
-    #self.mLSystem.setHasResources(hasResources)
-
-    # Print contents
-    print "Grammar File: " + grammarFile
-    print "Grammar File Contents: " + self.mLSystem.getGrammarString()
-
-    # The branches and flowers objects
-    branches = LSystem.VectorPyBranch()
-    flowers = LSystem.VectorPyBranch()
-
-    # Run Grammar String to make branches and flowers
-    self.mLSystem.processPy(iters, branches, flowers)
     # Update buds if we have resources
     if hasResources:
       # Update the branches and flowers based on resources
@@ -340,6 +338,39 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     return meshFs
 
 
+  def initLSystemBaseTree(self, iters, angle, step, grammarFile, data, newOutputData):
+    # Get Grammar File Contents & load to lsys
+    if grammarFile != self.mPrevGrammarFile:
+      self.mPrevGrammarContent = self.readGrammarFile(grammarFile)
+      self.mPrevGrammarFile = grammarFile
+
+    grammarContent = self.mPrevGrammarContent
+
+    if len(grammarContent) == 0:
+      print "Invalid Grammar File!"
+      return None
+
+    # Init the LSystem from the parameters
+    self.mLSystem.setDefaultAngle(float(angle))
+    self.mLSystem.setDefaultStep(float(step))
+    self.mLSystem.loadProgramFromString(grammarContent)
+    #self.mLSystem.setHasResources(hasResources)
+
+    # Print contents
+    print "Grammar File: " + grammarFile
+    print "Grammar File Contents: " + self.mLSystem.getGrammarString()
+
+    # The branches and flowers objects
+    self.mBaseBranches = LSystem.VectorPyBranch()
+    self.mBaseFlowers = LSystem.VectorPyBranch()
+
+    # Run Grammar String to make branches and flowers
+    self.mLSystem.processPy(iters, self.mBaseBranches, self.mBaseFlowers)
+
+    self.mPrevIterations = iters
+    self.mPrevAngle = angle
+
+    return [self.mBaseBranches, self.mBaseFlowers]
 
   '''
   '' Update Bud Nodes for an LSystem Generation
