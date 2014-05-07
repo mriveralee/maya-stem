@@ -64,7 +64,7 @@ DEFAULT_STEP_SIZE = 1.0
 DEFAULT_ANGLE = 42.5
 
 # Enable test drawing
-ENABLE_RESOURCE_DRAWING = False
+ENABLE_RESOURCE_DRAWING = True
 
 # Use Tree Curves
 ENABLE_TREE_CURVES = True
@@ -270,36 +270,29 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     branches = self.mBaseBranches
     flowers = self.mBaseFlowers
 
-    # Update the branches and flowers based on resources
-    self.updateBudGrowthForResources(growthIters, branches, flowers)
+    # Create Pre Bud Growth Internodes
+    preBudGrowthInternodes = self.createInternodes(branches, flowers)
 
-    # Create Cylinder Mesh Internodes
-    self.mInternodes = self.createInternodes(branches, flowers)
+    # Update the LSystem with the buds of the pre growth internodes
+    self.updateOptimalGrowthPairs(preBudGrowthInternodes)
 
-    # Create and configure buds and internode heirarchy
-    for b in self.mInternodes:
-      if (len(b.mInternodeChildren) == 0):
-        # b.mQLightAmount = 1
-        parent = b
-        b.mBudTerminal = SB.StemBud(SB.BudType.TERMINAL, parent)
-        b.mBudTerminal.mQLightAmount = 1
-        b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent)
-        b.mBudLateral.mQLightAmount = 0.5
-      elif (len(b.mInternodeChildren) == 1):
-        parent = b
-        child = b.mInternodeChildren[0]
-        b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent, child)
-        b.mBudLateral.mQLightAmount = 0.5
-      else:
-        print "has more than 1 child" + str(len(b.mInternodeChildren))
+    # ^calculates growth dir, light point, ties light to bud, this is when Q
+    # values will get assigned
+    # Set the current internodes
+    self.configureBudInternodeHeirarchry(preBudGrowthInternodes)
 
+    # Set the current internodes
+    self.mInternodes = preBudGrowthInternodes
+
+    # TODO: insert acro/basipetal passes here using Q values
+    # after propogation happens, v resouce value will get assigned in each bud
+    # grab v from each bud to determine growth from that bud
     # Grab Q values and distribute, generate resource values in STEM buds
     self.performBHModelResourceDistribution()
 
-    # Compute Optimal Growth pairs for internodes
-    self.updateOptimalGrowthPairs(self.mInternodes, False)
 
-
+    # TODO: Grow all branches of the tree using v-value (buds toward the light)
+    # self.grow the fucking branches
 
   '''
   '' Initializes the LSystem and creates the base branches and flowers for the
@@ -387,33 +380,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
 
   '''
-  '' Update Bud Nodes for an LSystem Generation
-  '''
-  def updateBudGrowthForResources(self, iters, branches, flowers):
-    # Create Pre Bud Growth Internodes
-    preBudGrowthInternodes = self.createInternodes(branches, flowers)
-
-    # Update the LSystem with the buds of the pre growth internodes
-    self.updateOptimalGrowthPairs(preBudGrowthInternodes, True)
-    # ^calculates growth dir, light point, ties light to bud, this is when Q
-    # values will get assigned
-
-    # TODO: insert acro/basipetal passes here using Q values
-    # after propogation happens, v resouce value will get assigned in each bud
-    # grab v from each bud to determine growth from that bud
-
-    # TODO: send v values to LSystem
-
-    # Test the output of the buds and angles in the LSystem
-    # self.verifyLSystemBudAngles(buds, dirs, angles)
-
-    # Get Optimal Growth Pairs from Branches then send to LSystem for Updating
-    self.mLSystem.updateBudGeometry(iters, branches, flowers)
-
-    return [branches, flowers]
-
-
-  '''
   '' Creates an Internodes List of CylinderMeshes from branches
   '''
   def createInternodes(self, branches, flowers):
@@ -442,24 +408,15 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   '' Compute Optimal Growth Pairs
   '''
-  def updateOptimalGrowthPairs(self, internodes, shouldUpdateLSystem=True):
+  def updateOptimalGrowthPairs(self, internodes):
     # Get optimal growth pairs and send to LSystem
-    self.mOptimalGrowthPairs = self.getBudOptimalGrowthDirs(internodes)
-
-    if shouldUpdateLSystem:
-      # Convert optimal growth pairs into vectors
-
-      [buds, dirs, angles] = self.convertOptGrowthPairsForLSystem(self.mOptimalGrowthPairs)
-
-      # Sets the optimal growth directions for the LSystem
-      self.mLSystem.setOptimalBudDirs(buds, dirs, angles)
-    return
+    self.mOptimalGrowthPairs = self.computeBudOptimalGrowthDirs(internodes)
 
   '''
   '' Finds the optimal growth direction angles and their bud growth pairs for
   '' each bud in the tree
   '''
-  def getBudOptimalGrowthDirs(self, internodes):
+  def computeBudOptimalGrowthDirs(self, internodes):
     # Erase old curves
     self.eraseCurves(self.mOptCurves)
     self.mOptCurves = []
@@ -516,7 +473,16 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         sumNodePositions = SG.sumArrayVectors(sumNodePositions, nodePos)
         totalLightPower += cmds.getAttr(str(n) + '.' + SL.KEY_DEF_LIGHT_RADIUS[0])
 
+      # Q Light value to be stored at a node
+      lightQValue = 0 if len(lightNodes) == 0.0 else 1.0
+      print 'BUD:', bud
+      print 'LightValue:', lightQValue
+
+      # Set the light for the bud node
+      bud.mQLightAmount = lightQValue
+      # TODO: Use avg light power for lightQValue
       avgLightPower = totalLightPower / numNodes
+
       print ('avgLightPower for bud:', avgLightPower)
       # Now average the node positions and substract the bud position to compute
       # the optimal growth direction
@@ -540,7 +506,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         optGrowthAngle = optGrowthAngle * 180 / math.pi
 
       # TODO - decide if we want to use growth Angle OR growth vector...
-      growthPair = (budPosition, optPt, optGrowthAngle)
+      growthPair = (budPosition, optPt, optGrowthAngle, lightQValue)
+
       #growthAnglePair = (budPosition, optGrowthAngle)
 
       # Draw curve to show direction vector
@@ -627,6 +594,28 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     # Return a list of the adjacency lists
     return allBudsAdjacencyList.values()
+
+
+  '''
+  '' Configures branches to hand lateral and terminal buds
+  '''
+  def configureBudInternodeHeirarchry(self, internodes):
+    # Create and configure buds and internode heirarchy
+    for b in internodes:
+      if (len(b.mInternodeChildren) == 0):
+        # b.mQLightAmount = 1
+        parent = b
+        b.mBudTerminal = SB.StemBud(SB.BudType.TERMINAL, parent)
+        b.mBudTerminal.mQLightAmount = b.mQLightAmount
+        b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent)
+        b.mBudLateral.mQLightAmount = b.mQLightAmount
+      elif (len(b.mInternodeChildren) == 1):
+        parent = b
+        child = b.mInternodeChildren[0]
+        b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent, child)
+        b.mBudLateral.mQLightAmount = b.mQLightAmount
+      else:
+        print "has more than 1 child" + str(len(b.mInternodeChildren))
 
   '''
   '' Converts optimal growth pairs into vectors for the LSystem
