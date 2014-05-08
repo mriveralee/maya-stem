@@ -411,13 +411,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     if growthIters <= 1 or not hasResources:
       ''' Case: No resource growth is used or is initial LSystem Tree '''
       growthKey = '1'
-
-      # Create Internodes for them
-      internodes = self.createInternodes(self.mBaseBranches, self.mBaseFlowers)
-
-      # Store in the first keyframe
-      self.mTreeGrowthInternodes[growthKey] = internodes
-
     elif self.mTreeGrowthInternodes.get(growthKey) is None:
       ''' Case: No Internodes for a growthIteration -- compute the growth '''
       startGrowthNum = 1
@@ -513,7 +506,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
                 # print 'appended terminal bud'
 
               # Clear the Terminal Bud
-              #b.setTerminalBud(None)
+              b.setTerminalBud(None)
 
             if b.hasLateralBud():
               ''' Lateral Buds move in baseGrownAngle direction '''
@@ -552,7 +545,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
                 currentEnd = nextEnd
                 # print 'appended lateral bud'
               # Clear the Lateral Bud
-              #b.setLateralBud(None)
+              b.setLateralBud(None)
         # Combine new shoots
         grownTree = preBudGrowthInternodes + newShoots
 
@@ -947,7 +940,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         #b.mBudLateral = None
         #b.mBudTerminal = None
         print "has more than 1 child: " + str(len(b.mInternodeChildren))
-        
+
   '''
   '' Converts optimal growth pairs into vectors for the LSystem
   '''
