@@ -1120,7 +1120,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def readGrammarFileUsingDialog(self):
     txtFileFilter = 'Text Files (*.txt)'
-    fileNames = cmds.fileDialog2(fileFilter=dialogStyle, txtFileFilter=2, fileMode=1)
+    fileNames = cmds.fileDialog2(fileFilter=txtFileFilter, dialogStyle=2, fileMode=1)
     return self.readGrammarFile(fileNames[0])
 
   '''
