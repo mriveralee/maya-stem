@@ -568,7 +568,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       #### End growth lopp interation
 
     # Set up internodes for drawing
-    self.mInternodes = self.mTreeGrowthInternodes[growthKey]
+    self.mInternodes = self.mTreeGrowthInternodes.get(growthKey)
 
     ''' Now update the growth mesh using the current internodes '''
     # If we use tree curves, update the tree mesh
