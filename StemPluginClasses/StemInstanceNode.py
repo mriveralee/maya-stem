@@ -432,9 +432,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
       ''' Now compute the growth for the internode list '''
       for i in range(startGrowthNum, endGrowthNum):
-        # Clear bud data from previous iterations
-        self.clearBudResourceData(preBudGrowthInternodes)
-
         # Update the optimals pre growth internodes
         self.updateOptimalGrowthPairs(preBudGrowthInternodes)
 
@@ -1179,7 +1176,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       print "===================================================================="
       print "PERFORMING RESOURCE DISTRIBUTION===================================="
       print "===================================================================="
-    self.clearBudResourceData(internodes)
+    #self.clearBudResourceData(internodes)
     self.performBasipetalPass(internodes)
     self.performAcropetalPass(internodes)
 
