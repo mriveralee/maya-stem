@@ -210,7 +210,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         val = int(b.mVResourceAmount * 100) / 100.0
         if ENABLE_RESOURCE_V_DRAWING:
           view.drawText(str(val), b.mEnd, OpenMayaUI.M3dView.kCenter)
-        if ENABLE_RESOURCE_V_PRINTING: 
+        if ENABLE_RESOURCE_V_PRINTING:
           print "~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*"
           print "internode end at " + str(b.mEnd[0]) + " , " + str(b.mEnd[1]) + " , " + str(b.mEnd[2])
 
@@ -234,7 +234,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           if ENABLE_RESOURCE_V_PRINTING:
             print "lateral:"
             print lBud.mVResourceAmount
-       
+
       glFT.glPopAttrib()
 
       # Draw light distribution values at base locations
@@ -244,7 +244,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         val = int(b.mQLightAmount * 100) / 100.0
         point = b.mStart + ((b.mEnd - b.mStart) / 2.0)
         if ENABLE_RESOURCE_Q_DRAWING:
-          view.drawText(str(val), point, OpenMayaUI.M3dView.kCenter) 
+          view.drawText(str(val), point, OpenMayaUI.M3dView.kCenter)
         if ENABLE_RESOURCE_Q_PRINTING:
           print "@~@~@~@@~@~@~@@~@~@~@~@~@~@~@@~@~@~@~@"
           print "internode end at " + str(b.mEnd[0]) + " , " + str(b.mEnd[1]) + " , " + str(b.mEnd[2])
@@ -306,19 +306,12 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       hasResData = data.inputValue(StemInstanceNode.mHasResourceDistribution)
       hasResources = hasResData.asBool()
 
-      # Init LSystem only when grammar/angle/iters change
-      shouldInitLSystem = grammarFile != self.mPrevGrammarFile
-      shouldInitLSystem = shouldInitLSystem or angle != self.mPrevAngle
-      shouldInitLSystem = shouldInitLSystem or iters != self.mPrevIterations
-
-      # Make LSystem Base Tree for growing
-      if shouldInitLSystem:
-        self.initLSystemBaseTree(iters, angle, step, grammarFile)
-
       # Check if scene Resource Nodes are dirty!
       resNodes = cmds.ls(type=SL.STEM_LIGHT_NODE_TYPE_NAME)
 
-      if self.areSceneResourceNodesDirty(resNodes):
+
+      shouldClearSceneResources = self.areSceneResourceNodesDirty(resNodes)
+      if shouldClearSceneResources:
         # Update the SceneResourceNodes
         self.clearSceneResourceNodes()
         self.setSceneResourceNodes(resNodes)
@@ -327,6 +320,24 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         self.clearTreeGrowthInternodes()
 
         print 'Scene Resource Nodes are dirty!'
+
+      # Init LSystem only when grammar/angle/iters change
+      shouldInitLSystem = shouldClearSceneResources
+      shouldInitLSystem = shouldInitLSystem or grammarFile != self.mPrevGrammarFile
+      shouldInitLSystem = shouldInitLSystem or angle != self.mPrevAngle
+      shouldInitLSystem = shouldInitLSystem or iters != self.mPrevIterations
+
+      # Make LSystem Base Tree for growing
+      if shouldInitLSystem:
+        # grab base branches & flowers
+        self.initLSystemBaseTree(iters, angle, step, grammarFile)
+
+        # Create Internodes for them
+        internodes = self.createInternodes(self.mBaseBranches, self.mBaseFlowers)
+
+        # Store in the first keyframe
+        self.mTreeGrowthInternodes['1'] = internodes
+
 
       # TODO Growth the branches and flowers for this growth iteration
       growthIters = int(cmds.getAttr(str(self.getStemNode()) +'.time'))
@@ -397,54 +408,46 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def growTree(self, growthIters, baseGrowthAngle, growthAngleJitter, hasResources, data):
     growthKey = str(growthIters)
-
-    if not hasResources or growthIters is 1:
-      ''' Case: No resource growth is used '''
-      # grab base branches & flowers
-      branches = self.mBaseBranches
-      flowers = self.mBaseFlowers
+    if growthIters <= 1 or not hasResources:
+      ''' Case: No resource growth is used or is initial LSystem Tree '''
+      growthKey = '1'
 
       # Create Internodes for them
-      internodes = self.createInternodes(branches, flowers)
-      self.mTreeGrowthInternodes[growthKey] = self.copyInternodes(internodes)
+      internodes = self.createInternodes(self.mBaseBranches, self.mBaseFlowers)
 
-    elif self.mTreeGrowthInternodes.get(growthKey) is not None:
-      ''' Case: Have Internodes for growthIteration -- update the internodes'''
-      self.mInternodes = self.mTreeGrowthInternodes.get(growthKey)
+      # Store in the first keyframe
+      self.mTreeGrowthInternodes[growthKey] = internodes
 
-    else:
+    elif self.mTreeGrowthInternodes.get(growthKey) is None:
       ''' Case: No Internodes for a growthIteration -- compute the growth '''
-      # Perform growth usings the current growth iters number
-      branches = self.mBaseBranches
-      flowers = self.mBaseFlowers
-
-      startGrowthNum = 0
-      endGrowthNum = growthIters
+      startGrowthNum = 1
+      endGrowthNum = growthIters + 1
 
       # Create Pre Bud Growth Internodes
-      preBudGrowthInternodes = self.createInternodes(branches, flowers)
+      preBudGrowthInternodes = self.mTreeGrowthInternodes.get('1')
 
-      # Save compiutation if we can :)
-      for i in range(0, growthIters):
+      # Save computation by copying a previously used internode list :)
+      for i in range(1, endGrowthNum):
         gKey = str(i)
         growth = self.mTreeGrowthInternodes.get(gKey)
         if growth is not None:
           startGrowthNum = i
-          preBudGrowthInternodes = growth
+          preBudGrowthInternodes = self.copyInternodes(growth)
 
+      if preBudGrowthInternodes is None:
+        preBudGrowthInternodes = self.mTreeGrowthInternodes.get('1')
 
-      for i in range(startGrowthNum, growthIters):
+      ''' Now compute the growth for the internode list '''
+      for i in range(startGrowthNum, endGrowthNum):
         # Update the optimals pre growth internodes
-        optimalGrowthPairs = self.updateOptimalGrowthPairs(preBudGrowthInternodes)
+        self.updateOptimalGrowthPairs(preBudGrowthInternodes)
 
-        # ^calculates growth dir, light point, ties light to bud, this is when Q
-        # values will get assigned
+        #  Assign Q values, growth dirs etc will get assigned
         # Set the current internodes
         self.configureBudInternodeHeirarchy(preBudGrowthInternodes)
 
         # Set the current internodes
         # self.mInternodes = preBudGrowthInternodes
-
         # Now perform resource distribution
         self.performBHModelResourceDistribution(preBudGrowthInternodes)
 
@@ -457,29 +460,26 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         minGrowthAngle = math.floor(baseGrowthAngle - growthAngleJitter)
         maxGrowthAngle = math.floor(baseGrowthAngle + growthAngleJitter)
 
-        nextStart = None
-        nextEnd = None
-        growthDir = None
+        # Shoots for appendings
         newShoots = []
 
-
-
-
         for b in preBudGrowthInternodes:
-            ''' Case 1: b is a bud w/ a light '''
-            # TODO add something here woomp
-            bPos = [b.mEnd.x, b.mEnd.y, b.mEnd.z]
-            lightPos = None
-            isLightBud = False
-            # growthPair = (budPosition, optPt, optGrowthAngle, lightQValue)
-            for gPair in optimalGrowthPairs:
-              gPairPos = [gPair[0].x, gPair[0].y, gPair[0].z]
-              if (bPos == gPairPos):
-                lightPos = OpenMaya.MPoint(gPair[1][0], gPair[1][1], gPair[1][2])
-                isLightBud = True
-                break
+          nextStart = None
+          nextEnd = None
+          growthDir = None
 
-            '''Case 2: b is a bud w/o a light'''
+          # TODO add something here woomp
+          bPos = [b.mEnd.x, b.mEnd.y, b.mEnd.z]
+          lightPos = None
+          isLightBud = False
+          # growthPair = (budPosition, optPt, optGrowthAngle, lightQValue)
+          ''' Check if we have a Light w/ this Bud'''
+          for gPair in self.mOptimalGrowthPairs:
+            gPairPos = [gPair[0].x, gPair[0].y, gPair[0].z]
+            if (bPos == gPairPos):
+              lightPos = OpenMaya.MPoint(gPair[1][0], gPair[1][1], gPair[1][2])
+              isLightBud = True
+
             if b.hasTerminalBud():
               ''' Terminal Buds move along main axis '''
               terminalBud = b.getTerminalBud()
@@ -490,13 +490,14 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
               currentEnd = b.mEnd
 
               # print ('Appending ', numShoots, ' Terminnal shoots!')
-              print 'NumShoots', numShoots
               for j in range(0, numShoots):
                 internodeLength = lengthMultipler * terminalBud.mVResourceAmount / numShoots
 
                 if isLightBud:
+                  '''Case 1: b is a bud w/ a Terminal Bud and light'''
                   growthDir = SG.normalize(lightPos - currentEnd) * internodeLength
                 else:
+                  '''Case 2: b is a bud w/o a Terminal Bud and light'''
                   growthDir = SG.normalize(currentEnd - currentStart) * internodeLength
                 # Get start and end of next branch
                 nextStart = currentEnd
@@ -507,7 +508,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
                 newShoots.append(shoot)
 
                 # Now set the start to be the newEnd
-                currentStart = currentEnd
+                currentStart = nextStart
                 currentEnd = nextEnd
                 # print 'appended terminal bud'
 
@@ -527,8 +528,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
                 # L = v / n
                 internodeLength = lengthMultipler * lateralBud.mVResourceAmount / numShoots
                 if isLightBud:
+                  '''Case 3: b is a bud w/ a Lateral Bud and light'''
                   growthDir = SG.normalize(lightPos - currentEnd) * internodeLength
                 else:
+                  '''Case 4: b is a bud w/o a Lateral Bud and light'''
+
                   # Compute a growth direction with some randomness the growth angle
                   theta = random.randint(minGrowthAngle, maxGrowthAngle) * SG.DEG_2_RAD
                   phi = random.randint(minGrowthAngle, maxGrowthAngle) * SG.DEG_2_RAD
@@ -544,15 +548,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
                 newShoots.append(shoot)
 
                 # Now set the start to be the newEnd
-                currentStart = currentEnd
+                currentStart = nextStart
                 currentEnd = nextEnd
-
                 # print 'appended lateral bud'
-
               # Clear the Lateral Bud
               #b.setLateralBud(None)
-
-
         # Combine new shoots
         grownTree = preBudGrowthInternodes + newShoots
 
@@ -560,13 +560,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         grownTree = self.createParentChildInternodeHeirarchy(grownTree)
 
         # Store the iternodes for this iteration
-        if i+1 is growthIters:
-          self.mTreeGrowthInternodes[growthKey] = self.copyInternodes(grownTree)
+        self.mTreeGrowthInternodes[str(i)] = grownTree
 
         # Set up internodes for the next growth iteration
-        preBudGrowthInternodes = grownTree
-      #### End growth lopp interation
+        preBudGrowthInternodes = self.copyInternodes(grownTree)
 
+    #### End growth lopp interation
+    ''' Now finish drawing the mesh '''
     # Set up internodes for drawing
     self.mInternodes = self.mTreeGrowthInternodes.get(growthKey)
 
@@ -947,7 +947,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         #b.mBudLateral = None
         #b.mBudTerminal = None
         print "has more than 1 child: " + str(len(b.mInternodeChildren))
-
+        
   '''
   '' Converts optimal growth pairs into vectors for the LSystem
   '''
