@@ -432,6 +432,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
       ''' Now compute the growth for the internode list '''
       for i in range(startGrowthNum, endGrowthNum):
+        # Clear bud data from previous iterations
+        self.clearBudResourceData(preBudGrowthInternodes)
+
         # Update the optimals pre growth internodes
         self.updateOptimalGrowthPairs(preBudGrowthInternodes)
 
@@ -1386,8 +1389,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         tBud.mVResourceAmount = 0
       if branch.hasLateralBud():
         lBud = branch.getLateralBud()
-        tBud.mQLightAmount = 0
-        tBud.mVResourceAmount = 0
+        lBud.mQLightAmount = 0
+        lBud.mVResourceAmount = 0
 
   def drawBuds(self, internodes):
     if ENABLE_JUDYS_DEBUG_PRINTING_CRAP:
