@@ -108,15 +108,10 @@ class StemCylinder():
     cyl = StemCylinder(start, end, self.mRadius)
     cyl.mQLightAmount = self.mQLightAmount
     cyl.mVResourceAmount = self.mVResourceAmount
-    print 'copied cylinder'
     if self.hasTerminalBud():
-
       cyl.mBudTerminal = self.mBudTerminal.makeCopy()
-      print 'copied terminal bud'
-
     if self.hasLateralBud():
       cyl.mBudLateral = self.mBudLateral.makeCopy()
-      print 'copied lateral bud'
     return cyl
 
   '''

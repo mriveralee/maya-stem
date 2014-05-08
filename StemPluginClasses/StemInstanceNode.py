@@ -60,7 +60,7 @@ BH_LAMBDA = 0.5 # controls bias of resource allocation. values in [0,1]
 BH_ALPHA = 1 #2# coefficient of proportionality for v_base, value from paper ex.
 
 # Default Grammar File
-DEFAULT_GRAMMAR_FILE = './StemPluginClasses/trees/simple4.txt'
+DEFAULT_GRAMMAR_FILE = './StemPluginClasses/trees/simple1.txt'
 
 # Default LSystem Step Size
 DEFAULT_STEP_SIZE = 1.0
@@ -341,7 +341,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       flowers = self.mBaseFlowers
 
       # Create Internodes for them
-      self.mInternodes = self.createInternodes(branches, flowers)
+      internodes = self.createInternodes(branches, flowers)
+      self.mTreeGrowthInternodes[growthKey] = self.copyInternodes(internodes)
 
     elif self.mTreeGrowthInternodes.get(growthKey) is not None:
       ''' Case: Have Internodes for growthIteration -- update the internodes'''
@@ -366,14 +367,14 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         self.configureBudInternodeHeirarchy(preBudGrowthInternodes)
 
         # Set the current internodes
-        self.mInternodes = preBudGrowthInternodes
+        # self.mInternodes = preBudGrowthInternodes
 
         # Now perform resource distribution
         # TODO: insert acro/basipetal passes here using Q values
         # after propogation happens, v resouce value will get assigned in each bud
         # grab v from each bud to determine growth from that bud
         # Grab Q values and distribute, generate resource values in STEM buds
-        self.performBHModelResourceDistribution()
+        self.performBHModelResourceDistribution(preBudGrowthInternodes)
 
         # TODO: Grow all branches of the tree using v-value (buds toward the light)
         # self.grow the fucking branches
@@ -387,7 +388,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         nextEnd = None
         growthDir = None
         newShoots = []
-        for b in self.mInternodes:
+        for b in preBudGrowthInternodes:
             ''' Case 1: b is a bud w/ a light '''
             # TODO add something here woomp
 
@@ -458,18 +459,21 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
 
         # Combine new shoots
-        grownTree = self.mInternodes + newShoots
+        grownTree = preBudGrowthInternodes + newShoots
 
         # Parent all the shoots
-        grownTree = self.createParentChildInternodeHeirarchy(self.mInternodes)
+        grownTree = self.createParentChildInternodeHeirarchy(grownTree)
 
         # Store the iternodes for this iteration
-        self.mTreeGrowthInternodes[growthKey] = self.copyInternodes(grownTree)
+        if i+1 is growthIters:
+          self.mTreeGrowthInternodes[growthKey] = self.copyInternodes(grownTree)
 
         # Set up internodes for the next growth iteration
-        self.mInternodes = grownTree
-        preBudGrowthInternodes = self.mInternodes
+        preBudGrowthInternodes = grownTree
       #### End growth lopp interation
+
+    # Set up internodes for drawing
+    self.mInternodes = self.mTreeGrowthInternodes[growthKey]
 
     ''' Now update the growth mesh using the current internodes '''
     # If we use tree curves, update the tree mesh
@@ -482,19 +486,16 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       self.createCylinderMesh(self.mInternodes, data)
 
 
-
+  '''
+  '' DEEP Copies a list of internodes
+  '''
   def copyInternodes(self, internodes):
     internodesCopy = []
-    print "Making a copy"
     for b in internodes:
       internode = b.makeCopy()
-      print 'made internode', internode
       internodesCopy.append(internode)
 
-    internodesCopy = self.createParentChildInternodeHeirarchy(internodesCopy, False)
-
-
-    print "Made a copy of internodes"
+    internodesCopy = self.createParentChildInternodeHeirarchy(internodesCopy)
     return internodesCopy
 
 
@@ -630,7 +631,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def resetParentChildInternodeHeirarchy(self, internodes):
     for branch in internodes:
       # Clear parents
-      print
       branch.mInternodeParent = None
       # Clear Children
       branch.mInternodeChildren[:] = []
@@ -939,10 +939,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   '' Returns the root internode of the Stem tree
   '''
-  def getRootInternode(self):
-    if len(self.mInternodes) == 0:
+  def getRootInternode(self, internodes):
+    if len(internodes) == 0:
       return None
-    return self.mInternodes[0]
+    for n in internodes:
+      if n.mInternodeParent is None:
+        return n
+    return None
 
   '''
   ''  Performs a BFS traversal from the root and pushes each node
@@ -1016,8 +1019,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   ''  Propogates light amounts (Q) from outermost internodes to towards the base.
   ''  (TODO: May have to edit to grab the light information from buds themselves)
   '''
-  def performBasipetalPass(self):
-    branchStack = self.getBfsTraversal(self.getRootInternode())
+  def performBasipetalPass(self, internodes):
+    root = self.getRootInternode(internodes) #self.getRootInternode()
+    branchStack = self.getBfsTraversal(root)
 
     # TODO: remove later. this bit is for testing on simple case
     # currently configuring appropriate bud types and locations using the
@@ -1044,9 +1048,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   ''  Distributes resource acropetally between continuing main axes
   ''  and lateral branches throughout entire tree.
   '''
-  def performAcropetalPass(self):
+  def performAcropetalPass(self, internodes):
     # v_base = alpha * Q_base
-    root = self.getRootInternode()
+    #root = self.getRootInternode()
+    root = self.getRootInternode(internodes)
     vBase = BH_ALPHA * root.mQLightAmount
     root.mVResourceAmount = vBase
     bfsTraversal = self.getBfsTraversal(root)
@@ -1063,9 +1068,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   ''  Performs BH Model passes to distribute resources throught the tree.
   '''
-  def performBHModelResourceDistribution(self):
-    self.performBasipetalPass()
-    self.performAcropetalPass()
+  def performBHModelResourceDistribution(self, internodes):
+    self.performBasipetalPass(internodes)
+    self.performAcropetalPass(internodes)
 
   '''
   ''  Reads a text file that is selected using a file dialog then returns its
