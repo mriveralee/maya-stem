@@ -61,6 +61,6 @@ class StemBud():
     bud.mBudType = self.mBudType
     #bud.mInternodeParent = self.mInternodeParent
     #bud.mInternodeChild = self.mInternodeChild
-    bud.mQLightAmount = self.mQLightAmount
-    bud.mVResourceAmount = self.mVResourceAmount
+    #bud.mQLightAmount = self.mQLightAmount
+    #bud.mVResourceAmount = self.mVResourceAmount
     return bud

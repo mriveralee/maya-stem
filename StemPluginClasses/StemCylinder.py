@@ -95,6 +95,8 @@ class StemCylinder():
     self.mQLightAmount = 0
     self.mVResourceAmount = 0
 
+    self.mInitialQ = 0
+
     if (G_POINTS.length() == 0):
       initCylinderMesh(radius)
 
@@ -105,13 +107,7 @@ class StemCylinder():
 
     start = OpenMaya.MPoint(self.mStart.x, self.mStart.y, self.mStart.z)
     end = OpenMaya.MPoint(self.mEnd.x, self.mEnd.y, self.mEnd.z)
-    cyl = StemCylinder(start, end, self.mRadius)
-    cyl.mQLightAmount = self.mQLightAmount
-    cyl.mVResourceAmount = self.mVResourceAmount
-    if self.hasTerminalBud():
-      cyl.mBudTerminal = self.mBudTerminal.makeCopy()
-    if self.hasLateralBud():
-      cyl.mBudLateral = self.mBudLateral.makeCopy()
+    cyl = StemCylinder(start, end)
     return cyl
 
   '''

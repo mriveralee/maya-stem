@@ -430,6 +430,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       if preBudGrowthInternodes is None:
         preBudGrowthInternodes = self.mTreeGrowthInternodes.get('1')
 
+
+      preBudGrowthInternodes = self.copyInternodes(preBudGrowthInternodes)
       ''' Now compute the growth for the internode list '''
       for i in range(startGrowthNum, endGrowthNum):
         # Update the optimals pre growth internodes
@@ -466,6 +468,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           lightPos = None
           isLightBud = False
           # growthPair = (budPosition, optPt, optGrowthAngle, lightQValue)
+
           ''' Check if we have a Light w/ this Bud'''
           for gPair in self.mOptimalGrowthPairs:
             gPairPos = [gPair[0].x, gPair[0].y, gPair[0].z]
@@ -473,19 +476,20 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
               lightPos = OpenMaya.MPoint(gPair[1][0], gPair[1][1], gPair[1][2])
               isLightBud = True
 
-            if b.hasTerminalBud():
-              ''' Terminal Buds move along main axis '''
-              terminalBud = b.getTerminalBud()
-              numShoots = int(math.floor(terminalBud.mVResourceAmount))
-
+          ''' Handle Terminal Bud Case '''
+          if b.hasTerminalBud():
+            ''' Terminal Buds move along main axis '''
+            terminalBud = b.getTerminalBud()
+            numShoots = int(math.floor(terminalBud.mVResourceAmount))
+            if numShoots > 0:
               # Start Creating additional shoots
               currentStart = b.mStart
               currentEnd = b.mEnd
 
-              # print ('Appending ', numShoots, ' Terminnal shoots!')
+              print ('Appending ', numShoots, ' Terminal shoots!')
+              internodeLength = lengthMultipler * terminalBud.mVResourceAmount / numShoots
+              print ('iLength', internodeLength)
               for j in range(0, numShoots):
-                internodeLength = lengthMultipler * terminalBud.mVResourceAmount / numShoots
-
                 if isLightBud:
                   '''Case 1: b is a bud w/ a Terminal Bud and light'''
                   growthDir = SG.normalize(lightPos - currentEnd) * internodeLength
@@ -508,18 +512,22 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
               # Clear the Terminal Bud
               b.setTerminalBud(None)
 
-            if b.hasLateralBud():
-              ''' Lateral Buds move in baseGrownAngle direction '''
-              lateralBud = b.getLateralBud()
-              numShoots = int(math.floor(lateralBud.mVResourceAmount))
+
+          ''' Handle Lateral Bud Case '''
+          if b.hasLateralBud():
+            ''' Lateral Buds move in baseGrownAngle direction '''
+            lateralBud = b.getLateralBud()
+            numShoots = int(math.floor(lateralBud.mVResourceAmount))
+            if numShoots > 0:
 
               # Start Creating additional shoots
               currentStart = b.mStart
               currentEnd = b.mEnd
-
+              print ('Appending ', numShoots, ' Lateral shoots!')
+              internodeLength = lengthMultipler * lateralBud.mVResourceAmount / numShoots
+              print ('iLength', internodeLength)
               for j in range(0, numShoots):
                 # L = v / n
-                internodeLength = lengthMultipler * lateralBud.mVResourceAmount / numShoots
                 if isLightBud:
                   '''Case 3: b is a bud w/ a Lateral Bud and light'''
                   growthDir = SG.normalize(lightPos - currentEnd) * internodeLength
@@ -543,9 +551,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
                 # Now set the start to be the newEnd
                 currentStart = nextStart
                 currentEnd = nextEnd
-                # print 'appended lateral bud'
-              # Clear the Lateral Bud
-              b.setLateralBud(None)
+                b.setLateralBud(None)
+
+
         # Combine new shoots
         grownTree = preBudGrowthInternodes + newShoots
 
@@ -553,10 +561,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         grownTree = self.createParentChildInternodeHeirarchy(grownTree)
 
         # Store the iternodes for this iteration
-        self.mTreeGrowthInternodes[str(i)] = grownTree
+        if i == growthIters:
+          self.mTreeGrowthInternodes[growthKey] = self.copyInternodes(grownTree)
 
         # Set up internodes for the next growth iteration
-        preBudGrowthInternodes = self.copyInternodes(grownTree)
+        preBudGrowthInternodes =  grownTree
 
     #### End growth lopp interation
     ''' Now finish drawing the mesh '''
@@ -800,7 +809,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # print 'LightValue:', lightQValue
 
       # Set the light for the bud node
-      bud.mQLightAmount = lightQValue
+      bud.mInitialQ = lightQValue
       # TODO: Use avg light power for lightQValue
       avgLightPower = totalLightPower / numNodes
 
@@ -814,20 +823,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Compute OptimalGrowthPoint
       optPt = SG.sumArrayVectors(budPosition, budOptGrowthDir)
 
-      # Dot prod and length of the vectors for optGrowthAngle
-      optPtLength = SG.getVectorLength(optPt)
-      bPosLength = SG.getVectorLength(budPosition)
-      dotProd = SG.getVectorDotProduct(optPt, budPosition)
-      crossProd = SG.crossVectors(budPosition, optPt)
-      # For getting Optimal growth angles
-      optGrowthAngle = 0
-      if optPtLength != 0 and bPosLength != 0:
-        optGrowthAngle = math.acos(dotProd / (bPosLength * optPtLength))
-        # Convert to degrees
-        optGrowthAngle = optGrowthAngle * 180 / math.pi
-
       # TODO - decide if we want to use growth Angle OR growth vector...
-      growthPair = (budPosition, optPt, optGrowthAngle, lightQValue)
+      growthPair = (budPosition, optPt, lightQValue)
 
       #growthAnglePair = (budPosition, optGrowthAngle)
 
@@ -927,19 +924,22 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         # b.mQLightAmount = 1
         parent = b
         b.mBudTerminal = SB.StemBud(SB.BudType.TERMINAL, parent)
-        b.mBudTerminal.mQLightAmount = b.mQLightAmount
+        b.mBudTerminal.mQLightAmount = b.mInitialQ
         b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent)
-        b.mBudLateral.mQLightAmount = b.mQLightAmount
+        b.mBudLateral.mQLightAmount = b.mInitialQ
       elif (len(b.mInternodeChildren) == 1):
         parent = b
         child = b.mInternodeChildren[0]
         b.mBudLateral = SB.StemBud(SB.BudType.LATERAL, parent, child)
-        b.mBudLateral.mQLightAmount = b.mQLightAmount
+        b.mBudLateral.mQLightAmount =  b.mInitialQ
       else:
         # Added this to reset the internodes buds when necessary
         #b.mBudLateral = None
         #b.mBudTerminal = None
-        print "has more than 1 child: " + str(len(b.mInternodeChildren))
+        b.mInitialQ = 0
+        numChildren = len(b.mInternodeChildren)
+        if numChildren > 2:
+          print "has more than 1 child: " + str(numChildren)
 
   '''
   '' Converts optimal growth pairs into vectors for the LSystem
@@ -1179,6 +1179,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     #self.clearBudResourceData(internodes)
     self.performBasipetalPass(internodes)
     self.performAcropetalPass(internodes)
+
 
   '''
   ''  Reads a text file that is selected using a file dialog then returns its
