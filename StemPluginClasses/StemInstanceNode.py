@@ -408,32 +408,26 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def growTree(self, growthIters, baseGrowthAngle, growthAngleJitter, hasResources, data):
     growthKey = str(growthIters)
+    preBudGrowthInternodes = None
     if growthIters <= 1 or not hasResources:
       ''' Case: No resource growth is used or is initial LSystem Tree '''
       growthKey = '1'
-    elif self.mTreeGrowthInternodes.get(growthKey) is None:
+      # Set up internodes for drawing
+      preBudGrowthInternodes = self.mTreeGrowthInternodes.get(growthKey)
+    else:
       ''' Case: No Internodes for a growthIteration -- compute the growth '''
-      startGrowthNum = 1
+      startGrowthNum = 2
       endGrowthNum = growthIters + 1
 
-      # Create Pre Bud Growth Internodes
-      preBudGrowthInternodes = self.mTreeGrowthInternodes.get('1')
-
-      # Save computation by copying a previously used internode list :)
-      for i in range(1, endGrowthNum):
-        gKey = str(i)
-        growth = self.mTreeGrowthInternodes.get(gKey)
-        if growth is not None:
-          startGrowthNum = i
-          preBudGrowthInternodes = self.copyInternodes(growth)
-
-      if preBudGrowthInternodes is None:
-        preBudGrowthInternodes = self.mTreeGrowthInternodes.get('1')
-
-
-      preBudGrowthInternodes = self.copyInternodes(preBudGrowthInternodes)
+      # Create Internodes for them
+      preBudGrowthInternodes = self.createInternodes(self.mBaseBranches, self.mBaseFlowers)
+      newShoots = []
       ''' Now compute the growth for the internode list '''
-      for i in range(startGrowthNum, endGrowthNum):
+      for i in range(2, endGrowthNum):
+        newShoots[:] = []
+        branches = self.createBranches(preBudGrowthInternodes)
+        preBudGrowthInternodes = self.createInternodes(branches, [])
+
         # Update the optimals pre growth internodes
         self.updateOptimalGrowthPairs(preBudGrowthInternodes)
 
@@ -450,13 +444,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           self.drawBuds(preBudGrowthInternodes)
 
         # Grow all branches of the tree using v-value (buds toward the light)
-        lengthMultipler = 0.25
+        lengthMultipler = 0.45
         radius = 0.25
         minGrowthAngle = math.floor(baseGrowthAngle - growthAngleJitter)
         maxGrowthAngle = math.floor(baseGrowthAngle + growthAngleJitter)
-
-        # Shoots for appendings
-        newShoots = []
 
         for b in preBudGrowthInternodes:
           nextStart = None
@@ -474,7 +465,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
             gPairPos = [gPair[0].x, gPair[0].y, gPair[0].z]
             if (bPos == gPairPos):
               lightPos = OpenMaya.MPoint(gPair[1][0], gPair[1][1], gPair[1][2])
-              isLightBud = True
+              # isLightBud = True
 
           ''' Handle Terminal Bud Case '''
           if b.hasTerminalBud():
@@ -485,9 +476,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
               # Start Creating additional shoots
               currentStart = b.mStart
               currentEnd = b.mEnd
-
-              print ('Appending ', numShoots, ' Terminal shoots!')
               internodeLength = lengthMultipler * terminalBud.mVResourceAmount / numShoots
+
+              # if (numShoots > 4):
+              #   numShoots = random.randint(3,5)
+              #   internodeLength = lengthMultipler * random.randint(1,3) / numShoots
+
+              print ('Appending ', numShoots, ' from VResAmount', terminalBud.mVResourceAmount, 'for Terminal shoots!')
               print ('iLength', internodeLength)
               for j in range(0, numShoots):
                 if isLightBud:
@@ -523,8 +518,14 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
               # Start Creating additional shoots
               currentStart = b.mStart
               currentEnd = b.mEnd
-              print ('Appending ', numShoots, ' Lateral shoots!')
+
               internodeLength = lengthMultipler * lateralBud.mVResourceAmount / numShoots
+
+              # if (numShoots > 4):
+              #   numShoots = random.randint(3,5)
+              #   internodeLength = lengthMultipler * random.randint(1,3) / numShoots
+
+              print ('Appending ', numShoots, ' from VResAmount', lateralBud.mVResourceAmount, 'for Lateral Buds!')
               print ('iLength', internodeLength)
               for j in range(0, numShoots):
                 # L = v / n
@@ -553,34 +554,30 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
                 currentEnd = nextEnd
                 b.setLateralBud(None)
 
-
         # Combine new shoots
         grownTree = preBudGrowthInternodes + newShoots
 
         # Parent all the shoots
+        self.clearBudResourceData(grownTree)
         grownTree = self.createParentChildInternodeHeirarchy(grownTree)
 
-        # Store the iternodes for this iteration
-        if i == growthIters:
-          self.mTreeGrowthInternodes[growthKey] = self.copyInternodes(grownTree)
-
         # Set up internodes for the next growth iteration
-        preBudGrowthInternodes =  grownTree
+        preBudGrowthInternodes = grownTree
 
     #### End growth lopp interation
     ''' Now finish drawing the mesh '''
     # Set up internodes for drawing
-    self.mInternodes = self.mTreeGrowthInternodes.get(growthKey)
+    # self.mInternodes = preBudGrowthInternodes
 
     ''' Now update the growth mesh using the current internodes '''
     # If we use tree curves, update the tree mesh
     if ENABLE_TREE_CURVES:
       # print 'Creating Tree curves'
-      self.updateTreeMesh(self.mInternodes)
+      self.updateTreeMesh(preBudGrowthInternodes)
 
     # IF we enable the cylinder mesh, draw it
     if ENABLE_CYLINDER_MESH:
-      self.createCylinderMesh(self.mInternodes, data)
+      self.createCylinderMesh(preBudGrowthInternodes, data)
 
 
   '''
@@ -708,6 +705,33 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # Return the internodes
     return internodes
 
+  '''
+  '' Creates an Internodes List of CylinderMeshes from branches
+  '''
+  def createBranches(self, internodes):
+    branches = LSystem.VectorPyBranch()
+    # flowers = []
+
+    for i in range(0, len(internodes)):
+      node = internodes[i]
+      s = node.mStart
+      e = node.mEnd
+ 
+      b = LSystem.VecFloat()
+      
+      b.push_back(s.x)
+      b.push_back(s.y)
+      b.push_back(s.z)
+
+      b.push_back(e.x)
+      b.push_back(e.y)
+      b.push_back(e.z)
+
+
+      branches.append(b) 
+    # Return the internodes
+    return branches
+
 
   '''
   '' Create Internode Parent Child Heirarchy
@@ -730,7 +754,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Clear parents
       branch.mInternodeParent = None
       # Clear Children
-      branch.mInternodeChildren[:] = []
+      branch.mInternodeChildren = []
     return internodes
 
   '''
@@ -876,13 +900,16 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       optimalBud = None
       minDist = 100000000
 
+      # Makes sure our bud won't overlap with teh light node
+      maxMinDistance = 1.0
+
       # Search through the list of buds and find the closest bud
       for b in buds:
         # Get distance between bud and resNode
         currentDist = SG.getDistance(b.mEnd, nPos)
 
         # Update optimal bud if necessary
-        if currentDist < minDist:
+        if currentDist < minDist and currentDist >= 1.0:
           optimalBud = b
           minDist = currentDist
 
@@ -1030,6 +1057,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def getRootInternode(self, internodes):
     if len(internodes) == 0:
       return None
+    #return internodes[0]
     for n in internodes:
       if n.mInternodeParent is None:
         return n
@@ -1061,63 +1089,39 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def distributeSingleResource(self, internode):
     if (internode is None):
       return
-
-    pV = internode.mVResourceAmount
+    mTarget = None
+    lTarget = None
 
     if (len(internode.mInternodeChildren) == 0):
       # if 0 children, there is 1 terminal and 1 lateral bud to split the resource
       mTarget = internode.mBudTerminal
       lTarget = internode.mBudLateral
-      pQm = mTarget.mQLightAmount
-      pQl = lTarget.mQLightAmount
-      # Compute amount of resource distributed to axis branch and lateral branch
-      denom = (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl)
-      if denom == 0:
-        pVm = 0
-        pVl = 0
-      else:
-        pVm = pV * (BH_LAMBDA * pQm) / denom
-        pVl = pV * ((1-BH_LAMBDA)*pQl) / denom
-      # Distribute
-      mTarget.mVResourceAmount = pVm
-      lTarget.mVResourceAmount = pVl
-
     elif (len(internode.mInternodeChildren) == 1):
       # if 1 child, there is 1 internode and 1 lateral bud to split the resource
       mTarget = internode.mInternodeChildren[0]
       lTarget = internode.mBudLateral
-      pQm = mTarget.mQLightAmount
-      pQl = lTarget.mQLightAmount
-      # Compute amount of resource distributed to axis branch and lateral branch
-      denom = (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl)
-      if denom == 0:
-        pVm = 0
-        pVl = 0
-      else:
-        pVm = pV * (BH_LAMBDA * pQm) / denom
-        pVl = pV * ((1-BH_LAMBDA)*pQl) / denom
-      # Distribute
-      mTarget.mVResourceAmount = pVm
-      lTarget.mVResourceAmount = pVl
-
     else:
       # TODO: still need to determine which is along main axis and which isn't
       mTarget = internode.mInternodeChildren[0]
       lTarget = internode.mInternodeChildren[1]
-      pQm = mTarget.mQLightAmount
-      pQl = lTarget.mQLightAmount
-      # Compute amount of resource distributed to axis branch and lateral branch
-      denom = (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl)
-      if denom == 0:
-        pVm = 0
-        pVl = 0
-      else:
-        pVm = pV * (BH_LAMBDA * pQm) / denom
-        pVl = pV * ((1-BH_LAMBDA)*pQl) / denom
-      # Distribute
-      mTarget.mVResourceAmount = pVm
-      lTarget.mVResourceAmount = pVl
 
+    # Fun Equations
+    pV = internode.mVResourceAmount
+    pQm = mTarget.mQLightAmount
+    pQl = lTarget.mQLightAmount
+    # Compute amount of resource distributed to axis branch and lateral branch
+    denom = (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl)
+    if denom == 0:
+      pVm = 0
+      pVl = 0
+    else:
+      pVm = pV * (BH_LAMBDA * pQm) / denom
+      pVl = pV * ((1-BH_LAMBDA)*pQl) / denom
+    # Distribute
+    mTarget.mVResourceAmount = pVm
+    lTarget.mVResourceAmount = pVl
+
+    internode.hasBeenDistributed = True
   '''
   ''  Propogates light amounts (Q) from outermost internodes to towards the base.
   ''  (TODO: May have to edit to grab the light information from buds themselves)
@@ -1162,7 +1166,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
     # Distribute resource acropetally (from base upwards)
     for b in bfsTraversal:
-      self.distributeSingleResource(b)
+      if not b.hasBeenDistributed:
+        self.distributeSingleResource(b)
 
     # TODO: remove later. prints resource values in BFS order
     # for b in newList:
@@ -1381,6 +1386,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     for branch in internodes:
       branch.mQLightAmount = 0
       branch.mVResourceAmount = 0
+      branch.hasBeenDistributed = False
       if branch.hasTerminalBud():
         tBud = branch.getTerminalBud()
         tBud.mQLightAmount = 0

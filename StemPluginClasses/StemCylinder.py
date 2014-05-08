@@ -95,6 +95,8 @@ class StemCylinder():
     self.mQLightAmount = 0
     self.mVResourceAmount = 0
 
+    self.hasBeenDistributed = False
+
     self.mInitialQ = 0
 
     if (G_POINTS.length() == 0):
@@ -126,6 +128,11 @@ class StemCylinder():
   '' Sets the terminal bud
   '''
   def setTerminalBud(self, bud):
+    if self.mBudTerminal is not None:
+      self.mBudTerminal.mInternodeParent = None
+      self.mBudTerminal.mInternodeChild = None
+      self.mBudTerminal.mQLightAmount = 0
+      self.mBudTerminal.mVResourceAmount = 0
     self.mBudTerminal = bud
 
 
@@ -145,6 +152,12 @@ class StemCylinder():
   '' Sets the lateral bud
   '''
   def setLateralBud(self, bud):
+    if self.mBudLateral is not None:
+      self.mBudLateral.mInternodeParent = None
+      self.mBudLateral.mInternodeChild = None
+      self.mBudLateral.mQLightAmount = 0
+      self.mBudLateral.mVResourceAmount = 0
+    # Change Bud
     self.mBudLateral = bud
 
 
