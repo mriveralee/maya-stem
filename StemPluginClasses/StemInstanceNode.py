@@ -70,6 +70,12 @@ DEFAULT_ANGLE = 42.5
 
 # Enable test drawing
 ENABLE_RESOURCE_DRAWING = True
+ENABLE_RESOURCE_V_DRAWING = True
+ENABLE_RESOURCE_Q_DRAWING = True
+ENABLE_BUD_DRAWING = False
+ENABLE_RESOURCE_V_PRINTING = False
+ENABLE_RESOURCE_Q_PRINTING = False
+ENABLE_JUDYS_DEBUG_PRINTING_CRAP = False
 
 # Use Tree Curves
 ENABLE_TREE_CURVES = True
@@ -189,14 +195,46 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
           self.mDisplayRadius * math.sin(rad))
     glFT.glEnd()
 
+    if ENABLE_JUDYS_DEBUG_PRINTING_CRAP:
+      print"================================================================="
+      print"================================================================="
+      print "length of internodes list: " + str(len(self.mInternodes))
     if ENABLE_RESOURCE_DRAWING:
       # Draw resource distribution values at "bud" (ahem) locations
       glFT.glPushAttrib(OpenMayaRender.MGL_CURRENT_BIT)
       glFT.glColor4f(0.0, 1.0, 0.0, 0.0)
-      #view.drawText("bob <3", OpenMaya.MPoint(0.0,0.0,0.0))
+      # For each internode, if it has a terminal but draw it. If it has a
+      # lateral bud draw it. Also draw the resources are their usual spots (ends).
       for b in self.mInternodes:
+        # if b.hasTerminalBud() and b.hasLateralBud():
         val = int(b.mVResourceAmount * 100) / 100.0
-        view.drawText(str(val), b.mEnd, OpenMayaUI.M3dView.kCenter)
+        if ENABLE_RESOURCE_V_DRAWING:
+          view.drawText(str(val), b.mEnd, OpenMayaUI.M3dView.kCenter)
+        if ENABLE_RESOURCE_V_PRINTING: 
+          print "~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*~*"
+          print "internode end at " + str(b.mEnd[0]) + " , " + str(b.mEnd[1]) + " , " + str(b.mEnd[2])
+
+        if b.hasTerminalBud():
+          tBud = b.getTerminalBud()
+          tBudPos = b.mEnd
+          tBudPosAdjusted = OpenMaya.MPoint(tBudPos[0]+0.05, tBudPos[1], tBudPos[2])
+          tResourceVal = int(tBud.mVResourceAmount * 100) / 100.0
+          if ENABLE_RESOURCE_V_DRAWING:
+            view.drawText(str(tResourceVal), tBudPosAdjusted, OpenMayaUI.M3dView.kCenter)
+          if ENABLE_RESOURCE_V_PRINTING:
+            print "terminal:"
+            print tBud.mVResourceAmount
+        if b.hasLateralBud():
+          lBud = b.getLateralBud()
+          lBudPos = b.mEnd
+          lBudPosAdjusted = OpenMaya.MPoint(lBudPos[0]-0.05, lBudPos[1], lBudPos[2])
+          lResourceVal = int(lBud.mVResourceAmount * 100) / 100.0
+          if ENABLE_RESOURCE_V_DRAWING:
+            view.drawText(str(lResourceVal), lBudPosAdjusted, OpenMayaUI.M3dView.kCenter)
+          if ENABLE_RESOURCE_V_PRINTING:
+            print "lateral:"
+            print lBud.mVResourceAmount
+       
       glFT.glPopAttrib()
 
       # Draw light distribution values at base locations
@@ -205,7 +243,34 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       for b in self.mInternodes:
         val = int(b.mQLightAmount * 100) / 100.0
         point = b.mStart + ((b.mEnd - b.mStart) / 2.0)
-        view.drawText(str(val), point, OpenMayaUI.M3dView.kCenter)
+        if ENABLE_RESOURCE_Q_DRAWING:
+          view.drawText(str(val), point, OpenMayaUI.M3dView.kCenter) 
+        if ENABLE_RESOURCE_Q_PRINTING:
+          print "@~@~@~@@~@~@~@@~@~@~@~@~@~@~@@~@~@~@~@"
+          print "internode end at " + str(b.mEnd[0]) + " , " + str(b.mEnd[1]) + " , " + str(b.mEnd[2])
+          print b.mQLightAmount
+
+        if b.hasTerminalBud():
+          tBud = b.getTerminalBud()
+          tBudPos = b.mEnd
+          tBudPosAdjusted = OpenMaya.MPoint(tBudPos[0]+0.05, tBudPos[1], tBudPos[2])
+          tLightVal = int(tBud.mQLightAmount * 100) / 100.0
+          if ENABLE_RESOURCE_Q_DRAWING:
+            view.drawText(str(tLightVal), tBudPosAdjusted, OpenMayaUI.M3dView.kCenter)
+          if ENABLE_RESOURCE_Q_PRINTING:
+            print "terminal:"
+            print tBud.mQLightAmount
+        if b.hasLateralBud():
+          lBud = b.getLateralBud()
+          lBudPos = b.mEnd
+          lBudPosAdjusted = OpenMaya.MPoint(lBudPos[0]-0.05, lBudPos[1], lBudPos[2])
+          lLightVal = int(lBud.mQLightAmount * 100) / 100.0
+          if ENABLE_RESOURCE_Q_DRAWING:
+            view.drawText(str(lLightVal), lBudPosAdjusted, OpenMayaUI.M3dView.kCenter)
+          if ENABLE_RESOURCE_Q_PRINTING:
+            print "lateral:"
+            print lBud.mQLightAmount
+
       glFT.glPopAttrib()
     view.endGL()
 
@@ -382,6 +447,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
 
         # Now perform resource distribution
         self.performBHModelResourceDistribution(preBudGrowthInternodes)
+
+        if ENABLE_BUD_DRAWING:
+          self.drawBuds(preBudGrowthInternodes)
 
         # Grow all branches of the tree using v-value (buds toward the light)
         lengthMultipler = 0.25
@@ -878,7 +946,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         # Added this to reset the internodes buds when necessary
         #b.mBudLateral = None
         #b.mBudTerminal = None
-        print "has more than 1 child" + str(len(b.mInternodeChildren))
+        print "has more than 1 child: " + str(len(b.mInternodeChildren))
 
   '''
   '' Converts optimal growth pairs into vectors for the LSystem
@@ -1111,6 +1179,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   ''  Performs BH Model passes to distribute resources throught the tree.
   '''
   def performBHModelResourceDistribution(self, internodes):
+    if ENABLE_JUDYS_DEBUG_PRINTING_CRAP:
+      print "===================================================================="
+      print "PERFORMING RESOURCE DISTRIBUTION===================================="
+      print "===================================================================="
+    self.clearBudResourceData(internodes)
     self.performBasipetalPass(internodes)
     self.performAcropetalPass(internodes)
 
@@ -1307,6 +1380,42 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       return
     # Link mesh
     cmds.parent(str(node), txNode)
+
+  def clearBudResourceData(self, internodes):
+    if ENABLE_JUDYS_DEBUG_PRINTING_CRAP:
+      print "!!!CLEARING BUD DATA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    for branch in internodes:
+      branch.mQLightAmount = 0
+      branch.mVResourceAmount = 0
+      if branch.hasTerminalBud():
+        tBud = branch.getTerminalBud()
+        tBud.mQLightAmount = 0
+        tBud.mVResourceAmount = 0
+      if branch.hasLateralBud():
+        lBud = branch.getLateralBud()
+        tBud.mQLightAmount = 0
+        tBud.mVResourceAmount = 0
+
+  def drawBuds(self, internodes):
+    if ENABLE_JUDYS_DEBUG_PRINTING_CRAP:
+      print "====DRAWIN BUDS=================================================="
+    for branch in internodes:
+      if ENABLE_JUDYS_DEBUG_PRINTING_CRAP:
+        print "====searchin======="
+      if branch.hasTerminalBud():
+        tBud = branch.getTerminalBud()
+        txNode = str(cmds.sphere(r=0.05)[0])
+        tBudPos = branch.mEnd
+        # note: tBud.mInternodeParent returns None when it shouldn't on iter=3
+        # issue w/ makeCopy or intentional?
+        cmds.move(tBudPos[0]+0.05, tBudPos[1], tBudPos[2], txNode, absolute=True)
+        if ENABLE_JUDYS_DEBUG_PRINTING_CRAP:
+          print txNode
+      if branch.hasLateralBud():
+        lBud = branch.getLateralBud()
+        txNode = str(cmds.nurbsCube(w=0.1)[0])
+        tBudPos = branch.mEnd
+        cmds.move(tBudPos[0]-0.05, tBudPos[1], tBudPos[2], txNode, absolute=True)
 
 ######################## End StemInstanceNode Class ############################
 '''
