@@ -376,6 +376,10 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         # Grab Q values and distribute, generate resource values in STEM buds
         self.performBHModelResourceDistribution(preBudGrowthInternodes)
 
+        # Draw buds if enabled
+        # if ENABLE_BUD_DRAWING:
+        #   self.drawBuds(preBudGrowthInternodes)
+
         # TODO: Grow all branches of the tree using v-value (buds toward the light)
         # self.grow the fucking branches
         ''' TODO: Some growth shit '''
@@ -983,8 +987,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       pQm = mTarget.mQLightAmount
       pQl = lTarget.mQLightAmount
       # Compute amount of resource distributed to axis branch and lateral branch
-      pVm = pV * (BH_LAMBDA * pQm) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
-      pVl = pV * ((1-BH_LAMBDA)*pQl) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
+      denom = (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl)
+      if denom == 0:
+        pVm = 0
+        pVl = 0
+      else:
+        pVm = pV * (BH_LAMBDA * pQm) / denom
+        pVl = pV * ((1-BH_LAMBDA)*pQl) / denom
       # Distribute
       mTarget.mVResourceAmount = pVm
       lTarget.mVResourceAmount = pVl
@@ -996,8 +1005,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       pQm = mTarget.mQLightAmount
       pQl = lTarget.mQLightAmount
       # Compute amount of resource distributed to axis branch and lateral branch
-      pVm = pV * (BH_LAMBDA * pQm) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
-      pVl = pV * ((1-BH_LAMBDA)*pQl) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
+      denom = (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl)
+      if denom == 0:
+        pVm = 0
+        pVl = 0
+      else:
+        pVm = pV * (BH_LAMBDA * pQm) / denom
+        pVl = pV * ((1-BH_LAMBDA)*pQl) / denom
       # Distribute
       mTarget.mVResourceAmount = pVm
       lTarget.mVResourceAmount = pVl
@@ -1009,8 +1023,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       pQm = mTarget.mQLightAmount
       pQl = lTarget.mQLightAmount
       # Compute amount of resource distributed to axis branch and lateral branch
-      pVm = pV * (BH_LAMBDA * pQm) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
-      pVl = pV * ((1-BH_LAMBDA)*pQl) / (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl + 0.001)
+      denom = (BH_LAMBDA*pQm + (1-BH_LAMBDA)*pQl)
+      if denom == 0:
+        pVm = 0
+        pVl = 0
+      else:
+        pVm = pV * (BH_LAMBDA * pQm) / denom
+        pVl = pV * ((1-BH_LAMBDA)*pQl) / denom
       # Distribute
       mTarget.mVResourceAmount = pVm
       lTarget.mVResourceAmount = pVl
@@ -1078,7 +1097,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   def readGrammarFileUsingDialog(self):
     txtFileFilter = 'Text Files (*.txt)'
-    fileNames = cmds.fileDialog2(fileFilter=txtFileFilter, dialogStyle=2, fileMode=1)
+    fileNames = cmds.fileDialog2(fileFilter=dialogStyle, txtFileFilter=2, fileMode=1)
     return self.readGrammarFile(fileNames[0])
 
   '''
