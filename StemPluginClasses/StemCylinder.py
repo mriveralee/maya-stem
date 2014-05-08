@@ -99,6 +99,27 @@ class StemCylinder():
       initCylinderMesh(radius)
 
   '''
+  '' Makes a copy this cylinder and returns it
+  '''
+  def makeCopy(self):
+
+    start = OpenMaya.MPoint(self.mStart.x, self.mStart.y, self.mStart.z)
+    end = OpenMaya.MPoint(self.mEnd.x, self.mEnd.y, self.mEnd.z)
+    cyl = StemCylinder(start, end, self.mRadius)
+    cyl.mQLightAmount = self.mQLightAmount
+    cyl.mVResourceAmount = self.mVResourceAmount
+    print 'copied cylinder'
+    if self.hasTerminalBud():
+
+      cyl.mBudTerminal = self.mBudTerminal.makeCopy()
+      print 'copied terminal bud'
+
+    if self.hasLateralBud():
+      cyl.mBudLateral = self.mBudLateral.makeCopy()
+      print 'copied lateral bud'
+    return cyl
+
+  '''
   '' Returns true if this internode has a terminal bud
   '''
   def hasTerminalBud(self):

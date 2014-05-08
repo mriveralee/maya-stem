@@ -464,7 +464,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         grownTree = self.createParentChildInternodeHeirarchy(self.mInternodes)
 
         # Store the iternodes for this iteration
-        self.mTreeGrowthInternodes[growthKey] = grownTree
+        self.mTreeGrowthInternodes[growthKey] = self.copyInternodes(grownTree)
 
         # Set up internodes for the next growth iteration
         self.mInternodes = grownTree
@@ -480,6 +480,22 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # IF we enable the cylinder mesh, draw it
     if ENABLE_CYLINDER_MESH:
       self.createCylinderMesh(self.mInternodes, data)
+
+
+
+  def copyInternodes(self, internodes):
+    internodesCopy = []
+    print "Making a copy"
+    for b in internodes:
+      internode = b.makeCopy()
+      print 'made internode', internode
+      internodesCopy.append(internode)
+
+    internodesCopy = self.createParentChildInternodeHeirarchy(internodesCopy, False)
+
+
+    print "Made a copy of internodes"
+    return internodesCopy
 
 
 
@@ -598,8 +614,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   '''
   '' Create Internode Parent Child Heirarchy
   '''
-  def createParentChildInternodeHeirarchy(self, internodes):
-    internodes = self.resetParentChildInternodeHeirarchy(internodes)
+  def createParentChildInternodeHeirarchy(self, internodes, shouldReset=True):
+    if shouldReset:
+      internodes = self.resetParentChildInternodeHeirarchy(internodes)
     for iBranch in internodes:
       for jBranch in internodes:
         if iBranch.mEnd == jBranch.mStart:
@@ -613,6 +630,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def resetParentChildInternodeHeirarchy(self, internodes):
     for branch in internodes:
       # Clear parents
+      print
       branch.mInternodeParent = None
       # Clear Children
       branch.mInternodeChildren[:] = []

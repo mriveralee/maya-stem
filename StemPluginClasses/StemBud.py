@@ -56,3 +56,11 @@ class StemBud():
     #st = parentInternode.mStart
     # coordString = '<' + str(st[0]) + ',' + str(st[1]) + ',' + str(st[2]) + '>'
     #print 'Successfully created ' + budTypeName + ' for ' + coordString
+  def makeCopy(self):
+    bud = StemBud()
+    bud.mBudType = self.mBudType
+    #bud.mInternodeParent = self.mInternodeParent
+    #bud.mInternodeChild = self.mInternodeChild
+    bud.mQLightAmount = self.mQLightAmount
+    bud.mVResourceAmount = self.mVResourceAmount
+    return bud
