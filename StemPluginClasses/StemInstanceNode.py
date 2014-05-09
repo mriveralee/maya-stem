@@ -462,9 +462,6 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         # Set the current internodes
         self.configureBudInternodeHeirarchy(preBudGrowthInternodes)
 
-        if ENABLE_BUD_DRAWING:
-          self.drawBuds(preBudGrowthInternodes)
-
         # Set the current internodes
         # self.mInternodes = preBudGrowthInternodes
         # Now perform resource distribution
@@ -605,6 +602,9 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # IF we enable the cylinder mesh, draw it
     if ENABLE_CYLINDER_MESH:
       self.createCylinderMesh(preBudGrowthInternodes, data)
+      
+    if ENABLE_BUD_DRAWING:
+      self.drawBuds(preBudGrowthInternodes)
 
 
   '''
