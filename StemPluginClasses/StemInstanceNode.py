@@ -68,7 +68,7 @@ DEFAULT_GRAMMAR_FILE = './StemPluginClasses/trees/simple1.txt'
 DEFAULT_BUD_OBJ_FILE = './StemPluginClasses/objFiles/test-bud-small.obj'
 
 # Default Leaf Obj File
-DEFAULT_LEAF_OBJ_FILE = './StemPluginClasses/objFiles/test-leaf.obj'
+DEFAULT_LEAF_OBJ_FILE = './StemPluginClasses/objFiles/test-leaf-bunch.obj'
 
 # Default LSystem Step Size
 DEFAULT_STEP_SIZE = 1.0
@@ -81,6 +81,7 @@ ENABLE_RESOURCE_DRAWING = True
 ENABLE_RESOURCE_V_DRAWING = True
 ENABLE_RESOURCE_Q_DRAWING = True
 ENABLE_BUD_DRAWING = True
+ENABLE_LEAF_DRAWING = False
 ENABLE_RESOURCE_V_PRINTING = False
 ENABLE_RESOURCE_Q_PRINTING = False
 ENABLE_JUDYS_DEBUG_PRINTING_CRAP = False
@@ -602,9 +603,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     # IF we enable the cylinder mesh, draw it
     if ENABLE_CYLINDER_MESH:
       self.createCylinderMesh(preBudGrowthInternodes, data)
-      
+
     if ENABLE_BUD_DRAWING:
       self.drawBuds(preBudGrowthInternodes)
+    if ENABLE_LEAF_DRAWING:
+      self.drawLeaves(preBudGrowthInternodes)
 
 
   '''
@@ -1458,8 +1461,38 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         instanceNode = cmds.instance(txNode, n=newBudMeshName)[0]
         lBudPos = branch.mEnd
         cmds.move(lBudPos[0]-0.05, lBudPos[1], lBudPos[2], instanceNode, absolute=True)
-        count = count + 100
+        count = count + 1
         #cmds.move(tBudPos[0]-0.05, tBudPos[1], tBudPos[2], txNode, absolute=True)
+
+    cmds.hide(txNode)
+
+  def drawLeaves(self, internodes):
+    # Get original transform of imported leaf
+    leafMeshes = cmds.ls('StemInstanceLeafMesh*', type='transform')
+    txNode = cmds.ls('StemObjLeafImport:*', type='transform')[0]
+    cmds.showHidden(txNode)
+    for leafMesh in leafMeshes:
+      cmds.delete(leafMesh)
+
+    leafInstanceName = "StemInstanceLeafMesh"
+    count = 0
+    for branch in internodes:
+      newLeafMeshName1 = leafInstanceName + str(count)
+      newLeafMeshName2 = leafInstanceName + str(count+1)
+      instanceNode1 = cmds.instance(txNode, n=newLeafMeshName1)[0]
+      instanceNode2 = cmds.instance(txNode, n=newLeafMeshName2)[0]
+      leafPos = branch.mEnd
+      cmds.move(leafPos[0], leafPos[1], leafPos[2], instanceNode1, absolute=True)
+      cmds.move(leafPos[0], leafPos[1], leafPos[2], instanceNode2, absolute=True)
+      rot1x = random.randrange(0, 360)
+      rot1y = random.randrange(0, 360)
+      rot1z = random.randrange(0, 360)
+      rot2x = random.randrange(0, 360)
+      rot2y = random.randrange(0, 360)
+      rot2z = random.randrange(0, 360)
+      cmds.rotate(str(rot1x)+'deg', str(rot1y)+'deg', str(rot1z)+'deg', instanceNode1)
+      cmds.rotate(str(rot2x)+'deg', str(rot2y)+'deg', str(rot2z)+'deg', instanceNode2)
+      count = count + 2
 
     cmds.hide(txNode)
 
