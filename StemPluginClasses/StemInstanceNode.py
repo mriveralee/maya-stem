@@ -80,7 +80,7 @@ DEFAULT_ANGLE = 42.5
 ENABLE_RESOURCE_DRAWING = True
 ENABLE_RESOURCE_V_DRAWING = True
 ENABLE_RESOURCE_Q_DRAWING = True
-ENABLE_BUD_DRAWING = False
+ENABLE_BUD_DRAWING = True
 ENABLE_RESOURCE_V_PRINTING = False
 ENABLE_RESOURCE_Q_PRINTING = False
 ENABLE_JUDYS_DEBUG_PRINTING_CRAP = False
@@ -462,13 +462,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         # Set the current internodes
         self.configureBudInternodeHeirarchy(preBudGrowthInternodes)
 
+        if ENABLE_BUD_DRAWING:
+          self.drawBuds(preBudGrowthInternodes)
+
         # Set the current internodes
         # self.mInternodes = preBudGrowthInternodes
         # Now perform resource distribution
         self.performBHModelResourceDistribution(preBudGrowthInternodes)
-
-        if ENABLE_BUD_DRAWING:
-          self.drawBuds(preBudGrowthInternodes)
 
         # Grow all branches of the tree using v-value (buds toward the light)
         lengthMultipler = 0.45
@@ -1424,35 +1424,54 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         lBud.mVResourceAmount = 0
 
   def drawBuds(self, internodes):
+    # Get original transform of imported bud
+    budMeshes = cmds.ls('StemInstanceBudMesh*', type='transform')
+    txNode = cmds.ls('StemObjBudImport:*', type='transform')[0]
+    cmds.showHidden(txNode)
+    for budMesh in budMeshes:
+      cmds.delete(budMesh)
+
     if ENABLE_JUDYS_DEBUG_PRINTING_CRAP:
       print "====DRAWIN BUDS=================================================="
+    budInstanceName = "StemInstanceBudMesh"
+    count = 0
     for branch in internodes:
       if ENABLE_JUDYS_DEBUG_PRINTING_CRAP:
         print "====searchin======="
       if branch.hasTerminalBud():
-        tBud = branch.getTerminalBud()
-        txNode = str(cmds.sphere(r=0.05)[0])
+        #tBud = branch.getTerminalBud()
+        #txNode = str(cmds.sphere(r=0.05)[0])
+        newBudMeshName = budInstanceName + str(count)
+        instanceNode = cmds.instance(txNode, n=newBudMeshName)[0]
         tBudPos = branch.mEnd
+        cmds.move(tBudPos[0]+0.05, tBudPos[1], tBudPos[2], instanceNode, absolute=True)
+        count = count + 1
         # note: tBud.mInternodeParent returns None when it shouldn't on iter=3
         # issue w/ makeCopy or intentional?
-        cmds.move(tBudPos[0]+0.05, tBudPos[1], tBudPos[2], txNode, absolute=True)
+        #cmds.move(tBudPos[0]+0.05, tBudPos[1], tBudPos[2], txNode, absolute=True)
         if ENABLE_JUDYS_DEBUG_PRINTING_CRAP:
           print txNode
       if branch.hasLateralBud():
-        lBud = branch.getLateralBud()
-        txNode = str(cmds.nurbsCube(w=0.1)[0])
-        tBudPos = branch.mEnd
-        cmds.move(tBudPos[0]-0.05, tBudPos[1], tBudPos[2], txNode, absolute=True)
+        #lBud = branch.getLateralBud()
+        #txNode = str(cmds.nurbsCube(w=0.1)[0])
+        newBudMeshName = budInstanceName + str(count)
+        instanceNode = cmds.instance(txNode, n=newBudMeshName)[0]
+        lBudPos = branch.mEnd
+        cmds.move(lBudPos[0]-0.05, lBudPos[1], lBudPos[2], instanceNode, absolute=True)
+        count = count + 100
+        #cmds.move(tBudPos[0]-0.05, tBudPos[1], tBudPos[2], txNode, absolute=True)
+
+    cmds.hide(txNode)
 
   def importBudObj(self, objFile):
     if (objFile is None or objFile == ''):
       return
-    cmds.file(objFile, i=True)
+    cmds.file(objFile, i=True, type='OBJ', ns='StemObjBudImport')
 
   def importLeafObj(self, objFile):
     if (objFile is None or objFile == ''):
       return
-    cmds.file(objFile, i=True)
+    cmds.file(objFile, i=True, type='OBJ', ns='StemObjLeafImport')
 
 ######################## End StemInstanceNode Class ############################
 '''
