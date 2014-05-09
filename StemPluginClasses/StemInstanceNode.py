@@ -34,6 +34,7 @@ STEM_INSTANCE_NODE_ID = OpenMaya.MTypeId(0xFA234)
 KEY_ITERATIONS = 'baseIterations', 'baseIter'
 KEY_TIME = 'time', 'tm'
 KEY_GRAMMAR = 'grammarFile', 'grf'
+KEY_BUD_OBJ = 'budObjFile', 'bof'
 KEY_ANGLE = 'angle', 'ang'
 KEY_STEP_SIZE = 'stepSize', 'ss'
 
@@ -61,6 +62,12 @@ BH_ALPHA = 1 #2# coefficient of proportionality for v_base, value from paper ex.
 
 # Default Grammar File
 DEFAULT_GRAMMAR_FILE = './StemPluginClasses/trees/simple1.txt'
+
+# Default Bud Obj File
+DEFAULT_BUD_OBJ_FILE = './StemPluginClasses/objFiles/test-bud.obj'
+
+# Default Leaf Obj File
+DEFAULT_LEAF_OBJ_FILE = ''
 
 # Default LSystem Step Size
 DEFAULT_STEP_SIZE = 1.0
@@ -108,6 +115,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mDefAngle = OpenMaya.MObject()
   mDefStepSize = OpenMaya.MObject()
   mDefGrammarFile = OpenMaya.MObject()
+  mDefBudObjFile = OpenMaya.MObject()
   mIterations = OpenMaya.MObject()
 
   # Stem Option Values
@@ -131,6 +139,8 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mPrevGrammarContent = None
   mPrevAngle = None
   mPrevIterations = None
+
+  mBudObjFile = ''
 
   # Optimal Point Curves Drawn
   mOptCurves = []
@@ -301,6 +311,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       # Grammar File String and convert from the maya object
       grammarData = data.inputValue(StemInstanceNode.mDefGrammarFile)
       grammarFile = str(grammarData.asString())
+
+      # Bud Obj File String
+      budObjData = data.inputValue(StemInstanceNode.mDefBudObjFile)
+      budObjFile = str(budObjData.asString())
+      if self.mBudObjFile != budObjFile:
+        self.mBudObjFile = budObjFile
+        self.importBudObj(self.mBudObjFile)
 
       # Has Resources
       hasResData = data.inputValue(StemInstanceNode.mHasResourceDistribution)
@@ -1417,6 +1434,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         tBudPos = branch.mEnd
         cmds.move(tBudPos[0]-0.05, tBudPos[1], tBudPos[2], txNode, absolute=True)
 
+  def importBudObj(self, objFile):
+    if (objFile is None or objFile == ''):
+      return
+    cmds.file(objFile, i=True)
+
 ######################## End StemInstanceNode Class ############################
 '''
 '' StemInstanceNode Creator for Maya Plug-in
@@ -1486,6 +1508,16 @@ def StemInstanceNodeInitializer():
     defStringData)
   SG.MAKE_INPUT(tAttr)
 
+  # Bud Obj File
+  defStringData = OpenMaya.MFnStringData().create(DEFAULT_BUD_OBJ_FILE)
+  tAttr = OpenMaya.MFnTypedAttribute()
+  StemInstanceNode.mDefBudObjFile = tAttr.create(
+    KEY_BUD_OBJ[0],
+    KEY_BUD_OBJ[1],
+    OpenMaya.MFnData.kString,
+    defStringData)
+  SG.MAKE_INPUT(tAttr)
+
   # Branch Segments
   tAttr = OpenMaya.MFnTypedAttribute()
   StemInstanceNode.mBranches =  tAttr.create(
@@ -1521,6 +1553,7 @@ def StemInstanceNodeInitializer():
   StemInstanceNode.addAttribute(StemInstanceNode.mDefAngle)
   StemInstanceNode.addAttribute(StemInstanceNode.mDefStepSize)
   StemInstanceNode.addAttribute(StemInstanceNode.mDefGrammarFile)
+  StemInstanceNode.addAttribute(StemInstanceNode.mDefBudObjFile)
   StemInstanceNode.addAttribute(StemInstanceNode.mHasResourceDistribution)
   StemInstanceNode.addAttribute(StemInstanceNode.mIterations)
   StemInstanceNode.addAttribute(StemInstanceNode.mHasBranchShedding)
@@ -1553,6 +1586,10 @@ def StemInstanceNodeInitializer():
     StemInstanceNode.mFlowers)
 
   StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefBudObjFile,
+    StemInstanceNode.mFlowers)
+
+  StemInstanceNode.attributeAffects(
     StemInstanceNode.mHasResourceDistribution,
     StemInstanceNode.mFlowers)
 
@@ -1582,6 +1619,10 @@ def StemInstanceNodeInitializer():
     StemInstanceNode.mBranches)
 
   StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefBudObjFile,
+    StemInstanceNode.mBranches)
+
+  StemInstanceNode.attributeAffects(
     StemInstanceNode.mHasResourceDistribution,
     StemInstanceNode.mBranches)
 
@@ -1609,6 +1650,10 @@ def StemInstanceNodeInitializer():
 
   StemInstanceNode.attributeAffects(
     StemInstanceNode.mDefGrammarFile,
+    StemInstanceNode.outputMesh)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefBudObjFile,
     StemInstanceNode.outputMesh)
 
   StemInstanceNode.attributeAffects(
