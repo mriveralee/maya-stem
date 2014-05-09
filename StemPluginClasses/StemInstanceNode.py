@@ -81,7 +81,7 @@ ENABLE_RESOURCE_DRAWING = True
 ENABLE_RESOURCE_V_DRAWING = True
 ENABLE_RESOURCE_Q_DRAWING = True
 ENABLE_BUD_DRAWING = True
-ENABLE_LEAF_DRAWING = False
+ENABLE_LEAF_DRAWING = True
 ENABLE_RESOURCE_V_PRINTING = False
 ENABLE_RESOURCE_Q_PRINTING = False
 ENABLE_JUDYS_DEBUG_PRINTING_CRAP = False
@@ -604,6 +604,14 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
     if ENABLE_CYLINDER_MESH:
       self.createCylinderMesh(preBudGrowthInternodes, data)
 
+    txNodeBudList = cmds.ls('StemObjBudImport:*', type='transform')
+    txNodeLeafList = cmds.ls('StemObjLeafImport:*', type='transform')
+    if len(txNodeBudList) > 0:
+      txNodeBud = txNodeBudList[0]
+      cmds.hide(txNodeBud)
+    if len(txNodeLeafList) > 0:
+      txNodeLeaf = txNodeLeafList[0]
+      cmds.hide(txNodeLeaf)
     if ENABLE_BUD_DRAWING:
       self.drawBuds(preBudGrowthInternodes)
     if ENABLE_LEAF_DRAWING:
@@ -1446,6 +1454,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         #txNode = str(cmds.sphere(r=0.05)[0])
         newBudMeshName = budInstanceName + str(count)
         instanceNode = cmds.instance(txNode, n=newBudMeshName)[0]
+        print "what about here??"
         tBudPos = branch.mEnd
         cmds.move(tBudPos[0]+0.05, tBudPos[1], tBudPos[2], instanceNode, absolute=True)
         count = count + 1
@@ -1459,6 +1468,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
         #txNode = str(cmds.nurbsCube(w=0.1)[0])
         newBudMeshName = budInstanceName + str(count)
         instanceNode = cmds.instance(txNode, n=newBudMeshName)[0]
+        print "what about here?????"
         lBudPos = branch.mEnd
         cmds.move(lBudPos[0]-0.05, lBudPos[1], lBudPos[2], instanceNode, absolute=True)
         count = count + 1
@@ -1499,12 +1509,34 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   def importBudObj(self, objFile):
     if (objFile is None or objFile == ''):
       return
-    cmds.file(objFile, i=True, type='OBJ', ns='StemObjBudImport')
+
+    budMeshes = cmds.ls('StemInstanceBudMesh*', type='transform')
+    for budMesh in budMeshes:
+      cmds.delete(budMesh)
+
+    budMeshList = cmds.ls('StemObjBudImport:*', type='transform')
+    if len(budMeshList) > 0:
+      txNode = budMeshList[0]
+      cmds.delete(txNode)
+      cmds.namespace(moveNamespace=[':StemObjBudImport',':'], force=True)
+      cmds.namespace(rm='StemObjBudImport')
+    cmds.file(objFile, i=True, type='OBJ', ns='StemObjBudImport', mergeNamespacesOnClash=True) # last param doesn't work cuz stupid maya
 
   def importLeafObj(self, objFile):
     if (objFile is None or objFile == ''):
       return
-    cmds.file(objFile, i=True, type='OBJ', ns='StemObjLeafImport')
+
+    leafMeshes = cmds.ls('StemInstanceLeafMesh*', type='transform')
+    for leafMesh in leafMeshes:
+      cmds.delete(leafMesh)
+
+    leafMeshList = cmds.ls('StemObjLeafImport:*', type='transform')
+    if len(leafMeshList) > 0:
+      txNode = leafMeshList[0]
+      cmds.delete(txNode)
+      cmds.namespace(moveNamespace=[':StemObjLeafImport',':'], force=True)
+      cmds.namespace(rm='StemObjLeafImport')
+    cmds.file(objFile, i=True, type='OBJ', ns='StemObjLeafImport', mergeNamespacesOnClash=True)
 
 ######################## End StemInstanceNode Class ############################
 '''
