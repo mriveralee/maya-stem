@@ -64,7 +64,7 @@ BH_ALPHA = 1 #2# coefficient of proportionality for v_base, value from paper ex.
 DEFAULT_GRAMMAR_FILE = './StemPluginClasses/trees/simple1.txt'
 
 # Default Bud Obj File
-DEFAULT_BUD_OBJ_FILE = './StemPluginClasses/objFiles/test-bud.obj'
+DEFAULT_BUD_OBJ_FILE = './StemPluginClasses/objFiles/test-bud-small.obj'
 
 # Default Leaf Obj File
 DEFAULT_LEAF_OBJ_FILE = ''
