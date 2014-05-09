@@ -35,6 +35,7 @@ KEY_ITERATIONS = 'baseIterations', 'baseIter'
 KEY_TIME = 'time', 'tm'
 KEY_GRAMMAR = 'grammarFile', 'grf'
 KEY_BUD_OBJ = 'budObjFile', 'bof'
+KEY_LEAF_OBJ = 'leafObjFile', 'lof'
 KEY_ANGLE = 'angle', 'ang'
 KEY_STEP_SIZE = 'stepSize', 'ss'
 
@@ -67,7 +68,7 @@ DEFAULT_GRAMMAR_FILE = './StemPluginClasses/trees/simple1.txt'
 DEFAULT_BUD_OBJ_FILE = './StemPluginClasses/objFiles/test-bud-small.obj'
 
 # Default Leaf Obj File
-DEFAULT_LEAF_OBJ_FILE = ''
+DEFAULT_LEAF_OBJ_FILE = './StemPluginClasses/objFiles/test-leaf.obj'
 
 # Default LSystem Step Size
 DEFAULT_STEP_SIZE = 1.0
@@ -116,6 +117,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mDefStepSize = OpenMaya.MObject()
   mDefGrammarFile = OpenMaya.MObject()
   mDefBudObjFile = OpenMaya.MObject()
+  mDefLeafObjFile = OpenMaya.MObject()
   mIterations = OpenMaya.MObject()
 
   # Stem Option Values
@@ -141,6 +143,7 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
   mPrevIterations = None
 
   mBudObjFile = ''
+  mLeafObjFile = ''
 
   # Optimal Point Curves Drawn
   mOptCurves = []
@@ -318,6 +321,13 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       if self.mBudObjFile != budObjFile:
         self.mBudObjFile = budObjFile
         self.importBudObj(self.mBudObjFile)
+
+      # Leaf Obj File String
+      leafObjData = data.inputValue(StemInstanceNode.mDefLeafObjFile)
+      leafObjFile = str(leafObjData.asString())
+      if self.mLeafObjFile != leafObjFile:
+        self.mLeafObjFile = leafObjFile
+        self.importLeafObj(self.mLeafObjFile)
 
       # Has Resources
       hasResData = data.inputValue(StemInstanceNode.mHasResourceDistribution)
@@ -1439,6 +1449,11 @@ class StemInstanceNode(OpenMayaMPx.MPxLocatorNode):
       return
     cmds.file(objFile, i=True)
 
+  def importLeafObj(self, objFile):
+    if (objFile is None or objFile == ''):
+      return
+    cmds.file(objFile, i=True)
+
 ######################## End StemInstanceNode Class ############################
 '''
 '' StemInstanceNode Creator for Maya Plug-in
@@ -1518,6 +1533,16 @@ def StemInstanceNodeInitializer():
     defStringData)
   SG.MAKE_INPUT(tAttr)
 
+  # Leaf Obj File
+  defStringData = OpenMaya.MFnStringData().create(DEFAULT_LEAF_OBJ_FILE)
+  tAttr = OpenMaya.MFnTypedAttribute()
+  StemInstanceNode.mDefLeafObjFile = tAttr.create(
+    KEY_LEAF_OBJ[0],
+    KEY_LEAF_OBJ[1],
+    OpenMaya.MFnData.kString,
+    defStringData)
+  SG.MAKE_INPUT(tAttr)
+
   # Branch Segments
   tAttr = OpenMaya.MFnTypedAttribute()
   StemInstanceNode.mBranches =  tAttr.create(
@@ -1554,6 +1579,7 @@ def StemInstanceNodeInitializer():
   StemInstanceNode.addAttribute(StemInstanceNode.mDefStepSize)
   StemInstanceNode.addAttribute(StemInstanceNode.mDefGrammarFile)
   StemInstanceNode.addAttribute(StemInstanceNode.mDefBudObjFile)
+  StemInstanceNode.addAttribute(StemInstanceNode.mDefLeafObjFile)
   StemInstanceNode.addAttribute(StemInstanceNode.mHasResourceDistribution)
   StemInstanceNode.addAttribute(StemInstanceNode.mIterations)
   StemInstanceNode.addAttribute(StemInstanceNode.mHasBranchShedding)
@@ -1590,6 +1616,10 @@ def StemInstanceNodeInitializer():
     StemInstanceNode.mFlowers)
 
   StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefLeafObjFile,
+    StemInstanceNode.mFlowers)
+
+  StemInstanceNode.attributeAffects(
     StemInstanceNode.mHasResourceDistribution,
     StemInstanceNode.mFlowers)
 
@@ -1623,6 +1653,10 @@ def StemInstanceNodeInitializer():
     StemInstanceNode.mBranches)
 
   StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefLeafObjFile,
+    StemInstanceNode.mBranches)
+
+  StemInstanceNode.attributeAffects(
     StemInstanceNode.mHasResourceDistribution,
     StemInstanceNode.mBranches)
 
@@ -1654,6 +1688,10 @@ def StemInstanceNodeInitializer():
 
   StemInstanceNode.attributeAffects(
     StemInstanceNode.mDefBudObjFile,
+    StemInstanceNode.outputMesh)
+
+  StemInstanceNode.attributeAffects(
+    StemInstanceNode.mDefLeafObjFile,
     StemInstanceNode.outputMesh)
 
   StemInstanceNode.attributeAffects(
